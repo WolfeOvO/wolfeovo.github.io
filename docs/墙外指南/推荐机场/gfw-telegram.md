@@ -37,8 +37,8 @@
 
 欢迎送测！
 
-投稿机器人：[@Bronya01Bot](https://t.me/Bronya01Bot)
-群组：[https://t.me/Bronya_02](https://t.me/Bronya_02)
+- 投稿机器人：[@Bronya01Bot](https://t.me/Bronya01Bot)
+- 群组：[https://t.me/Bronya_02](https://t.me/Bronya_02)
 
 请给我钱，谢谢喵~
 - Tron：||TDdtJmMUs3QM4wvGeED5UpGwtDDv1XhhzQ||
