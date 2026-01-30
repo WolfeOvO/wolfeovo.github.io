@@ -66,9 +66,7 @@ export default defineConfig({
     sidebar: sidebar,
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/WolfeOvO' },
-      { icon: 'twitter', link: 'https://x.com/_WolfeOvO_' },
-      { icon: 'telegram', link: 'https://t.me/WolfesMind' }
+      { icon: 'github', link: 'https://muselink.cc/wolfe' }
       ],
 
     lastUpdated: {
