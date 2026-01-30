@@ -1,0 +1,1 @@
+import{_ as t,o as e,c as a}from"./chunks/framework.C4jhkNcu.js";const l=JSON.parse('{"title":"标签","description":"","frontmatter":{"title":"标签"},"headers":[],"relativePath":"tags.md","filePath":"tags.md","lastUpdated":1769754840000}'),s={name:"tags.md"};function r(o,c,n,d,p,i){return e(),a("div")}const m=t(s,[["render",r]]);export{l as __pageData,m as default};
