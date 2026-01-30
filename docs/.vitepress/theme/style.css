@@ -2337,8 +2337,27 @@
   content: none !important;
 }
 
-/* Copy Toast */
+/* Copy Toast - 完整样式 */
 .dl-toast {
+  position: fixed !important;
+  left: 50% !important;
+  bottom: 28px !important;
+  transform: translateX(-50%) !important;
+  z-index: 99999 !important;
+
+  /* 关键：不要铺满 */
+  width: auto !important;
+  max-width: calc(100vw - 24px) !important;
+  box-sizing: border-box !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+
+  padding: 10px 14px !important;
+  border-radius: 12px !important;
+
+  /* 你要的绿色风格 */
   background: #16a34a !important;
   color: #fff !important;
   box-shadow: 0 10px 30px rgba(0,0,0,.18) !important;
@@ -2358,6 +2377,7 @@
   opacity: 0.95;
 }
 
+/* 过渡动画 */
 .dl-toast-enter-active,
 .dl-toast-leave-active {
   transition: opacity 0.18s ease, transform 0.18s ease;
