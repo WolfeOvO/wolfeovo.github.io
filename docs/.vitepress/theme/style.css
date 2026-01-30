@@ -2327,38 +2327,25 @@
   user-select: auto;
 }
 
-/* 隐藏原生的 "Copied" 气泡 */
-.vp-doc [class*='language-'] > button.copy::after {
+.vp-doc div[class*='language-'] > button.copy::before {
   display: none !important;
+  content: none !important;
 }
 
-/* 隐藏 VitePress 代码块复制按钮自带的 Copied 提示 */
-.vp-code-group .copy span,
-.vp-doc div[class*='language-'] .copy span {
+.vp-doc div[class*='language-'] > button.copy::after {
   display: none !important;
+  content: none !important;
 }
 
 /* Copy Toast */
 .dl-toast {
-  position: fixed;
-  left: 50%;
-  bottom: 28px;
-  transform: translateX(-50%);
-  z-index: 9999;
+  background: #16a34a !important;
+  color: #fff !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.18) !important;
+}
 
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-
-  padding: 10px 14px;
-  border-radius: 10px;
-
-  background: rgba(17, 24, 39, 0.92);
-  color: #fff;
-
-  font-size: 14px;
-  line-height: 1;
-  backdrop-filter: blur(8px);
+.dl-toast * {
+  color: #fff !important;
 }
 
 .dl-toast-icon {
