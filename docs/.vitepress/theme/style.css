@@ -2332,6 +2332,12 @@
   display: none !important;
 }
 
+/* 隐藏 VitePress 代码块复制按钮自带的 Copied 提示 */
+.vp-code-group .copy span,
+.vp-doc div[class*='language-'] .copy span {
+  display: none !important;
+}
+
 /* Copy Toast */
 .dl-toast {
   position: fixed;
