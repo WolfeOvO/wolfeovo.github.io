@@ -15,16 +15,6 @@
       <span class="dl-wave-3"></span>
     </div>
 
-    <!-- 顶部 toast（复制成功） -->
-    <Teleport to="body">
-      <Transition name="dl-toast">
-        <div v-if="toast.visible" class="dl-toast" role="status" aria-live="polite">
-          <span class="dl-toast-icon" v-html="icons.check"></span>
-          <span class="dl-toast-text">已复制到剪贴板</span>
-        </div>
-      </Transition>
-    </Teleport>
-
     <!-- header -->
     <header class="dl-header">
       <!-- 文件 icon：只负责文件 -->

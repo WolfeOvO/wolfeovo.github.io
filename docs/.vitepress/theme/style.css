@@ -2326,3 +2326,52 @@
   border-color: transparent;
   user-select: auto;
 }
+
+/* 隐藏原生的 "Copied" 气泡 */
+.vp-doc [class*='language-'] > button.copy::after {
+  display: none !important;
+}
+
+/* Copy Toast */
+.dl-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  z-index: 9999;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 14px;
+  border-radius: 10px;
+
+  background: rgba(17, 24, 39, 0.92);
+  color: #fff;
+
+  font-size: 14px;
+  line-height: 1;
+  backdrop-filter: blur(8px);
+}
+
+.dl-toast-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  opacity: 0.95;
+}
+
+.dl-toast-enter-active,
+.dl-toast-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.dl-toast-enter-from,
+.dl-toast-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(8px);
+}
