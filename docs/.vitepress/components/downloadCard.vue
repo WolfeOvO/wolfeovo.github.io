@@ -8,6 +8,13 @@
     <!-- shine 扫光层（整卡 hover） -->
     <div class="dl-shine" :style="{ opacity: isHovered ? 1 : 0 }"></div>
 
+    <!-- ✅ wave 波浪动态背景层（不影响交互） -->
+    <div class="dl-wave" aria-hidden="true">
+      <span class="dl-wave-1"></span>
+      <span class="dl-wave-2"></span>
+      <span class="dl-wave-3"></span>
+    </div>
+
     <!-- 顶部 toast（复制成功） -->
     <Teleport to="body">
       <Transition name="dl-toast">
@@ -40,7 +47,7 @@
         </div>
       </div>
 
-      <!-- ✅ 右侧留空（不再提供“立即下载”按钮：下载渠道只展示，入口放到“下载链接”里） -->
+      <!-- ✅ 右侧留空（下载渠道只展示，不再提供“立即下载”按钮） -->
     </header>
 
     <!-- body -->
@@ -83,7 +90,7 @@
         </div>
       </div>
 
-      <!-- ✅ 下载链接：列出所有平台，每条前有平台 icon；仅“复制按钮”复制 -->
+      <!-- ✅ 下载链接：仅按钮复制；图标与红框标题基线对齐 -->
       <div class="dl-row">
         <div class="dl-label">
           <span class="dl-label-ico" v-html="icons.link"></span>
@@ -124,20 +131,18 @@
             </div>
           </div>
         </div>
-
-        <!-- 可选：如果你不想要“打开”按钮，可以把 dl-link-actions 里 openbtn 删除即可 -->
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
 
 const props = defineProps({
   // 基本信息
   name: { type: String, required: true },
-  url: { type: String, default: "" }, // 兜底（如果你不传 channels）
+  url: { type: String, default: "" }, // 兜底（如果不传 channels）
   icon: { type: String, default: "" },
 
   // type / size
@@ -145,11 +150,11 @@ const props = defineProps({
   typeName: { type: String, default: "" },
   size: { type: String, default: "" },
 
-  // ✅ 核心：全平台数据源
-  // [{ name: 'GitHub', icon: 'github', url: '...' }, ...]
+  // ✅ 全平台数据源
+  // [{ name: 'GitHub Releases', icon: 'github', url: '...' }, ...]
   channels: { type: Array, default: null },
 
-  // 配色（参考 GitHubRelease 那套 6 色）
+  // 配色（6 色）
   color: { type: String, default: "blue" }, // blue/green/yellow/pink/purple/orange
   theme: { type: Object, default: null },
 });
@@ -177,43 +182,139 @@ onMounted(() => {
     window.matchMedia?.("(prefers-color-scheme: dark)")?.addEventListener?.("change", checkDarkMode);
   }
 
-  // 延迟测试启动
   startLatencyLoop();
 });
 
 onBeforeUnmount(() => {
   observer?.disconnect?.();
-  window.matchMedia?.("(prefers-color-scheme: dark)")?.removeEventListener?.("change", checkDarkMode);
+  window
+    .matchMedia?.("(prefers-color-scheme: dark)")
+    ?.removeEventListener?.("change", checkDarkMode);
 
-  // 延迟测试清理
   stopLatencyLoop();
 });
 
 /* ========= 颜色预设（6 色） ========= */
 const PRESETS = {
   blue: {
-    light: { bg: "#f0f7ff", border: "#c6deff", accent: "#3b82f6", text: "#1e40af", muted: "#64748b", iconBg: "#e6f1ff", shadow: "rgba(59,130,246,.35)" },
-    dark: { bg: "#1e3a5f", border: "#2563eb", accent: "#60a5fa", text: "#93c5fd", muted: "#94a3b8", iconBg: "#16314f", shadow: "rgba(37,99,235,.40)" },
+    light: {
+      bg: "#f0f7ff",
+      border: "#c6deff",
+      accent: "#3b82f6",
+      text: "#1e40af",
+      muted: "#64748b",
+      iconBg: "#e6f1ff",
+      shadow: "rgba(59,130,246,.35)",
+    },
+    dark: {
+      bg: "#1e3a5f",
+      border: "#2563eb",
+      accent: "#60a5fa",
+      text: "#93c5fd",
+      muted: "#94a3b8",
+      iconBg: "#16314f",
+      shadow: "rgba(37,99,235,.40)",
+    },
   },
   green: {
-    light: { bg: "#f0fdf4", border: "#bbf7d0", accent: "#22c55e", text: "#166534", muted: "#64748b", iconBg: "#e8fff1", shadow: "rgba(34,197,94,.30)" },
-    dark: { bg: "#14532d", border: "#16a34a", accent: "#4ade80", text: "#86efac", muted: "#94a3b8", iconBg: "#114425", shadow: "rgba(22,163,74,.38)" },
+    light: {
+      bg: "#f0fdf4",
+      border: "#bbf7d0",
+      accent: "#22c55e",
+      text: "#166534",
+      muted: "#64748b",
+      iconBg: "#e8fff1",
+      shadow: "rgba(34,197,94,.30)",
+    },
+    dark: {
+      bg: "#14532d",
+      border: "#16a34a",
+      accent: "#4ade80",
+      text: "#86efac",
+      muted: "#94a3b8",
+      iconBg: "#114425",
+      shadow: "rgba(22,163,74,.38)",
+    },
   },
   yellow: {
-    light: { bg: "#fefce8", border: "#fef08a", accent: "#eab308", text: "#a16207", muted: "#64748b", iconBg: "#fff8cf", shadow: "rgba(234,179,8,.30)" },
-    dark: { bg: "#422006", border: "#ca8a04", accent: "#facc15", text: "#fde047", muted: "#94a3b8", iconBg: "#341905", shadow: "rgba(202,138,4,.40)" },
+    light: {
+      bg: "#fefce8",
+      border: "#fef08a",
+      accent: "#eab308",
+      text: "#a16207",
+      muted: "#64748b",
+      iconBg: "#fff8cf",
+      shadow: "rgba(234,179,8,.30)",
+    },
+    dark: {
+      bg: "#422006",
+      border: "#ca8a04",
+      accent: "#facc15",
+      text: "#fde047",
+      muted: "#94a3b8",
+      iconBg: "#341905",
+      shadow: "rgba(202,138,4,.40)",
+    },
   },
   pink: {
-    light: { bg: "#fdf2f8", border: "#fbcfe8", accent: "#ec4899", text: "#9d174d", muted: "#64748b", iconBg: "#ffe7f2", shadow: "rgba(236,72,153,.28)" },
-    dark: { bg: "#500724", border: "#db2777", accent: "#f472b6", text: "#fbcfe8", muted: "#94a3b8", iconBg: "#3f061c", shadow: "rgba(219,39,119,.42)" },
+    light: {
+      bg: "#fdf2f8",
+      border: "#fbcfe8",
+      accent: "#ec4899",
+      text: "#9d174d",
+      muted: "#64748b",
+      iconBg: "#ffe7f2",
+      shadow: "rgba(236,72,153,.28)",
+    },
+    dark: {
+      bg: "#500724",
+      border: "#db2777",
+      accent: "#f472b6",
+      text: "#fbcfe8",
+      muted: "#94a3b8",
+      iconBg: "#3f061c",
+      shadow: "rgba(219,39,119,.42)",
+    },
   },
   purple: {
-    light: { bg: "#f5f3ff", border: "#ddd6fe", accent: "#8b5cf6", text: "#5b21b6", muted: "#64748b", iconBg: "#ede9ff", shadow: "rgba(139,92,246,.30)" },
-    dark: { bg: "#2e1065", border: "#7c3aed", accent: "#a78bfa", text: "#c4b5fd", muted: "#94a3b8", iconBg: "#250e52", shadow: "rgba(124,58,237,.42)" },
+    light: {
+      bg: "#f5f3ff",
+      border: "#ddd6fe",
+      accent: "#8b5cf6",
+      text: "#5b21b6",
+      muted: "#64748b",
+      iconBg: "#ede9ff",
+      shadow: "rgba(139,92,246,.30)",
+    },
+    dark: {
+      bg: "#2e1065",
+      border: "#7c3aed",
+      accent: "#a78bfa",
+      text: "#c4b5fd",
+      muted: "#94a3b8",
+      iconBg: "#250e52",
+      shadow: "rgba(124,58,237,.42)",
+    },
   },
   orange: {
-    light: { bg: "#fff7ed", border: "#fed7aa", accent: "#f97316", text: "#c2410c", muted: "#64748b", iconBg: "#ffedd5", shadow: "rgba(249,115,22,.28)" },
-    dark: { bg: "#431407", border: "#ea580c", accent: "#fb923c", text: "#fdba74", muted: "#94a3b8", iconBg: "#351006", shadow: "rgba(234,88,12,.42)" },
+    light: {
+      bg: "#fff7ed",
+      border: "#fed7aa",
+      accent: "#f97316",
+      text: "#c2410c",
+      muted: "#64748b",
+      iconBg: "#ffedd5",
+      shadow: "rgba(249,115,22,.28)",
+    },
+    dark: {
+      bg: "#431407",
+      border: "#ea580c",
+      accent: "#fb923c",
+      text: "#fdba74",
+      muted: "#94a3b8",
+      iconBg: "#351006",
+      shadow: "rgba(234,88,12,.42)",
+    },
   },
 };
 
@@ -303,7 +404,10 @@ const computedSize = computed(() => {
 const splitUrl = (u) => {
   try {
     const urlObj = new URL(u);
-    return { domain: `${urlObj.protocol}//${urlObj.host}`, path: `${urlObj.pathname}${urlObj.search}${urlObj.hash}` };
+    return {
+      domain: `${urlObj.protocol}//${urlObj.host}`,
+      path: `${urlObj.pathname}${urlObj.search}${urlObj.hash}`,
+    };
   } catch {
     return { domain: u, path: "" };
   }
@@ -338,10 +442,7 @@ const copy = async (text) => {
   }
 };
 
-/* ========= 延迟实时测试（轻量版，参考你给的 script.js 思路） =========
- * - 不对真实大文件做 GET，默认对“同域 favicon.ico / 根路径”做 no-cors HEAD
- * - 采样间隔默认 15s，可按需调大
- */
+/* ========= 延迟实时测试 ========= */
 const latencyState = reactive({});
 let latencyTimer = null;
 
@@ -356,8 +457,7 @@ const keyOf = (ch) => {
 const probeUrlOf = (rawUrl) => {
   try {
     const u = new URL(rawUrl);
-    // 尽量测“同域的小资源”，避免对大文件下载链接造成浪费
-    // 优先 favicon，其次根路径
+    // 测同域 favicon，避免对真实大文件下载链接造成浪费
     return `${u.origin}/favicon.ico`;
   } catch {
     return rawUrl;
@@ -374,7 +474,6 @@ const testLatencyOnce = async (ch) => {
 
   const start = Date.now();
   try {
-    // 先 HEAD；失败再 GET（都 no-cors，拿不到 body 也没关系，我们只要耗时）
     await fetch(`${probe}?t=${Date.now()}`, {
       method: "HEAD",
       cache: "no-cache",
@@ -410,10 +509,8 @@ const startLatencyLoop = () => {
   if (typeof window === "undefined") return;
   if (!normalizedChannels.value.length) return;
 
-  // 先跑一轮
   normalizedChannels.value.forEach((ch) => testLatencyOnce(ch));
 
-  // 再定时更新（15s）
   latencyTimer = window.setInterval(() => {
     normalizedChannels.value.forEach((ch) => testLatencyOnce(ch));
   }, 15000);
@@ -425,6 +522,15 @@ const stopLatencyLoop = () => {
     latencyTimer = null;
   }
 };
+
+// channels 变动时重启探测（避免新增/删除渠道后不刷新）
+watch(
+  () => normalizedChannels.value.map((c) => c.url).join("|"),
+  () => {
+    stopLatencyLoop();
+    startLatencyLoop();
+  }
+);
 
 const latencyClass = (ch) => {
   const st = latencyState[keyOf(ch)];
@@ -523,6 +629,7 @@ function parseToBytes(input) {
   transition: opacity 0.3s ease;
   pointer-events: none;
   animation: dl-shine 3s infinite;
+  z-index: 0;
 }
 @keyframes dl-shine {
   0% {
@@ -530,6 +637,122 @@ function parseToBytes(input) {
   }
   100% {
     transform: translateX(200%) skewX(-15deg);
+  }
+}
+
+/* ✅ 波浪动态背景 */
+.dl-wave {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 78px;
+  pointer-events: none;
+  z-index: 0; /* 内容之下 */
+  opacity: 0.85;
+  transition: opacity 0.25s ease;
+}
+.dl-card:hover .dl-wave {
+  opacity: 1;
+}
+
+/* 让内容在波浪之上 */
+.dl-header,
+.dl-stack {
+  position: relative;
+  z-index: 1;
+}
+
+/* 三层波浪：不同速度/透明度 */
+.dl-wave-1,
+.dl-wave-2,
+.dl-wave-3 {
+  position: absolute;
+  inset: 0;
+  bottom: 0;
+  height: 100%;
+  display: block;
+
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--dl-accent) 24%, transparent) 0%,
+    color-mix(in srgb, var(--dl-accent) 10%, transparent) 35%,
+    color-mix(in srgb, var(--dl-accent) 22%, transparent) 70%,
+    color-mix(in srgb, var(--dl-accent) 14%, transparent) 100%
+  );
+
+  -webkit-mask-image: radial-gradient(22px 14px at 18px 62px, #000 98%, transparent 100%),
+    radial-gradient(22px 14px at 62px 62px, #000 98%, transparent 100%);
+  -webkit-mask-size: 80px 78px;
+  -webkit-mask-repeat: repeat-x;
+
+  mask-image: radial-gradient(22px 14px at 18px 62px, #000 98%, transparent 100%),
+    radial-gradient(22px 14px at 62px 62px, #000 98%, transparent 100%);
+  mask-size: 80px 78px;
+  mask-repeat: repeat-x;
+
+  filter: blur(0.2px);
+}
+
+.dl-wave-1 {
+  opacity: 0.85;
+  transform: translateY(6px);
+  animation: dl-wave-move-1 8s linear infinite;
+}
+.dl-wave-2 {
+  opacity: 0.55;
+  transform: translateY(0px);
+  animation: dl-wave-move-2 12s linear infinite;
+}
+.dl-wave-3 {
+  opacity: 0.35;
+  transform: translateY(10px);
+  animation: dl-wave-move-3 16s linear infinite;
+}
+
+@keyframes dl-wave-move-1 {
+  0% {
+    -webkit-mask-position: 0 0;
+    mask-position: 0 0;
+  }
+  100% {
+    -webkit-mask-position: 320px 0;
+    mask-position: 320px 0;
+  }
+}
+@keyframes dl-wave-move-2 {
+  0% {
+    -webkit-mask-position: 0 0;
+    mask-position: 0 0;
+  }
+  100% {
+    -webkit-mask-position: 240px 0;
+    mask-position: 240px 0;
+  }
+}
+@keyframes dl-wave-move-3 {
+  0% {
+    -webkit-mask-position: 0 0;
+    mask-position: 0 0;
+  }
+  100% {
+    -webkit-mask-position: -280px 0;
+    mask-position: -280px 0;
+  }
+}
+
+:global(.dark) .dl-wave {
+  opacity: 0.65;
+}
+:global(.dark) .dl-card:hover .dl-wave {
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dl-wave-1,
+  .dl-wave-2,
+  .dl-wave-3 {
+    animation: none !important;
   }
 }
 
@@ -659,7 +882,7 @@ function parseToBytes(input) {
   word-break: break-all;
 }
 
-/* ✅ channels: 展示 + 延迟 */
+/* channels */
 .dl-channels {
   display: flex;
   flex-wrap: wrap;
@@ -706,7 +929,6 @@ function parseToBytes(input) {
   white-space: nowrap;
 }
 
-/* 右侧延迟：做成“数值”更显眼（参考你截图那种视觉重点） */
 .dl-channel-chip-latency {
   margin-left: 6px;
   display: inline-flex;
@@ -732,7 +954,6 @@ function parseToBytes(input) {
   font-weight: 700;
 }
 
-/* 延迟颜色档位（尽量使用 VitePress 变量，兼容主题） */
 .dl-channel-chip-latency.is-good .num {
   color: var(--vp-c-green-1, #22c55e);
 }
@@ -761,7 +982,7 @@ function parseToBytes(input) {
   border: 1px solid rgba(0, 0, 0, 0.06);
   background: rgba(255, 255, 255, 0.55);
   transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-  align-items: flex-start; /* ✅ 让左侧图标对齐到“标题行”，不在多行内容时垂直居中跑偏 */
+  align-items: flex-start; /* 让图标贴合标题行 */
 }
 :global(.dark) .dl-link-item {
   border-color: rgba(255, 255, 255, 0.1);
@@ -786,7 +1007,7 @@ function parseToBytes(input) {
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  margin-top: 2px; /* ✅ 微调：更贴合你红框截图里的 icon/text baseline */
+  margin-top: 2px; /* 基线微调 */
 }
 .dl-link-ico :deep(svg) {
   width: 14px;
@@ -799,7 +1020,7 @@ function parseToBytes(input) {
 }
 .dl-link-top {
   display: flex;
-  align-items: center; /* ✅ 标题行垂直居中对齐 */
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 6px;
