@@ -4,17 +4,17 @@ import { h, render, onMounted, watch } from 'vue'
 import { useRoute } from 'vitepress'
 
 // 组件
-import GitHubRelease from './components/GitHubRelease.vue'
-import notionTags from './components/notionTags.vue'
-import linkCard from './components/linkCard.vue'
-import sidebar from './components/sidebarDirectory.vue'
-import downloadCard from './components/downloadCard.vue'
-import copyMessage from './components/copyMessage.vue'
+import GitHubRelease from '../components/GitHubRelease.vue'
+import notionTags from '../components/notionTags.vue'
+import linkCard from '../components/linkCard.vue'
+import sidebar from '../components/sidebarDirectory.vue'
+import downloadCard from '../components/downloadCard.vue'
+import copyMessage from '../components/copyMessage.vue'
 
 // 插件
 import { enhanceAppWithTabs } from 'vitepress-plugin-tabs/client'
-import { injectTabs } from './plugins/vitepress-tabbed.js'
-import { setupDetailsAnimation } from './plugins/detailsAnimation.js'
+import { injectTabs } from '../plugins/vitepress-tabbed.js'
+import { setupDetailsAnimation } from '../plugins/detailsAnimation.js'
 
 // ====== Copy Toast 单例 & clipboard patch ======
 let __copyToastExposed = null
