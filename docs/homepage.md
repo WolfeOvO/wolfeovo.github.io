@@ -2,8 +2,8 @@
 
 ::: warning
 GitHub Pages 和 Cloudflare Pages 同步部署更新，记得收藏防丢！
-- GitHub Pages：[https://wolfeovo.github.io]
-- Cloudflare Pages：[https://wolfe.pages.dev]
+- GitHub Pages：[https://wolfeovo.github.io](https://wolfeovo.github.io)
+- Cloudflare Pages：[https://wolfe.pages.dev](https://wolfe.pages.dev)
 :::
 
 ::: info 🕒时区说明
