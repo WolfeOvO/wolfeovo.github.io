@@ -59,6 +59,8 @@ onUnmounted(() => {
 // 更新遮罩层位置（粘性效果）
 function updateOverlayPosition() {
   if (!containerRef.value || !overlayRef.value || !isLocked.value) return
+  // 抖动动画期间不更新位置
+  if (isShaking.value) return
   
   const container = containerRef.value
   const overlay = overlayRef.value
@@ -79,7 +81,7 @@ function updateOverlayPosition() {
   // 如果容器高度不足以容纳遮罩层，固定在顶部居中
   if (containerHeight <= overlayHeight + padding * 2) {
     overlay.style.top = '50%'
-    overlay.style.transform = 'translate(-50%, -50%)'
+    overlay.style.transform = 'translateX(-50%)'
     return
   }
   
@@ -199,9 +201,8 @@ watch(isLocked, (locked) => {
         v-if="isLocked" 
         ref="overlayRef"
         class="encrypted-overlay"
-        :class="{ 'shake': isShaking }"
       >
-        <div class="overlay-content">
+        <div class="overlay-content" :class="{ 'shake': isShaking }">
           <!-- 图标 -->
           <div class="lock-icon" v-html="icon"></div>
           
@@ -276,13 +277,13 @@ watch(isLocked, (locked) => {
   margin: 1.5rem 0;
   border-radius: 12px;
   overflow: hidden;
-  /* 确保容器有最小高度来容纳遮罩层 */
-  min-height: 280px;
 }
 
 .encrypted-block.is-locked {
   background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
   border: 1px solid rgba(0, 0, 0, 0.08);
+  /* 锁定时的最小高度：确保能容纳遮罩层，但不会太大 */
+  min-height: 280px;
 }
 
 :root.dark .encrypted-block.is-locked {
@@ -290,12 +291,19 @@ watch(isLocked, (locked) => {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* 解锁后移除最小高度限制 */
+.encrypted-block:not(.is-locked) {
+  min-height: 0;
+  background: transparent;
+  border: none;
+}
+
 /* 遮罩层 - 始终使用 absolute */
 .encrypted-overlay {
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   z-index: 10;
   width: 100%;
   max-width: 340px;
@@ -542,21 +550,21 @@ watch(isLocked, (locked) => {
   transform: translateY(-8px);
 }
 
-/* 抖动动画 */
-.shake {
+/* 抖动动画 - 应用在 overlay-content 上而不是 overlay */
+.overlay-content.shake {
   animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
 @keyframes shake {
-  10%, 90% { transform: translateX(calc(-50% - 1px)); }
-  20%, 80% { transform: translateX(calc(-50% + 2px)); }
-  30%, 50%, 70% { transform: translateX(calc(-50% - 4px)); }
-  40%, 60% { transform: translateX(calc(-50% + 4px)); }
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
 }
 
 /* 响应式 */
 @media (max-width: 640px) {
-  .encrypted-block {
+  .encrypted-block.is-locked {
     min-height: 260px;
   }
   
