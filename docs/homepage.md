@@ -42,3 +42,8 @@
   :channels="[{ name: 'GitHub Releases', icon: 'github', url: 'https://github.com/xxx/releases/download/v1.2.3/file.zip' }, { name: 'OneDrive', icon: 'onedrive', url: 'https://1drv.ms/u/s!xxxx' }, { name: 'Gitee', icon: 'gitee', url: 'https://gitee.com/xxx/releases/download/v1.2.3/file.zip' }]"
 />
 %%%
+
+%%%
+"pwd":"123456"
+test
+%%%
