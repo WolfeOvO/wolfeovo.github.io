@@ -53,6 +53,55 @@ function patchClipboardOnce() {
 }
 // ============================================
 
+// ====== Spoiler 处理逻辑 ======
+let __spoilerInitialized = false
+
+function setupSpoiler() {
+  if (typeof document === 'undefined') return
+  if (__spoilerInitialized) return
+  __spoilerInitialized = true
+
+  // 检测是否为触摸设备
+  const isTouchDevice = () => {
+    return window.matchMedia('(hover: none)').matches || 
+           window.matchMedia('(pointer: coarse)').matches
+  }
+
+  // 全局点击事件处理
+  document.addEventListener('click', (e) => {
+    const clickedSpoiler = e.target.closest('.spoiler')
+    
+    if (isTouchDevice()) {
+      // 触摸设备逻辑
+      if (clickedSpoiler) {
+        // 点击的是 spoiler
+        e.preventDefault()
+        
+        // 先关闭所有其他已显示的 spoiler
+        document.querySelectorAll('.spoiler.revealed').forEach(el => {
+          if (el !== clickedSpoiler) {
+            el.classList.remove('revealed')
+          }
+        })
+        
+        // 切换当前 spoiler 的状态
+        clickedSpoiler.classList.toggle('revealed')
+      } else {
+        // 点击的是其他地方，关闭所有 spoiler
+        document.querySelectorAll('.spoiler.revealed').forEach(el => {
+          el.classList.remove('revealed')
+        })
+      }
+    } else {
+      // 非触摸设备（桌面端）- 点击也可以切换状态（可选）
+      if (clickedSpoiler) {
+        clickedSpoiler.classList.toggle('revealed')
+      }
+    }
+  }, true) // 使用捕获阶段
+}
+// ============================================
+
 export default {
   extends: DefaultTheme,
 
@@ -84,11 +133,8 @@ export default {
       // 初始化脚注
       initFootnotes()
 
-      // 监听 Spoiler (黑幕) 点击事件
-      document.addEventListener('click', (e) => {
-        const target = e.target.closest('.spoiler')
-        if (target) target.classList.toggle('revealed')
-      })
+      // 初始化 Spoiler 处理
+      setupSpoiler()
     })
 
     // 路由变化时重新初始化脚注
