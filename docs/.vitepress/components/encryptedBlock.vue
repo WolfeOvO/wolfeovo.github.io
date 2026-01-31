@@ -77,41 +77,31 @@ onUnmounted(() => {
   if (overlayObserver) overlayObserver.disconnect()
 })
 
-// --- 核心修复：更智能的定位逻辑 ---
 function updateOverlayPosition() {
   if (!containerRef.value || !overlayRef.value || !isLocked.value) return
   
   const container = containerRef.value
   const overlay = overlayRef.value
-  
   const containerRect = container.getBoundingClientRect()
   const overlayHeight = overlay.offsetHeight
   const viewportHeight = window.innerHeight
   
+  // 这里的 transform 负责居中，必须保证不被 CSS 动画覆盖
   overlay.style.position = 'absolute'
   overlay.style.transform = 'translate(-50%, 0)'
   
-  // 安全边距 (padding)
   const padding = 12 
-  
-  // 【关键修复】
-  // 原逻辑只判断 containerHeight <= overlayHeight，导致略大的容器强行贴顶。
-  // 新逻辑：如果容器高度减去卡片高度，剩下的空间不足以支撑上下各 12px 的 Padding (即总余量 < 24px)，
-  // 则放弃跟随滚动，直接强制绝对居中。这样 60px 容器装 44px 卡片时，会自动算成 (60-44)/2 = 8px，而不是强行 12px。
   if (containerRect.height <= overlayHeight + (padding * 2)) {
     overlay.style.top = '50%'
     overlay.style.transform = 'translate(-50%, -50%)'
     return
   }
 
-  // 空间充足时的粘性逻辑
   const viewportCenterY = viewportHeight / 2
   const centerInContainer = viewportCenterY - containerRect.top
   const idealTop = centerInContainer - overlayHeight / 2
-  
   const minTop = padding
   const maxTop = containerRect.height - overlayHeight - padding
-  
   const clampedTop = Math.max(minTop, Math.min(maxTop, idealTop))
   
   overlay.style.top = `${clampedTop}px`
@@ -155,6 +145,7 @@ function verifyPassword() {
     localStorage.setItem(storageKey.value, 'unlocked')
     nextTick(showHeadings)
   } else {
+    // Mini模式下，错误提示不显示文字，只抖动
     errorMsg.value = layoutMode.value === 'mini' ? '!' : '密码错误'
     isShaking.value = true
     setTimeout(() => { isShaking.value = false }, 500)
@@ -207,9 +198,13 @@ watch(isLocked, (locked) => {
         v-if="isLocked" 
         ref="overlayRef"
         class="encrypted-overlay-wrapper"
-        :class="[`layout-${layoutMode}`, { 'shake': isShaking }]"
+        :class="[`layout-${layoutMode}`]"
       >
-        <div class="interaction-card">
+        <!-- 
+           修正点：将 :class="{ 'shake': isShaking }" 移到内部的 interaction-card 上。
+           这样抖动时只会抖内部卡片，不会干扰外层 wrapper 的 transform 定位。
+        -->
+        <div class="interaction-card" :class="{ 'shake': isShaking }">
           <div v-if="layoutMode !== 'mini'" class="info-section">
             <div v-if="layoutMode === 'normal'" class="lock-icon" v-html="icon"></div>
             <div class="text-group">
@@ -334,7 +329,6 @@ watch(isLocked, (locked) => {
 /* Mini Mode */
 .layout-mini { max-width: 300px; }
 .layout-mini .interaction-card {
-  /* 上下 padding 均等，确保胶囊内部垂直平衡 */
   padding: 4px 6px 4px 14px; 
   border-radius: 99px;
   display: flex;
@@ -353,7 +347,7 @@ watch(isLocked, (locked) => {
   padding: 0;
   font-size: 15px;
   height: 36px;
-  line-height: 36px; /* 辅助垂直居中 */
+  line-height: 36px;
 }
 .layout-mini .password-input::placeholder { font-size: 14px; opacity: 0.7; }
 
@@ -433,12 +427,15 @@ watch(isLocked, (locked) => {
   color: #ccc;
 }
 
-.shake { animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+.shake {
+  animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
 @keyframes shake {
-  10%, 90% { transform: translate3d(-51%, 0, 0); }
-  20%, 80% { transform: translate3d(-49%, 0, 0); }
-  30%, 50%, 70% { transform: translate3d(-52%, 0, 0); }
-  40%, 60% { transform: translate3d(-48%, 0, 0); }
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+  40%, 60% { transform: translate3d(3px, 0, 0); }
 }
 
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
