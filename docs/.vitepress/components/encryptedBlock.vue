@@ -45,8 +45,8 @@ onMounted(() => {
   
   // 监听滚动以实现粘性效果
   updateOverlayPosition()
-  window.addEventListener('scroll', updateOverlayPosition)
-  window.addEventListener('resize', updateOverlayPosition)
+  window.addEventListener('scroll', updateOverlayPosition, { passive: true })
+  window.addEventListener('resize', updateOverlayPosition, { passive: true })
 })
 
 onUnmounted(() => {
@@ -62,36 +62,40 @@ function updateOverlayPosition() {
   const overlay = overlayRef.value
   const containerRect = container.getBoundingClientRect()
   const viewportHeight = window.innerHeight
+  const containerHeight = container.offsetHeight
   
-  // 如果容器完全在视口内，居中显示
-  if (containerRect.height <= viewportHeight) {
-    overlay.style.position = 'absolute'
+  // 获取遮罩层实际高度
+  const overlayHeight = overlay.offsetHeight || 300 // 给一个默认值
+  
+  // 始终使用 absolute 定位
+  overlay.style.position = 'absolute'
+  overlay.style.bottom = 'auto'
+  
+  // 计算安全边距（遮罩层距离容器顶部/底部的最小距离）
+  const padding = 20
+  const minTop = padding
+  const maxTop = containerHeight - overlayHeight - padding
+  
+  // 如果容器高度不足以容纳遮罩层，居中显示
+  if (containerHeight <= overlayHeight + padding * 2) {
     overlay.style.top = '50%'
     overlay.style.transform = 'translate(-50%, -50%)'
     return
   }
   
-  // 容器顶部在视口下方
-  if (containerRect.top >= 0) {
-    overlay.style.position = 'absolute'
-    overlay.style.top = '50%'
-    overlay.style.transform = 'translate(-50%, -50%)'
-    return
-  }
+  // 计算视口中心点相对于容器顶部的位置
+  // containerRect.top 是容器顶部相对于视口顶部的距离（可能为负）
+  const viewportCenterY = viewportHeight / 2
+  const centerInContainer = viewportCenterY - containerRect.top
   
-  // 容器底部在视口上方
-  if (containerRect.bottom <= viewportHeight) {
-    overlay.style.position = 'absolute'
-    overlay.style.top = 'auto'
-    overlay.style.bottom = '50%'
-    overlay.style.transform = 'translate(-50%, 50%)'
-    return
-  }
+  // 遮罩层的理想 top 位置（使其中心点对齐视口中心）
+  const idealTop = centerInContainer - overlayHeight / 2
   
-  // 容器跨越整个视口，使用固定定位
-  overlay.style.position = 'fixed'
-  overlay.style.top = '50%'
-  overlay.style.transform = 'translate(-50%, -50%)'
+  // 限制在安全范围内
+  const clampedTop = Math.max(minTop, Math.min(maxTop, idealTop))
+  
+  overlay.style.top = `${clampedTop}px`
+  overlay.style.transform = 'translateX(-50%)'
 }
 
 // 隐藏加密区域内的标题（从右侧目录中移除）
@@ -281,7 +285,7 @@ watch(isLocked, (locked) => {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* 遮罩层 */
+/* 遮罩层 - 始终使用 absolute */
 .encrypted-overlay {
   position: absolute;
   left: 50%;
@@ -291,6 +295,7 @@ watch(isLocked, (locked) => {
   width: 100%;
   max-width: 380px;
   padding: 2rem;
+  box-sizing: border-box;
 }
 
 .overlay-content {
@@ -378,6 +383,8 @@ watch(isLocked, (locked) => {
   color: #1f2937;
   transition: all 0.2s ease;
   outline: none;
+  /* 防止移动端缩放 */
+  font-size: 16px;
 }
 
 .password-input:focus {
@@ -413,6 +420,9 @@ watch(isLocked, (locked) => {
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  /* 移动端点击优化 */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .unlock-btn:hover {
@@ -469,6 +479,7 @@ watch(isLocked, (locked) => {
   cursor: pointer;
   transition: all 0.2s ease;
   z-index: 5;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .relock-btn:hover {
@@ -515,16 +526,16 @@ watch(isLocked, (locked) => {
   transform: translateY(-8px);
 }
 
-/* 抖动动画 */
+/* 抖动动画 - 修复 transform 冲突 */
 .shake {
   animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
 @keyframes shake {
-  10%, 90% { transform: translate(-50%, -50%) translateX(-1px); }
-  20%, 80% { transform: translate(-50%, -50%) translateX(2px); }
-  30%, 50%, 70% { transform: translate(-50%, -50%) translateX(-4px); }
-  40%, 60% { transform: translate(-50%, -50%) translateX(4px); }
+  10%, 90% { transform: translateX(calc(-50% - 1px)); }
+  20%, 80% { transform: translateX(calc(-50% + 2px)); }
+  30%, 50%, 70% { transform: translateX(calc(-50% - 4px)); }
+  40%, 60% { transform: translateX(calc(-50% + 4px)); }
 }
 
 /* 响应式 */
