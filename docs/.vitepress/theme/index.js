@@ -67,7 +67,7 @@ export default {
     app.component('lc', linkCard)
     app.component('sidebar', sidebar)
     app.component('dc', downloadCard)
-    app.component('eb', EncryptedBlock)
+    app.component('EncryptedBlock', EncryptedBlock)
   },
 
   setup() {
