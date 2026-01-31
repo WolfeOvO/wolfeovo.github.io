@@ -9,11 +9,11 @@ import { spoiler } from './plugins/spoiler'
 import encryptedBlockPlugin from './plugins/encryptedBlockPlugin'
 
 export default defineConfig({
-  title: "Wolfeの储物间",
+  title: "Wolfeの储物间 - 互联网集大成者",
   description: "Wolfe 的小破站，始于 2026/1/11",
   ignoreDeadLinks: true,
   lastUpdated: true,
-  head: [['link', { rel: 'icon', href: '/media/icon/icon.svg' }]],
+  head: [['link', { rel: 'icon', href: '/media/icon/logo.svg' }]],
 
   markdown: {
     config(md) {
