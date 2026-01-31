@@ -22,6 +22,7 @@ const isLocked = ref(true)
 const inputPassword = ref('')
 const errorMsg = ref('')
 const containerRef = ref<HTMLElement | null>(null)
+const overlayRef = ref<HTMLElement | null>(null)
 const contentRef = ref<HTMLElement | null>(null)
 const isShaking = ref(false)
 
@@ -41,7 +42,63 @@ onMounted(() => {
   } else {
     hideHeadings()
   }
+  
+  // 监听滚动以实现粘性效果
+  nextTick(() => {
+    updateOverlayPosition()
+  })
+  window.addEventListener('scroll', updateOverlayPosition, { passive: true })
+  window.addEventListener('resize', updateOverlayPosition, { passive: true })
 })
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', updateOverlayPosition)
+  window.removeEventListener('resize', updateOverlayPosition)
+})
+
+// 更新遮罩层位置（粘性效果）
+function updateOverlayPosition() {
+  if (!containerRef.value || !overlayRef.value || !isLocked.value) return
+  
+  const container = containerRef.value
+  const overlay = overlayRef.value
+  const containerRect = container.getBoundingClientRect()
+  const viewportHeight = window.innerHeight
+  const containerHeight = container.offsetHeight
+  
+  // 获取遮罩层实际高度
+  const overlayHeight = overlay.offsetHeight || 300
+  
+  // 始终使用 absolute 定位
+  overlay.style.position = 'absolute'
+  overlay.style.bottom = 'auto'
+  
+  // 安全边距
+  const padding = 16
+  
+  // 如果容器高度不足以容纳遮罩层，固定在顶部居中
+  if (containerHeight <= overlayHeight + padding * 2) {
+    overlay.style.top = '50%'
+    overlay.style.transform = 'translate(-50%, -50%)'
+    return
+  }
+  
+  const minTop = padding
+  const maxTop = containerHeight - overlayHeight - padding
+  
+  // 计算视口中心点相对于容器顶部的位置
+  const viewportCenterY = viewportHeight / 2
+  const centerInContainer = viewportCenterY - containerRect.top
+  
+  // 遮罩层的理想 top 位置（使其中心点对齐视口中心）
+  const idealTop = centerInContainer - overlayHeight / 2
+  
+  // 限制在安全范围内
+  const clampedTop = Math.max(minTop, Math.min(maxTop, idealTop))
+  
+  overlay.style.top = `${clampedTop}px`
+  overlay.style.transform = 'translateX(-50%)'
+}
 
 // 隐藏加密区域内的标题（从右侧目录中移除）
 function hideHeadings() {
@@ -109,6 +166,7 @@ function relock() {
   localStorage.removeItem(storageKey.value)
   nextTick(() => {
     hideHeadings()
+    updateOverlayPosition()
   })
 }
 
@@ -118,6 +176,15 @@ function handleKeydown(e: KeyboardEvent) {
     verifyPassword()
   }
 }
+
+// 监听锁定状态变化
+watch(isLocked, (locked) => {
+  if (locked) {
+    nextTick(() => {
+      updateOverlayPosition()
+    })
+  }
+})
 </script>
 
 <template>
@@ -130,9 +197,11 @@ function handleKeydown(e: KeyboardEvent) {
     <Transition name="fade">
       <div 
         v-if="isLocked" 
+        ref="overlayRef"
         class="encrypted-overlay"
+        :class="{ 'shake': isShaking }"
       >
-        <div class="overlay-content" :class="{ 'shake': isShaking }">
+        <div class="overlay-content">
           <!-- 图标 -->
           <div class="lock-icon" v-html="icon"></div>
           
@@ -158,7 +227,7 @@ function handleKeydown(e: KeyboardEvent) {
                 autocomplete="off"
               />
               <button class="unlock-btn" @click="verifyPassword">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M5 12h14"/>
                   <path d="m12 5 7 7-7 7"/>
                 </svg>
@@ -206,6 +275,9 @@ function handleKeydown(e: KeyboardEvent) {
   position: relative;
   margin: 1.5rem 0;
   border-radius: 12px;
+  overflow: hidden;
+  /* 确保容器有最小高度来容纳遮罩层 */
+  min-height: 280px;
 }
 
 .encrypted-block.is-locked {
@@ -218,12 +290,15 @@ function handleKeydown(e: KeyboardEvent) {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* 遮罩层 */
+/* 遮罩层 - 始终使用 absolute */
 .encrypted-overlay {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  width: 100%;
+  max-width: 340px;
   padding: 1rem;
   box-sizing: border-box;
 }
@@ -233,14 +308,12 @@ function handleKeydown(e: KeyboardEvent) {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 16px;
-  padding: 1.5rem 1.75rem;
+  padding: 1.75rem 2rem;
   text-align: center;
   box-shadow: 
     0 4px 24px rgba(0, 0, 0, 0.08),
     0 1px 3px rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(0, 0, 0, 0.06);
-  width: 100%;
-  max-width: 300px;
 }
 
 :root.dark .overlay-content {
@@ -253,15 +326,15 @@ function handleKeydown(e: KeyboardEvent) {
 
 /* 图标 */
 .lock-icon {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
   line-height: 1;
   filter: grayscale(20%);
 }
 
 .lock-icon :deep(svg) {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   color: #6b7280;
 }
 
@@ -271,10 +344,10 @@ function handleKeydown(e: KeyboardEvent) {
 
 /* 标题 */
 .lock-title {
-  font-size: 1.05rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #1f2937;
-  margin: 0 0 0.375rem 0;
+  margin: 0 0 0.5rem 0;
   letter-spacing: -0.02em;
 }
 
@@ -284,14 +357,14 @@ function handleKeydown(e: KeyboardEvent) {
 
 /* 说明文字 */
 .lock-texts {
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
 .lock-text {
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   color: #6b7280;
-  margin: 0.2rem 0;
-  line-height: 1.4;
+  margin: 0.25rem 0;
+  line-height: 1.5;
 }
 
 :root.dark .lock-text {
@@ -330,9 +403,9 @@ function handleKeydown(e: KeyboardEvent) {
 
 .password-input {
   flex: 1;
-  padding: 0.6rem 0.75rem;
+  padding: 0.7rem 0.875rem;
   border: none;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   background: transparent;
   color: #1f2937;
   outline: none;
@@ -353,8 +426,8 @@ function handleKeydown(e: KeyboardEvent) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   margin: 2px;
   border: none;
   border-radius: 8px;
@@ -363,6 +436,7 @@ function handleKeydown(e: KeyboardEvent) {
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  /* 移动端点击优化 */
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -390,21 +464,16 @@ function handleKeydown(e: KeyboardEvent) {
   background: rgba(239, 68, 68, 0.15);
 }
 
-/* 内容区域 - 锁定时隐藏 */
+/* 内容区域 */
 .encrypted-content {
   transition: opacity 0.3s ease, filter 0.3s ease;
 }
 
 .encrypted-content.content-hidden {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
   filter: blur(8px);
   user-select: none;
   pointer-events: none;
-  opacity: 0.15;
-  padding: 2rem 1rem;
+  opacity: 0.3;
 }
 
 /* 重新锁定按钮 */
@@ -473,27 +542,31 @@ function handleKeydown(e: KeyboardEvent) {
   transform: translateY(-8px);
 }
 
-/* 抖动动画 - 只应用在 overlay-content */
-.overlay-content.shake {
+/* 抖动动画 */
+.shake {
   animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 
 @keyframes shake {
-  10%, 90% { transform: translateX(-1px); }
-  20%, 80% { transform: translateX(2px); }
-  30%, 50%, 70% { transform: translateX(-4px); }
-  40%, 60% { transform: translateX(4px); }
+  10%, 90% { transform: translateX(calc(-50% - 1px)); }
+  20%, 80% { transform: translateX(calc(-50% + 2px)); }
+  30%, 50%, 70% { transform: translateX(calc(-50% - 4px)); }
+  40%, 60% { transform: translateX(calc(-50% + 4px)); }
 }
 
 /* 响应式 */
 @media (max-width: 640px) {
+  .encrypted-block {
+    min-height: 260px;
+  }
+  
   .encrypted-overlay {
     padding: 0.75rem;
+    max-width: calc(100% - 1.5rem);
   }
   
   .overlay-content {
     padding: 1.5rem 1.25rem;
-    max-width: calc(100% - 1rem);
   }
   
   .lock-icon {
