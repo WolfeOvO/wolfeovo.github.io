@@ -270,4 +270,4 @@ function encryptedBlockPlugin(md) {
   }
 }
 
-module.exports = encryptedBlockPlugin
+export default encryptedBlockPlugin
