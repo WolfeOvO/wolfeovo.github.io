@@ -25,11 +25,38 @@ const containerRef = ref<HTMLElement | null>(null)
 const overlayRef = ref<HTMLElement | null>(null)
 const contentRef = ref<HTMLElement | null>(null)
 const isShaking = ref(false)
+const isCompact = ref(false) // 是否使用紧凑模式
 
 // 存储密钥：基于页面路径和内容ID
 const storageKey = computed(() => {
   return `encrypted-block-${page.value.relativePath}-${props.contentId}`
 })
+
+// 检测内容高度，决定使用哪种布局模式
+function detectLayoutMode() {
+  if (!contentRef.value) return
+  
+  // 临时显示内容以测量高度
+  const content = contentRef.value
+  const originalFilter = content.style.filter
+  const originalOpacity = content.style.opacity
+  content.style.filter = 'none'
+  content.style.opacity = '0'
+  content.style.position = 'absolute'
+  content.style.visibility = 'hidden'
+  
+  nextTick(() => {
+    const contentHeight = content.scrollHeight
+    // 如果内容高度小于 120px，使用紧凑模式
+    isCompact.value = contentHeight < 120
+    
+    // 恢复原始样式
+    content.style.filter = originalFilter
+    content.style.opacity = originalOpacity
+    content.style.position = ''
+    content.style.visibility = ''
+  })
+}
 
 // 检查本地存储中是否已解锁
 onMounted(() => {
@@ -43,22 +70,34 @@ onMounted(() => {
     hideHeadings()
   }
   
-  // 监听滚动以实现粘性效果
+  // 检测布局模式
+  detectLayoutMode()
+  
+  // 监听滚动以实现粘性效果（仅在非紧凑模式下）
   nextTick(() => {
-    updateOverlayPosition()
+    if (!isCompact.value) {
+      updateOverlayPosition()
+    }
   })
   window.addEventListener('scroll', updateOverlayPosition, { passive: true })
-  window.addEventListener('resize', updateOverlayPosition, { passive: true })
+  window.addEventListener('resize', handleResize, { passive: true })
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', updateOverlayPosition)
-  window.removeEventListener('resize', updateOverlayPosition)
+  window.removeEventListener('resize', handleResize)
 })
 
-// 更新遮罩层位置（粘性效果）
+function handleResize() {
+  detectLayoutMode()
+  if (!isCompact.value) {
+    updateOverlayPosition()
+  }
+}
+
+// 更新遮罩层位置（粘性效果）- 仅用于非紧凑模式
 function updateOverlayPosition() {
-  if (!containerRef.value || !overlayRef.value || !isLocked.value) return
+  if (!containerRef.value || !overlayRef.value || !isLocked.value || isCompact.value) return
   
   const container = containerRef.value
   const overlay = overlayRef.value
@@ -151,7 +190,7 @@ function verifyPassword() {
       showHeadings()
     })
   } else {
-    errorMsg.value = '密码错误，请重试'
+    errorMsg.value = '密码错误'
     isShaking.value = true
     setTimeout(() => {
       isShaking.value = false
@@ -166,7 +205,9 @@ function relock() {
   localStorage.removeItem(storageKey.value)
   nextTick(() => {
     hideHeadings()
-    updateOverlayPosition()
+    if (!isCompact.value) {
+      updateOverlayPosition()
+    }
   })
 }
 
@@ -179,7 +220,7 @@ function handleKeydown(e: KeyboardEvent) {
 
 // 监听锁定状态变化
 watch(isLocked, (locked) => {
-  if (locked) {
+  if (locked && !isCompact.value) {
     nextTick(() => {
       updateOverlayPosition()
     })
@@ -191,12 +232,50 @@ watch(isLocked, (locked) => {
   <div 
     ref="containerRef" 
     class="encrypted-block"
-    :class="{ 'is-locked': isLocked }"
+    :class="{ 
+      'is-locked': isLocked,
+      'is-compact': isCompact
+    }"
   >
-    <!-- 遮罩层 -->
+    <!-- 紧凑模式遮罩层 -->
     <Transition name="fade">
       <div 
-        v-if="isLocked" 
+        v-if="isLocked && isCompact" 
+        class="compact-overlay"
+        :class="{ 'shake': isShaking }"
+      >
+        <div class="compact-left">
+          <span class="compact-icon" v-html="icon"></span>
+          <span class="compact-title">{{ title }}</span>
+        </div>
+        <div class="compact-right">
+          <div class="compact-input-group">
+            <input
+              v-model="inputPassword"
+              type="password"
+              class="compact-input"
+              placeholder="输入密码..."
+              @keydown="handleKeydown"
+              autocomplete="off"
+            />
+            <button class="compact-btn" @click="verifyPassword">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14"/>
+                <path d="m12 5 7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+          <Transition name="slide-fade">
+            <span v-if="errorMsg" class="compact-error">{{ errorMsg }}</span>
+          </Transition>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- 标准模式遮罩层 -->
+    <Transition name="fade">
+      <div 
+        v-if="isLocked && !isCompact" 
         ref="overlayRef"
         class="encrypted-overlay"
         :class="{ 'shake': isShaking }"
@@ -257,10 +336,11 @@ watch(isLocked, (locked) => {
       <button 
         v-if="!isLocked" 
         class="relock-btn"
+        :class="{ 'relock-btn-compact': isCompact }"
         @click="relock"
         title="重新锁定"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
           <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
         </svg>
@@ -276,20 +356,165 @@ watch(isLocked, (locked) => {
   margin: 1.5rem 0;
   border-radius: 12px;
   overflow: hidden;
-  /* 确保容器有最小高度来容纳遮罩层 */
-  min-height: 280px;
 }
 
-.encrypted-block.is-locked {
+/* 非紧凑模式需要最小高度 */
+.encrypted-block.is-locked:not(.is-compact) {
+  min-height: 280px;
   background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-:root.dark .encrypted-block.is-locked {
+:root.dark .encrypted-block.is-locked:not(.is-compact) {
   background: linear-gradient(135deg, #2a2a2e 0%, #1e1e21 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* ==================== 紧凑模式样式 ==================== */
+.encrypted-block.is-compact {
+  margin: 0.75rem 0;
+}
+
+.encrypted-block.is-compact.is-locked {
+  background: transparent;
+}
+
+.compact-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.625rem 1rem;
+  background: linear-gradient(135deg, #f8f8fa 0%, #f0f0f5 100%);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+:root.dark .compact-overlay {
+  background: linear-gradient(135deg, #28282c 0%, #1e1e21 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.compact-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.compact-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  filter: grayscale(20%);
+}
+
+.compact-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+:root.dark .compact-title {
+  color: #d1d5db;
+}
+
+.compact-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 200px;
+}
+
+.compact-input-group {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.compact-input-group:focus-within {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+:root.dark .compact-input-group {
+  background: #1f1f23;
+  border-color: #3f3f46;
+}
+
+:root.dark .compact-input-group:focus-within {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.12);
+}
+
+.compact-input {
+  width: 120px;
+  padding: 0.45rem 0.75rem;
+  border: none;
+  font-size: 0.85rem;
+  background: transparent;
+  color: #1f2937;
+  outline: none;
+}
+
+:root.dark .compact-input {
+  color: #f3f4f6;
+}
+
+.compact-input::placeholder {
+  color: #9ca3af;
+  font-size: 0.8rem;
+}
+
+.compact-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: 2px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.compact-btn:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+}
+
+.compact-error {
+  font-size: 0.75rem;
+  color: #ef4444;
+  white-space: nowrap;
+}
+
+/* 紧凑模式的内容隐藏 */
+.encrypted-block.is-compact .encrypted-content.content-hidden {
+  filter: blur(4px);
+  opacity: 0.4;
+}
+
+/* 紧凑模式的锁定按钮 */
+.relock-btn-compact {
+  position: static;
+  display: inline-flex;
+  margin-left: auto;
+  padding: 0.375rem 0.625rem;
+  font-size: 0.75rem;
+}
+
+/* ==================== 标准模式样式 ==================== */
 /* 遮罩层 - 始终使用 absolute */
 .encrypted-overlay {
   position: absolute;
@@ -548,6 +773,18 @@ watch(isLocked, (locked) => {
 }
 
 @keyframes shake {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+
+/* 标准模式的抖动需要考虑居中 */
+.encrypted-overlay.shake {
+  animation: shake-centered 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shake-centered {
   10%, 90% { transform: translateX(calc(-50% - 1px)); }
   20%, 80% { transform: translateX(calc(-50% + 2px)); }
   30%, 50%, 70% { transform: translateX(calc(-50% - 4px)); }
@@ -556,7 +793,7 @@ watch(isLocked, (locked) => {
 
 /* 响应式 */
 @media (max-width: 640px) {
-  .encrypted-block {
+  .encrypted-block:not(.is-compact) {
     min-height: 260px;
   }
   
@@ -584,6 +821,32 @@ watch(isLocked, (locked) => {
   
   .lock-texts {
     margin-bottom: 1rem;
+  }
+  
+  /* 紧凑模式响应式 */
+  .compact-overlay {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+  
+  .compact-left {
+    justify-content: center;
+  }
+  
+  .compact-right {
+    flex-direction: column;
+    min-width: 0;
+  }
+  
+  .compact-input-group {
+    width: 100%;
+  }
+  
+  .compact-input {
+    flex: 1;
+    width: auto;
   }
 }
 </style>
