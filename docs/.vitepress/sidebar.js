@@ -71,6 +71,7 @@ export const sidebar = {
           items: [
             { text: '合集（一定要先读完我再下载！）', link: 'client' },
             { text: 'Clash', link: 'Clash' },
+            { text: 'Hiddfy', link: 'Hiddfy' },
             { text: 'Karing', link: 'Karing' },
             { text: 'FlClash', link: 'FlClash' },
             { text: 'Clash Mi', link: 'ClashMi' },

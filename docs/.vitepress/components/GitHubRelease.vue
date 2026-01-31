@@ -549,6 +549,20 @@ const closeModal = () => {
     showFileList.value = false
 }
 
+// 复制到剪贴板
+const copyToClipboard = async (text) => {
+    try {
+        await navigator.clipboard.writeText(text)
+    } catch (e) {
+        const input = document.createElement('input')
+        input.value = text
+        document.body.appendChild(input)
+        input.select()
+        document.execCommand('copy')
+        document.body.removeChild(input)
+    }
+}
+
 // 转义正则特殊字符
 const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
