@@ -1,5 +1,11 @@
 # 请选择您要访问的内容：
 
+::: warning
+GitHub Pages 和 Cloudflare Pages 同步部署更新，记得收藏防丢！
+- GitHub Pages：[https://wolfeovo.github.io]
+- Cloudflare Pages：[https://wolfe.pages.dev]
+:::
+
 ::: info 🕒时区说明
 若无特殊说明，文档内出现的时间一律为 [UTC+8](https://zh.wikipedia.org/wiki/UTC%2B08:00) 时区为准，也就是比[世界协调时](https://zh.wikipedia.org/wiki/%E4%B8%96%E7%95%8C%E5%8D%94%E8%AA%BF%E6%99%82%E9%96%93)快 8 小时。
 :::

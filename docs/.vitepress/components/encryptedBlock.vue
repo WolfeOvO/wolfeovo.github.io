@@ -8,12 +8,14 @@ interface Props {
   texts?: string[]
   password: string
   contentId: string
+  compact?: boolean // 是否使用紧凑模式，默认 false
 }
 
 const props = withDefaults(defineProps<Props>(), {
   icon: '🔒',
   title: '加密内容',
-  texts: () => ['请输入密码查看内容']
+  texts: () => ['请输入密码查看内容'],
+  compact: false
 })
 
 const { page } = useData()
@@ -25,38 +27,11 @@ const containerRef = ref<HTMLElement | null>(null)
 const overlayRef = ref<HTMLElement | null>(null)
 const contentRef = ref<HTMLElement | null>(null)
 const isShaking = ref(false)
-const isCompact = ref(false) // 是否使用紧凑模式
 
 // 存储密钥：基于页面路径和内容ID
 const storageKey = computed(() => {
   return `encrypted-block-${page.value.relativePath}-${props.contentId}`
 })
-
-// 检测内容高度，决定使用哪种布局模式
-function detectLayoutMode() {
-  if (!contentRef.value) return
-  
-  // 临时显示内容以测量高度
-  const content = contentRef.value
-  const originalFilter = content.style.filter
-  const originalOpacity = content.style.opacity
-  content.style.filter = 'none'
-  content.style.opacity = '0'
-  content.style.position = 'absolute'
-  content.style.visibility = 'hidden'
-  
-  nextTick(() => {
-    const contentHeight = content.scrollHeight
-    // 如果内容高度小于 120px，使用紧凑模式
-    isCompact.value = contentHeight < 120
-    
-    // 恢复原始样式
-    content.style.filter = originalFilter
-    content.style.opacity = originalOpacity
-    content.style.position = ''
-    content.style.visibility = ''
-  })
-}
 
 // 检查本地存储中是否已解锁
 onMounted(() => {
@@ -70,34 +45,26 @@ onMounted(() => {
     hideHeadings()
   }
   
-  // 检测布局模式
-  detectLayoutMode()
-  
   // 监听滚动以实现粘性效果（仅在非紧凑模式下）
-  nextTick(() => {
-    if (!isCompact.value) {
+  if (!props.compact) {
+    nextTick(() => {
       updateOverlayPosition()
-    }
-  })
-  window.addEventListener('scroll', updateOverlayPosition, { passive: true })
-  window.addEventListener('resize', handleResize, { passive: true })
+    })
+    window.addEventListener('scroll', updateOverlayPosition, { passive: true })
+    window.addEventListener('resize', updateOverlayPosition, { passive: true })
+  }
 })
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', updateOverlayPosition)
-  window.removeEventListener('resize', handleResize)
-})
-
-function handleResize() {
-  detectLayoutMode()
-  if (!isCompact.value) {
-    updateOverlayPosition()
+  if (!props.compact) {
+    window.removeEventListener('scroll', updateOverlayPosition)
+    window.removeEventListener('resize', updateOverlayPosition)
   }
-}
+})
 
 // 更新遮罩层位置（粘性效果）- 仅用于非紧凑模式
 function updateOverlayPosition() {
-  if (!containerRef.value || !overlayRef.value || !isLocked.value || isCompact.value) return
+  if (!containerRef.value || !overlayRef.value || !isLocked.value || props.compact) return
   
   const container = containerRef.value
   const overlay = overlayRef.value
@@ -105,17 +72,13 @@ function updateOverlayPosition() {
   const viewportHeight = window.innerHeight
   const containerHeight = container.offsetHeight
   
-  // 获取遮罩层实际高度
   const overlayHeight = overlay.offsetHeight || 300
   
-  // 始终使用 absolute 定位
   overlay.style.position = 'absolute'
   overlay.style.bottom = 'auto'
   
-  // 安全边距
   const padding = 16
   
-  // 如果容器高度不足以容纳遮罩层，固定在顶部居中
   if (containerHeight <= overlayHeight + padding * 2) {
     overlay.style.top = '50%'
     overlay.style.transform = 'translate(-50%, -50%)'
@@ -124,22 +87,16 @@ function updateOverlayPosition() {
   
   const minTop = padding
   const maxTop = containerHeight - overlayHeight - padding
-  
-  // 计算视口中心点相对于容器顶部的位置
   const viewportCenterY = viewportHeight / 2
   const centerInContainer = viewportCenterY - containerRect.top
-  
-  // 遮罩层的理想 top 位置（使其中心点对齐视口中心）
   const idealTop = centerInContainer - overlayHeight / 2
-  
-  // 限制在安全范围内
   const clampedTop = Math.max(minTop, Math.min(maxTop, idealTop))
   
   overlay.style.top = `${clampedTop}px`
   overlay.style.transform = 'translateX(-50%)'
 }
 
-// 隐藏加密区域内的标题（从右侧目录中移除）
+// 隐藏加密区域内的标题
 function hideHeadings() {
   if (!contentRef.value) return
   
@@ -147,7 +104,6 @@ function hideHeadings() {
   headings.forEach((heading) => {
     const id = heading.getAttribute('id')
     if (id) {
-      // 在目录中找到对应链接并隐藏
       const tocLink = document.querySelector(`.VPDocAsideOutline a[href="#${id}"]`)
       if (tocLink) {
         const listItem = tocLink.closest('li')
@@ -205,7 +161,7 @@ function relock() {
   localStorage.removeItem(storageKey.value)
   nextTick(() => {
     hideHeadings()
-    if (!isCompact.value) {
+    if (!props.compact) {
       updateOverlayPosition()
     }
   })
@@ -220,7 +176,7 @@ function handleKeydown(e: KeyboardEvent) {
 
 // 监听锁定状态变化
 watch(isLocked, (locked) => {
-  if (locked && !isCompact.value) {
+  if (locked && !props.compact) {
     nextTick(() => {
       updateOverlayPosition()
     })
@@ -234,119 +190,140 @@ watch(isLocked, (locked) => {
     class="encrypted-block"
     :class="{ 
       'is-locked': isLocked,
-      'is-compact': isCompact
+      'is-compact': compact
     }"
   >
-    <!-- 紧凑模式遮罩层 -->
-    <Transition name="fade">
-      <div 
-        v-if="isLocked && isCompact" 
-        class="compact-overlay"
-        :class="{ 'shake': isShaking }"
-      >
-        <div class="compact-left">
-          <span class="compact-icon" v-html="icon"></span>
-          <span class="compact-title">{{ title }}</span>
-        </div>
-        <div class="compact-right">
-          <div class="compact-input-group">
-            <input
-              v-model="inputPassword"
-              type="password"
-              class="compact-input"
-              placeholder="输入密码..."
-              @keydown="handleKeydown"
-              autocomplete="off"
-            />
-            <button class="compact-btn" @click="verifyPassword">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 12h14"/>
-                <path d="m12 5 7 7-7 7"/>
-              </svg>
-            </button>
+    <!-- 紧凑模式 -->
+    <template v-if="compact">
+      <!-- 提示栏 -->
+      <Transition name="fade">
+        <div 
+          v-if="isLocked" 
+          class="compact-header"
+          :class="{ 'shake': isShaking }"
+        >
+          <div class="compact-left">
+            <span class="compact-icon" v-html="icon"></span>
+            <span class="compact-title">{{ title }}</span>
           </div>
-          <Transition name="slide-fade">
-            <span v-if="errorMsg" class="compact-error">{{ errorMsg }}</span>
-          </Transition>
-        </div>
-      </div>
-    </Transition>
-
-    <!-- 标准模式遮罩层 -->
-    <Transition name="fade">
-      <div 
-        v-if="isLocked && !isCompact" 
-        ref="overlayRef"
-        class="encrypted-overlay"
-        :class="{ 'shake': isShaking }"
-      >
-        <div class="overlay-content">
-          <!-- 图标 -->
-          <div class="lock-icon" v-html="icon"></div>
-          
-          <!-- 标题 -->
-          <h3 class="lock-title">{{ title }}</h3>
-          
-          <!-- 说明文字 -->
-          <div class="lock-texts">
-            <p v-for="(text, index) in texts" :key="index" class="lock-text">
-              {{ text }}
-            </p>
-          </div>
-          
-          <!-- 密码输入 -->
-          <div class="password-input-wrapper">
-            <div class="input-group">
+          <div class="compact-right">
+            <div class="compact-input-group">
               <input
                 v-model="inputPassword"
                 type="password"
-                class="password-input"
+                class="compact-input"
                 placeholder="输入密码..."
                 @keydown="handleKeydown"
                 autocomplete="off"
               />
-              <button class="unlock-btn" @click="verifyPassword">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <button class="compact-btn" @click="verifyPassword">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M5 12h14"/>
                   <path d="m12 5 7 7-7 7"/>
                 </svg>
               </button>
             </div>
+            <Transition name="slide-fade">
+              <span v-if="errorMsg" class="compact-error">{{ errorMsg }}</span>
+            </Transition>
           </div>
-          
-          <!-- 错误提示 -->
-          <Transition name="slide-fade">
-            <p v-if="errorMsg" class="error-msg">{{ errorMsg }}</p>
-          </Transition>
         </div>
+      </Transition>
+      
+      <!-- 内容区 -->
+      <div class="compact-body">
+        <div 
+          ref="contentRef" 
+          class="encrypted-content"
+          :class="{ 'content-hidden-compact': isLocked }"
+        >
+          <slot />
+        </div>
+        <Transition name="fade">
+          <button 
+            v-if="!isLocked" 
+            class="relock-btn-inline"
+            @click="relock"
+            title="重新锁定"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <span>锁定</span>
+          </button>
+        </Transition>
       </div>
-    </Transition>
-    
-    <!-- 内容区域 -->
-    <div 
-      ref="contentRef" 
-      class="encrypted-content"
-      :class="{ 'content-hidden': isLocked }"
-    >
-      <slot />
-    </div>
-    
-    <!-- 重新锁定按钮 -->
-    <Transition name="fade">
-      <button 
-        v-if="!isLocked" 
-        class="relock-btn"
-        :class="{ 'relock-btn-compact': isCompact }"
-        @click="relock"
-        title="重新锁定"
+    </template>
+
+    <!-- 标准模式 -->
+    <template v-else>
+      <!-- 遮罩层 -->
+      <Transition name="fade">
+        <div 
+          v-if="isLocked" 
+          ref="overlayRef"
+          class="encrypted-overlay"
+          :class="{ 'shake': isShaking }"
+        >
+          <div class="overlay-content">
+            <div class="lock-icon" v-html="icon"></div>
+            <h3 class="lock-title">{{ title }}</h3>
+            <div class="lock-texts">
+              <p v-for="(text, index) in texts" :key="index" class="lock-text">
+                {{ text }}
+              </p>
+            </div>
+            <div class="password-input-wrapper">
+              <div class="input-group">
+                <input
+                  v-model="inputPassword"
+                  type="password"
+                  class="password-input"
+                  placeholder="输入密码..."
+                  @keydown="handleKeydown"
+                  autocomplete="off"
+                />
+                <button class="unlock-btn" @click="verifyPassword">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14"/>
+                    <path d="m12 5 7 7-7 7"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <Transition name="slide-fade">
+              <p v-if="errorMsg" class="error-msg">{{ errorMsg }}</p>
+            </Transition>
+          </div>
+        </div>
+      </Transition>
+      
+      <!-- 内容区域 -->
+      <div 
+        ref="contentRef" 
+        class="encrypted-content"
+        :class="{ 'content-hidden': isLocked }"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-        </svg>
-        <span>锁定</span>
-      </button>
-    </Transition>
+        <slot />
+      </div>
+      
+      <!-- 锁定按钮 -->
+      <Transition name="fade">
+        <button 
+          v-if="!isLocked" 
+          class="relock-btn"
+          @click="relock"
+          title="重新锁定"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span>锁定</span>
+        </button>
+      </Transition>
+    </template>
   </div>
 </template>
 
@@ -358,7 +335,7 @@ watch(isLocked, (locked) => {
   overflow: hidden;
 }
 
-/* 非紧凑模式需要最小高度 */
+/* ==================== 标准模式 ==================== */
 .encrypted-block.is-locked:not(.is-compact) {
   min-height: 280px;
   background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
@@ -370,152 +347,7 @@ watch(isLocked, (locked) => {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* ==================== 紧凑模式样式 ==================== */
-.encrypted-block.is-compact {
-  margin: 0.75rem 0;
-}
-
-.encrypted-block.is-compact.is-locked {
-  background: transparent;
-}
-
-.compact-overlay {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.625rem 1rem;
-  background: linear-gradient(135deg, #f8f8fa 0%, #f0f0f5 100%);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 10px;
-  flex-wrap: wrap;
-}
-
-:root.dark .compact-overlay {
-  background: linear-gradient(135deg, #28282c 0%, #1e1e21 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.compact-left {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
-}
-
-.compact-icon {
-  font-size: 1.1rem;
-  line-height: 1;
-  filter: grayscale(20%);
-}
-
-.compact-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #4b5563;
-}
-
-:root.dark .compact-title {
-  color: #d1d5db;
-}
-
-.compact-right {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex: 1;
-  justify-content: flex-end;
-  min-width: 200px;
-}
-
-.compact-input-group {
-  display: flex;
-  align-items: center;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  overflow: hidden;
-  transition: all 0.2s ease;
-}
-
-.compact-input-group:focus-within {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
-}
-
-:root.dark .compact-input-group {
-  background: #1f1f23;
-  border-color: #3f3f46;
-}
-
-:root.dark .compact-input-group:focus-within {
-  border-color: #818cf8;
-  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.12);
-}
-
-.compact-input {
-  width: 120px;
-  padding: 0.45rem 0.75rem;
-  border: none;
-  font-size: 0.85rem;
-  background: transparent;
-  color: #1f2937;
-  outline: none;
-}
-
-:root.dark .compact-input {
-  color: #f3f4f6;
-}
-
-.compact-input::placeholder {
-  color: #9ca3af;
-  font-size: 0.8rem;
-}
-
-.compact-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  margin: 2px;
-  border: none;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  color: #fff;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.compact-btn:hover {
-  filter: brightness(1.05);
-  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
-}
-
-.compact-error {
-  font-size: 0.75rem;
-  color: #ef4444;
-  white-space: nowrap;
-}
-
-/* 紧凑模式的内容隐藏 */
-.encrypted-block.is-compact .encrypted-content.content-hidden {
-  filter: blur(4px);
-  opacity: 0.4;
-}
-
-/* 紧凑模式的锁定按钮 */
-.relock-btn-compact {
-  position: static;
-  display: inline-flex;
-  margin-left: auto;
-  padding: 0.375rem 0.625rem;
-  font-size: 0.75rem;
-}
-
-/* ==================== 标准模式样式 ==================== */
-/* 遮罩层 - 始终使用 absolute */
+/* 遮罩层 */
 .encrypted-overlay {
   position: absolute;
   left: 50%;
@@ -549,7 +381,6 @@ watch(isLocked, (locked) => {
     0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* 图标 */
 .lock-icon {
   font-size: 2.5rem;
   margin-bottom: 0.75rem;
@@ -567,7 +398,6 @@ watch(isLocked, (locked) => {
   color: #9ca3af;
 }
 
-/* 标题 */
 .lock-title {
   font-size: 1.15rem;
   font-weight: 700;
@@ -580,7 +410,6 @@ watch(isLocked, (locked) => {
   color: #f3f4f6;
 }
 
-/* 说明文字 */
 .lock-texts {
   margin-bottom: 1.25rem;
 }
@@ -596,7 +425,6 @@ watch(isLocked, (locked) => {
   color: #9ca3af;
 }
 
-/* 密码输入 */
 .password-input-wrapper {
   margin-bottom: 0.5rem;
 }
@@ -630,13 +458,11 @@ watch(isLocked, (locked) => {
   flex: 1;
   padding: 0.7rem 0.875rem;
   border: none;
-  font-size: 0.9rem;
+  font-size: 16px;
   background: transparent;
   color: #1f2937;
   outline: none;
   min-width: 0;
-  /* 防止移动端缩放 */
-  font-size: 16px;
 }
 
 :root.dark .password-input {
@@ -661,7 +487,6 @@ watch(isLocked, (locked) => {
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
-  /* 移动端点击优化 */
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -671,11 +496,6 @@ watch(isLocked, (locked) => {
   box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
 }
 
-.unlock-btn:active {
-  filter: brightness(0.98);
-}
-
-/* 错误提示 */
 .error-msg {
   font-size: 0.8rem;
   color: #ef4444;
@@ -701,7 +521,7 @@ watch(isLocked, (locked) => {
   opacity: 0.3;
 }
 
-/* 重新锁定按钮 */
+/* 锁定按钮 */
 .relock-btn {
   position: absolute;
   top: 0.75rem;
@@ -742,7 +562,200 @@ watch(isLocked, (locked) => {
   border-color: #52525b;
 }
 
-/* 动画 */
+/* ==================== 紧凑模式 ==================== */
+.encrypted-block.is-compact {
+  margin: 0.75rem 0;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, #f8f8fa 0%, #f0f0f5 100%);
+  overflow: visible;
+}
+
+:root.dark .encrypted-block.is-compact {
+  background: linear-gradient(135deg, #28282c 0%, #1e1e21 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.encrypted-block.is-compact:not(.is-locked) {
+  background: transparent;
+  border-color: transparent;
+}
+
+.compact-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
+}
+
+:root.dark .compact-header {
+  background: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.compact-left {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.compact-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+  filter: grayscale(20%);
+}
+
+.compact-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+:root.dark .compact-title {
+  color: #d1d5db;
+}
+
+.compact-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 160px;
+}
+
+.compact-input-group {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.compact-input-group:focus-within {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+:root.dark .compact-input-group {
+  background: #1f1f23;
+  border-color: #3f3f46;
+}
+
+:root.dark .compact-input-group:focus-within {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.12);
+}
+
+.compact-input {
+  width: 90px;
+  padding: 0.3rem 0.5rem;
+  border: none;
+  font-size: 0.8rem;
+  background: transparent;
+  color: #1f2937;
+  outline: none;
+}
+
+:root.dark .compact-input {
+  color: #f3f4f6;
+}
+
+.compact-input::placeholder {
+  color: #9ca3af;
+  font-size: 0.75rem;
+}
+
+.compact-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin: 2px;
+  border: none;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.compact-btn:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.3);
+}
+
+.compact-error {
+  font-size: 0.7rem;
+  color: #ef4444;
+  white-space: nowrap;
+}
+
+/* 紧凑模式内容区 */
+.compact-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.75rem;
+  gap: 0.5rem;
+}
+
+.compact-body .encrypted-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.encrypted-content.content-hidden-compact {
+  filter: blur(4px);
+  opacity: 0.5;
+  user-select: none;
+  pointer-events: none;
+}
+
+.relock-btn-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #6b7280;
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.relock-btn-inline:hover {
+  background: #fff;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+:root.dark .relock-btn-inline {
+  background: rgba(40, 40, 45, 0.8);
+  border-color: #3f3f46;
+  color: #9ca3af;
+}
+
+:root.dark .relock-btn-inline:hover {
+  background: #2a2a2e;
+  color: #d1d5db;
+}
+
+/* ==================== 动画 ==================== */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;
@@ -779,7 +792,6 @@ watch(isLocked, (locked) => {
   40%, 60% { transform: translateX(4px); }
 }
 
-/* 标准模式的抖动需要考虑居中 */
 .encrypted-overlay.shake {
   animation: shake-centered 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
@@ -791,7 +803,7 @@ watch(isLocked, (locked) => {
   40%, 60% { transform: translateX(calc(-50% + 4px)); }
 }
 
-/* 响应式 */
+/* ==================== 响应式 ==================== */
 @media (max-width: 640px) {
   .encrypted-block:not(.is-compact) {
     min-height: 260px;
@@ -824,11 +836,11 @@ watch(isLocked, (locked) => {
   }
   
   /* 紧凑模式响应式 */
-  .compact-overlay {
+  .compact-header {
     flex-direction: column;
     align-items: stretch;
-    gap: 0.75rem;
-    padding: 0.75rem;
+    gap: 0.4rem;
+    padding: 0.4rem 0.6rem;
   }
   
   .compact-left {
@@ -838,6 +850,7 @@ watch(isLocked, (locked) => {
   .compact-right {
     flex-direction: column;
     min-width: 0;
+    gap: 0.3rem;
   }
   
   .compact-input-group {
@@ -847,6 +860,16 @@ watch(isLocked, (locked) => {
   .compact-input {
     flex: 1;
     width: auto;
+  }
+  
+  .compact-body {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
+  
+  .relock-btn-inline {
+    align-self: flex-end;
   }
 }
 </style>
