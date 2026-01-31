@@ -44,7 +44,9 @@ onMounted(() => {
   }
   
   // 监听滚动以实现粘性效果
-  updateOverlayPosition()
+  nextTick(() => {
+    updateOverlayPosition()
+  })
   window.addEventListener('scroll', updateOverlayPosition, { passive: true })
   window.addEventListener('resize', updateOverlayPosition, { passive: true })
 })
@@ -65,26 +67,26 @@ function updateOverlayPosition() {
   const containerHeight = container.offsetHeight
   
   // 获取遮罩层实际高度
-  const overlayHeight = overlay.offsetHeight || 300 // 给一个默认值
+  const overlayHeight = overlay.offsetHeight || 300
   
   // 始终使用 absolute 定位
   overlay.style.position = 'absolute'
   overlay.style.bottom = 'auto'
   
-  // 计算安全边距（遮罩层距离容器顶部/底部的最小距离）
-  const padding = 20
-  const minTop = padding
-  const maxTop = containerHeight - overlayHeight - padding
+  // 安全边距
+  const padding = 16
   
-  // 如果容器高度不足以容纳遮罩层，居中显示
+  // 如果容器高度不足以容纳遮罩层，固定在顶部居中
   if (containerHeight <= overlayHeight + padding * 2) {
     overlay.style.top = '50%'
     overlay.style.transform = 'translate(-50%, -50%)'
     return
   }
   
+  const minTop = padding
+  const maxTop = containerHeight - overlayHeight - padding
+  
   // 计算视口中心点相对于容器顶部的位置
-  // containerRect.top 是容器顶部相对于视口顶部的距离（可能为负）
   const viewportCenterY = viewportHeight / 2
   const centerInContainer = viewportCenterY - containerRect.top
   
@@ -177,7 +179,7 @@ function handleKeydown(e: KeyboardEvent) {
 
 // 监听锁定状态变化
 watch(isLocked, (locked) => {
-  if (!locked) {
+  if (locked) {
     nextTick(() => {
       updateOverlayPosition()
     })
@@ -215,20 +217,22 @@ watch(isLocked, (locked) => {
           
           <!-- 密码输入 -->
           <div class="password-input-wrapper">
-            <input
-              v-model="inputPassword"
-              type="password"
-              class="password-input"
-              placeholder="输入密码..."
-              @keydown="handleKeydown"
-              autocomplete="off"
-            />
-            <button class="unlock-btn" @click="verifyPassword">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 12h14"/>
-                <path d="m12 5 7 7-7 7"/>
-              </svg>
-            </button>
+            <div class="input-group">
+              <input
+                v-model="inputPassword"
+                type="password"
+                class="password-input"
+                placeholder="输入密码..."
+                @keydown="handleKeydown"
+                autocomplete="off"
+              />
+              <button class="unlock-btn" @click="verifyPassword">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h14"/>
+                  <path d="m12 5 7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
           </div>
           
           <!-- 错误提示 -->
@@ -272,7 +276,8 @@ watch(isLocked, (locked) => {
   margin: 1.5rem 0;
   border-radius: 12px;
   overflow: hidden;
-  min-height: 200px;
+  /* 确保容器有最小高度来容纳遮罩层 */
+  min-height: 280px;
 }
 
 .encrypted-block.is-locked {
@@ -293,8 +298,8 @@ watch(isLocked, (locked) => {
   transform: translate(-50%, -50%);
   z-index: 10;
   width: 100%;
-  max-width: 380px;
-  padding: 2rem;
+  max-width: 340px;
+  padding: 1rem;
   box-sizing: border-box;
 }
 
@@ -303,7 +308,7 @@ watch(isLocked, (locked) => {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 16px;
-  padding: 2rem;
+  padding: 1.75rem 2rem;
   text-align: center;
   box-shadow: 
     0 4px 24px rgba(0, 0, 0, 0.08),
@@ -321,15 +326,15 @@ watch(isLocked, (locked) => {
 
 /* 图标 */
 .lock-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
   line-height: 1;
   filter: grayscale(20%);
 }
 
 .lock-icon :deep(svg) {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   color: #6b7280;
 }
 
@@ -339,10 +344,10 @@ watch(isLocked, (locked) => {
 
 /* 标题 */
 .lock-title {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #1f2937;
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 0.5rem 0;
   letter-spacing: -0.02em;
 }
 
@@ -352,11 +357,11 @@ watch(isLocked, (locked) => {
 
 /* 说明文字 */
 .lock-texts {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .lock-text {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   color: #6b7280;
   margin: 0.25rem 0;
   line-height: 1.5;
@@ -368,39 +373,49 @@ watch(isLocked, (locked) => {
 
 /* 密码输入 */
 .password-input-wrapper {
+  margin-bottom: 0.5rem;
+}
+
+.input-group {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.input-group:focus-within {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+:root.dark .input-group {
+  background: #1f1f23;
+  border-color: #3f3f46;
+}
+
+:root.dark .input-group:focus-within {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.15);
 }
 
 .password-input {
   flex: 1;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  font-size: 0.95rem;
-  background: #fff;
+  padding: 0.7rem 0.875rem;
+  border: none;
+  font-size: 0.9rem;
+  background: transparent;
   color: #1f2937;
-  transition: all 0.2s ease;
   outline: none;
+  min-width: 0;
   /* 防止移动端缩放 */
   font-size: 16px;
 }
 
-.password-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-}
-
 :root.dark .password-input {
-  background: #1f1f23;
-  border-color: #3f3f46;
   color: #f3f4f6;
-}
-
-:root.dark .password-input:focus {
-  border-color: #818cf8;
-  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2);
 }
 
 .password-input::placeholder {
@@ -411,10 +426,11 @@ watch(isLocked, (locked) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
+  margin: 2px;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: #fff;
   cursor: pointer;
@@ -426,20 +442,20 @@ watch(isLocked, (locked) => {
 }
 
 .unlock-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  filter: brightness(1.05);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
 }
 
 .unlock-btn:active {
-  transform: translateY(0);
+  filter: brightness(0.98);
 }
 
 /* 错误提示 */
 .error-msg {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #ef4444;
-  margin: 0;
-  padding: 0.5rem;
+  margin: 0.5rem 0 0 0;
+  padding: 0.4rem 0.75rem;
   background: rgba(239, 68, 68, 0.1);
   border-radius: 6px;
 }
@@ -526,7 +542,7 @@ watch(isLocked, (locked) => {
   transform: translateY(-8px);
 }
 
-/* 抖动动画 - 修复 transform 冲突 */
+/* 抖动动画 */
 .shake {
   animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
@@ -540,21 +556,34 @@ watch(isLocked, (locked) => {
 
 /* 响应式 */
 @media (max-width: 640px) {
+  .encrypted-block {
+    min-height: 260px;
+  }
+  
   .encrypted-overlay {
-    padding: 1rem;
-    max-width: calc(100% - 2rem);
+    padding: 0.75rem;
+    max-width: calc(100% - 1.5rem);
   }
   
   .overlay-content {
-    padding: 1.5rem;
+    padding: 1.5rem 1.25rem;
   }
   
   .lock-icon {
-    font-size: 2.5rem;
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
   }
   
   .lock-title {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
+  }
+  
+  .lock-text {
+    font-size: 0.8rem;
+  }
+  
+  .lock-texts {
+    margin-bottom: 1rem;
   }
 }
 </style>
