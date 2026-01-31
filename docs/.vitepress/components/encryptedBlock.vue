@@ -22,7 +22,6 @@ const isLocked = ref(true)
 const inputPassword = ref('')
 const errorMsg = ref('')
 const containerRef = ref<HTMLElement | null>(null)
-const overlayRef = ref<HTMLElement | null>(null)
 const contentRef = ref<HTMLElement | null>(null)
 const isShaking = ref(false)
 
@@ -42,65 +41,7 @@ onMounted(() => {
   } else {
     hideHeadings()
   }
-  
-  // 监听滚动以实现粘性效果
-  nextTick(() => {
-    updateOverlayPosition()
-  })
-  window.addEventListener('scroll', updateOverlayPosition, { passive: true })
-  window.addEventListener('resize', updateOverlayPosition, { passive: true })
 })
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', updateOverlayPosition)
-  window.removeEventListener('resize', updateOverlayPosition)
-})
-
-// 更新遮罩层位置（粘性效果）
-function updateOverlayPosition() {
-  if (!containerRef.value || !overlayRef.value || !isLocked.value) return
-  // 抖动动画期间不更新位置
-  if (isShaking.value) return
-  
-  const container = containerRef.value
-  const overlay = overlayRef.value
-  const containerRect = container.getBoundingClientRect()
-  const viewportHeight = window.innerHeight
-  const containerHeight = container.offsetHeight
-  
-  // 获取遮罩层实际高度
-  const overlayHeight = overlay.offsetHeight || 300
-  
-  // 始终使用 absolute 定位
-  overlay.style.position = 'absolute'
-  overlay.style.bottom = 'auto'
-  
-  // 安全边距
-  const padding = 16
-  
-  // 如果容器高度不足以容纳遮罩层，固定在顶部居中
-  if (containerHeight <= overlayHeight + padding * 2) {
-    overlay.style.top = '50%'
-    overlay.style.transform = 'translateX(-50%)'
-    return
-  }
-  
-  const minTop = padding
-  const maxTop = containerHeight - overlayHeight - padding
-  
-  // 计算视口中心点相对于容器顶部的位置
-  const viewportCenterY = viewportHeight / 2
-  const centerInContainer = viewportCenterY - containerRect.top
-  
-  // 遮罩层的理想 top 位置（使其中心点对齐视口中心）
-  const idealTop = centerInContainer - overlayHeight / 2
-  
-  // 限制在安全范围内
-  const clampedTop = Math.max(minTop, Math.min(maxTop, idealTop))
-  
-  overlay.style.top = `${clampedTop}px`
-  overlay.style.transform = 'translateX(-50%)'
-}
 
 // 隐藏加密区域内的标题（从右侧目录中移除）
 function hideHeadings() {
@@ -168,7 +109,6 @@ function relock() {
   localStorage.removeItem(storageKey.value)
   nextTick(() => {
     hideHeadings()
-    updateOverlayPosition()
   })
 }
 
@@ -178,15 +118,6 @@ function handleKeydown(e: KeyboardEvent) {
     verifyPassword()
   }
 }
-
-// 监听锁定状态变化
-watch(isLocked, (locked) => {
-  if (locked) {
-    nextTick(() => {
-      updateOverlayPosition()
-    })
-  }
-})
 </script>
 
 <template>
@@ -199,7 +130,6 @@ watch(isLocked, (locked) => {
     <Transition name="fade">
       <div 
         v-if="isLocked" 
-        ref="overlayRef"
         class="encrypted-overlay"
       >
         <div class="overlay-content" :class="{ 'shake': isShaking }">
@@ -276,14 +206,11 @@ watch(isLocked, (locked) => {
   position: relative;
   margin: 1.5rem 0;
   border-radius: 12px;
-  overflow: hidden;
 }
 
 .encrypted-block.is-locked {
   background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
   border: 1px solid rgba(0, 0, 0, 0.08);
-  /* 锁定时的最小高度：确保能容纳遮罩层，但不会太大 */
-  min-height: 280px;
 }
 
 :root.dark .encrypted-block.is-locked {
@@ -291,23 +218,14 @@ watch(isLocked, (locked) => {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* 解锁后移除最小高度限制 */
-.encrypted-block:not(.is-locked) {
-  min-height: 0;
-  background: transparent;
-  border: none;
-}
-
-/* 遮罩层 - 始终使用 absolute */
+/* 遮罩层 - 使用 padding 撑开容器高度 */
 .encrypted-overlay {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  width: 100%;
-  max-width: 340px;
-  padding: 1rem;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  min-height: 200px;
   box-sizing: border-box;
 }
 
@@ -322,6 +240,8 @@ watch(isLocked, (locked) => {
     0 4px 24px rgba(0, 0, 0, 0.08),
     0 1px 3px rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(0, 0, 0, 0.06);
+  width: 100%;
+  max-width: 320px;
 }
 
 :root.dark .overlay-content {
@@ -444,7 +364,6 @@ watch(isLocked, (locked) => {
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
-  /* 移动端点击优化 */
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
@@ -472,16 +391,21 @@ watch(isLocked, (locked) => {
   background: rgba(239, 68, 68, 0.15);
 }
 
-/* 内容区域 */
+/* 内容区域 - 锁定时隐藏 */
 .encrypted-content {
   transition: opacity 0.3s ease, filter 0.3s ease;
 }
 
 .encrypted-content.content-hidden {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   filter: blur(8px);
   user-select: none;
   pointer-events: none;
-  opacity: 0.3;
+  opacity: 0.15;
+  padding: 2rem 1rem;
 }
 
 /* 重新锁定按钮 */
@@ -550,7 +474,7 @@ watch(isLocked, (locked) => {
   transform: translateY(-8px);
 }
 
-/* 抖动动画 - 应用在 overlay-content 上而不是 overlay */
+/* 抖动动画 - 只应用在 overlay-content */
 .overlay-content.shake {
   animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
@@ -564,17 +488,14 @@ watch(isLocked, (locked) => {
 
 /* 响应式 */
 @media (max-width: 640px) {
-  .encrypted-block.is-locked {
-    min-height: 260px;
-  }
-  
   .encrypted-overlay {
-    padding: 0.75rem;
-    max-width: calc(100% - 1.5rem);
+    padding: 1.5rem 0.75rem;
+    min-height: 180px;
   }
   
   .overlay-content {
     padding: 1.5rem 1.25rem;
+    max-width: calc(100% - 1rem);
   }
   
   .lock-icon {
