@@ -251,15 +251,6 @@
       <span class="dl-footer-text">{{ note }}</span>
     </footer>
 
-    <!-- Toast -->
-    <Teleport to="body">
-      <Transition name="dl-toast">
-        <div v-if="toast.visible" class="dl-toast">
-          <span class="dl-toast-icon" v-html="icons.check"></span>
-          <span class="dl-toast-text">已复制到剪贴板</span>
-        </div>
-      </Transition>
-    </Teleport>
   </section>
 </template>
 
@@ -641,18 +632,10 @@ const splitUrl = (u) => {
   } catch { return { domain: u, path: "" }; }
 };
 
-/* ========= toast / copy ========= */
-const toast = reactive({ visible: false, timer: null });
-const showToast = () => {
-  toast.visible = true;
-  if (toast.timer) clearTimeout(toast.timer);
-  toast.timer = setTimeout(() => (toast.visible = false), 1600);
-};
-
+/* ========= copy ========= */
 const copy = async (text) => {
   try {
     await navigator.clipboard.writeText(text);
-    showToast();
   } catch {
     try {
       const ta = document.createElement("textarea");
@@ -664,7 +647,6 @@ const copy = async (text) => {
       ta.select();
       document.execCommand("copy");
       document.body.removeChild(ta);
-      showToast();
     } catch {}
   }
 };
@@ -865,9 +847,8 @@ function parseToBytes(input) {
 .dl-label-ico{width:20px;height:20px;border-radius:6px;border:1px solid var(--dl-border);background:var(--dl-icon-bg);color:var(--dl-accent);display:inline-flex;align-items:center;justify-content:center}
 .dl-label-ico :deep(svg){width:11px;height:11px}
 .dl-label-hint{margin-left:6px;font-size:10px;opacity:.7;letter-spacing:.2px;font-weight:500}
-.dl-latency-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-@media(max-width:1200px){.dl-latency-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.dl-latency-grid{grid-template-columns:1fr}}
+.dl-latency-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+
 .dl-latency-card{position:relative;background:var(--dl-bg-solid);border:1px solid var(--dl-border);border-radius:12px;padding:12px 14px;min-height:70px;display:flex;align-items:center;overflow:hidden;transition:all .3s;box-shadow:0 1px 3px var(--dl-shadow)}
 .dl-latency-card:hover{transform:translateY(-3px);border-color:var(--dl-accent);box-shadow:0 8px 20px var(--dl-shadow-hover)}
 .dl-ecg-container{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.25}
@@ -916,10 +897,5 @@ function parseToBytes(input) {
 .dl-footer-ico{width:18px;height:18px;color:var(--dl-muted);flex:0 0 auto;margin-top:1px}
 .dl-footer-ico :deep(svg){width:18px;height:18px}
 .dl-footer-text{font-size:12px;color:var(--dl-muted);line-height:1.5}
-.dl-toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:9999;display:inline-flex;align-items:center;gap:10px;padding:12px 18px;border-radius:12px;background:linear-gradient(135deg,#10b981 0%,#059669 100%);color:#fff;box-shadow:0 12px 28px rgba(16,185,129,.35);border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(12px)}
-.dl-toast-icon{width:20px;height:20px;display:inline-flex}
-.dl-toast-icon :deep(svg){width:20px;height:20px}
-.dl-toast-text{font-weight:700;font-size:13px}
-.dl-toast-enter-active,.dl-toast-leave-active{transition:opacity .2s,transform .2s}
-.dl-toast-enter-from,.dl-toast-leave-to{opacity:0;transform:translateX(-50%) translateY(-10px)}
+
 </style>
