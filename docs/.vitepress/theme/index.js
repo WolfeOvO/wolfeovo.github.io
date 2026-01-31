@@ -10,6 +10,7 @@ import linkCard from '../components/linkCard.vue'
 import sidebar from '../components/sidebarDirectory.vue'
 import downloadCard from '../components/downloadCard.vue'
 import copyMessage from '../components/copyMessage.vue'
+import EncryptedBlock from '../components/EncryptedBlock.vue'
 
 // 插件
 import { enhanceAppWithTabs } from 'vitepress-plugin-tabs/client'
@@ -66,6 +67,7 @@ export default {
     app.component('lc', linkCard)
     app.component('sidebar', sidebar)
     app.component('dc', downloadCard)
+    app.component('eb', EncryptedBlock)
   },
 
   setup() {

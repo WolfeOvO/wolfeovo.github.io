@@ -30,6 +30,8 @@
 
 ||~~如果看到了这段话就说明作者没删掉我，嘻嘻🤭~~||
 
+%%%
+"pwd":"123456"
 <dc
   name="MyApp v1.2.3"
   ext="zip"
@@ -39,3 +41,4 @@
   :defaultIndex="0"
   :channels="[{ name: 'GitHub Releases', icon: 'github', url: 'https://github.com/xxx/releases/download/v1.2.3/file.zip' }, { name: 'OneDrive', icon: 'onedrive', url: 'https://1drv.ms/u/s!xxxx' }, { name: 'Gitee', icon: 'gitee', url: 'https://gitee.com/xxx/releases/download/v1.2.3/file.zip' }]"
 />
+%%%
