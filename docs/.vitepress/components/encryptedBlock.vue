@@ -158,7 +158,7 @@ function handleKeydown(e: KeyboardEvent) {
                 autocomplete="off"
               />
               <button class="unlock-btn" @click="verifyPassword">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M5 12h14"/>
                   <path d="m12 5 7 7-7 7"/>
                 </svg>
@@ -218,14 +218,13 @@ function handleKeydown(e: KeyboardEvent) {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* 遮罩层 - 使用 padding 撑开容器高度 */
+/* 遮罩层 */
 .encrypted-overlay {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1rem;
-  min-height: 200px;
+  padding: 1rem;
   box-sizing: border-box;
 }
 
@@ -234,14 +233,14 @@ function handleKeydown(e: KeyboardEvent) {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 16px;
-  padding: 1.75rem 2rem;
+  padding: 1.5rem 1.75rem;
   text-align: center;
   box-shadow: 
     0 4px 24px rgba(0, 0, 0, 0.08),
     0 1px 3px rgba(0, 0, 0, 0.04);
   border: 1px solid rgba(0, 0, 0, 0.06);
   width: 100%;
-  max-width: 320px;
+  max-width: 300px;
 }
 
 :root.dark .overlay-content {
@@ -254,15 +253,15 @@ function handleKeydown(e: KeyboardEvent) {
 
 /* 图标 */
 .lock-icon {
-  font-size: 2.5rem;
-  margin-bottom: 0.75rem;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
   line-height: 1;
   filter: grayscale(20%);
 }
 
 .lock-icon :deep(svg) {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   color: #6b7280;
 }
 
@@ -272,10 +271,10 @@ function handleKeydown(e: KeyboardEvent) {
 
 /* 标题 */
 .lock-title {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #1f2937;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.375rem 0;
   letter-spacing: -0.02em;
 }
 
@@ -285,14 +284,14 @@ function handleKeydown(e: KeyboardEvent) {
 
 /* 说明文字 */
 .lock-texts {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 .lock-text {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: #6b7280;
-  margin: 0.25rem 0;
-  line-height: 1.5;
+  margin: 0.2rem 0;
+  line-height: 1.4;
 }
 
 :root.dark .lock-text {
@@ -331,9 +330,9 @@ function handleKeydown(e: KeyboardEvent) {
 
 .password-input {
   flex: 1;
-  padding: 0.7rem 0.875rem;
+  padding: 0.6rem 0.75rem;
   border: none;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   background: transparent;
   color: #1f2937;
   outline: none;
@@ -354,8 +353,8 @@ function handleKeydown(e: KeyboardEvent) {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   margin: 2px;
   border: none;
   border-radius: 8px;
@@ -489,8 +488,7 @@ function handleKeydown(e: KeyboardEvent) {
 /* 响应式 */
 @media (max-width: 640px) {
   .encrypted-overlay {
-    padding: 1.5rem 0.75rem;
-    min-height: 180px;
+    padding: 0.75rem;
   }
   
   .overlay-content {
