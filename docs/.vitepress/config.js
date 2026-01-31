@@ -6,6 +6,7 @@ import { tabbed } from './plugins/vitepress-tabbed'
 import { customContainerColorPlugin } from './plugins/customContainerColor'
 import { licenseDeclarationPlugin } from './plugins/licenseDeclaration'
 import { spoiler } from './plugins/spoiler'
+import encryptedBlockPlugin from './plugins/encryptedBlockPlugin'
 
 export default defineConfig({
   title: "Wolfeの储物间",
@@ -21,6 +22,7 @@ export default defineConfig({
       md.use(footnote)
       md.use(spoiler)
       md.use(licenseDeclarationPlugin)
+      md.use(encryptedBlockPlugin)
       customContainerColorPlugin(md)
       
       // 自定义脚注渲染
