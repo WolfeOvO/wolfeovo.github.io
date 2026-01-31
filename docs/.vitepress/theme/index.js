@@ -69,36 +69,30 @@ function setupSpoiler() {
 
   // 全局点击事件处理
   document.addEventListener('click', (e) => {
+    // 只有触摸设备才处理点击
+    if (!isTouchDevice()) return
+
     const clickedSpoiler = e.target.closest('.spoiler')
     
-    if (isTouchDevice()) {
-      // 触摸设备逻辑
-      if (clickedSpoiler) {
-        // 点击的是 spoiler
-        e.preventDefault()
-        
-        // 先关闭所有其他已显示的 spoiler
-        document.querySelectorAll('.spoiler.revealed').forEach(el => {
-          if (el !== clickedSpoiler) {
-            el.classList.remove('revealed')
-          }
-        })
-        
-        // 切换当前 spoiler 的状态
-        clickedSpoiler.classList.toggle('revealed')
-      } else {
-        // 点击的是其他地方，关闭所有 spoiler
-        document.querySelectorAll('.spoiler.revealed').forEach(el => {
+    if (clickedSpoiler) {
+      e.preventDefault()
+      
+      // 关闭其他已显示的 spoiler
+      document.querySelectorAll('.spoiler.revealed').forEach(el => {
+        if (el !== clickedSpoiler) {
           el.classList.remove('revealed')
-        })
-      }
+        }
+      })
+      
+      // 切换当前 spoiler
+      clickedSpoiler.classList.toggle('revealed')
     } else {
-      // 非触摸设备（桌面端）- 点击也可以切换状态（可选）
-      if (clickedSpoiler) {
-        clickedSpoiler.classList.toggle('revealed')
-      }
+      // 点击其他地方，关闭所有 spoiler
+      document.querySelectorAll('.spoiler.revealed').forEach(el => {
+        el.classList.remove('revealed')
+      })
     }
-  }, true) // 使用捕获阶段
+  }, true)
 }
 // ============================================
 
