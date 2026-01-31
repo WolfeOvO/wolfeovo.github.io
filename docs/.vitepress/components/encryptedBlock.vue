@@ -25,27 +25,22 @@ const containerRef = ref<HTMLElement | null>(null)
 const overlayRef = ref<HTMLElement | null>(null)
 const contentRef = ref<HTMLElement | null>(null)
 const isShaking = ref(false)
-const containerHeight = ref(0) // 实时追踪容器高度
+const containerHeight = ref(0) 
 
-// 存储密钥
 const storageKey = computed(() => {
   return `encrypted-block-${page.value.relativePath}-${props.contentId}`
 })
 
-// 计算当前的布局模式
 const layoutMode = computed(() => {
-  // 阈值微调：小于100px转为迷你胶囊模式，小于240px转为紧凑模式
   if (containerHeight.value < 100) return 'mini'
   if (containerHeight.value < 240) return 'compact'
   return 'normal'
 })
 
-// 用于监听尺寸变化的观察者
 let containerObserver: ResizeObserver | null = null
 let overlayObserver: ResizeObserver | null = null
 
 onMounted(() => {
-  // 1. 检查解锁状态
   const stored = localStorage.getItem(storageKey.value)
   if (stored === 'unlocked') {
     isLocked.value = false
@@ -54,7 +49,6 @@ onMounted(() => {
     hideHeadings()
   }
   
-  // 2. 监听外层容器高度变化 (用于切换 layoutMode)
   if (containerRef.value) {
     containerObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -65,16 +59,13 @@ onMounted(() => {
     containerObserver.observe(containerRef.value)
   }
 
-  // 3. 【关键修复】监听遮罩层卡片自身高度变化
-  // 当错误提示出现导致卡片变高时，这个监听器会触发，自动修正位置防止被裁切
   if (overlayRef.value) {
     overlayObserver = new ResizeObserver(() => {
       requestAnimationFrame(updateOverlayPosition)
     })
-    overlayObserver.observe(overlayRef.value) // 需在 DOM 渲染后绑定，见 watch(isLocked)
+    overlayObserver.observe(overlayRef.value)
   }
 
-  // 4. 事件监听
   window.addEventListener('scroll', updateOverlayPosition, { passive: true })
   window.addEventListener('resize', updateOverlayPosition, { passive: true })
 })
@@ -86,37 +77,39 @@ onUnmounted(() => {
   if (overlayObserver) overlayObserver.disconnect()
 })
 
-// 核心：视野跟随逻辑
+// --- 核心修复：更智能的定位逻辑 ---
 function updateOverlayPosition() {
   if (!containerRef.value || !overlayRef.value || !isLocked.value) return
   
   const container = containerRef.value
-  const overlay = overlayRef.value // 注意：这里获取的是 wrapper
+  const overlay = overlayRef.value
   
   const containerRect = container.getBoundingClientRect()
   const overlayHeight = overlay.offsetHeight
   const viewportHeight = window.innerHeight
   
-  // 基础样式重置
   overlay.style.position = 'absolute'
   overlay.style.transform = 'translate(-50%, 0)'
   
-  // 情况 A: 容器高度不足以容纳卡片 (或者刚好相等) -> 绝对垂直居中
-  if (containerRect.height <= overlayHeight) {
+  // 安全边距 (padding)
+  const padding = 12 
+  
+  // 【关键修复】
+  // 原逻辑只判断 containerHeight <= overlayHeight，导致略大的容器强行贴顶。
+  // 新逻辑：如果容器高度减去卡片高度，剩下的空间不足以支撑上下各 12px 的 Padding (即总余量 < 24px)，
+  // 则放弃跟随滚动，直接强制绝对居中。这样 60px 容器装 44px 卡片时，会自动算成 (60-44)/2 = 8px，而不是强行 12px。
+  if (containerRect.height <= overlayHeight + (padding * 2)) {
     overlay.style.top = '50%'
     overlay.style.transform = 'translate(-50%, -50%)'
     return
   }
 
-  // 情况 B: 容器很高，需要跟随滚动
+  // 空间充足时的粘性逻辑
   const viewportCenterY = viewportHeight / 2
   const centerInContainer = viewportCenterY - containerRect.top
   const idealTop = centerInContainer - overlayHeight / 2
   
-  // 边界限制
-  const padding = 12 
   const minTop = padding
-  // 【关键】maxTop 会随着 overlayHeight 的增加而减小，从而把变高的卡片往上拉
   const maxTop = containerRect.height - overlayHeight - padding
   
   const clampedTop = Math.max(minTop, Math.min(maxTop, idealTop))
@@ -162,15 +155,10 @@ function verifyPassword() {
     localStorage.setItem(storageKey.value, 'unlocked')
     nextTick(showHeadings)
   } else {
-    // 错误处理
     errorMsg.value = layoutMode.value === 'mini' ? '!' : '密码错误'
     isShaking.value = true
     setTimeout(() => { isShaking.value = false }, 500)
-    
-    // 【关键】手动触发一次位置更新，防止 ResizeObserver 有延迟
-    nextTick(() => {
-      updateOverlayPosition()
-    })
+    nextTick(() => updateOverlayPosition())
   }
 }
 
@@ -181,7 +169,6 @@ function relock() {
   localStorage.removeItem(storageKey.value)
   nextTick(() => {
     hideHeadings()
-    // 重新锁定后，必须确保 Overlay 存在后再 update
     if (containerRef.value) containerHeight.value = containerRef.value.offsetHeight
     updateOverlayPosition()
   })
@@ -191,12 +178,10 @@ function handleKeydown(e: KeyboardEvent) {
   if (e.key === 'Enter') verifyPassword()
 }
 
-// 监听锁定状态，处理 ResizeObserver 的绑定与解绑
 watch(isLocked, (locked) => {
   if (locked) {
     nextTick(() => {
       updateOverlayPosition()
-      // 重新绑定 Overlay 监听
       if (overlayRef.value && !overlayObserver) {
         overlayObserver = new ResizeObserver(() => requestAnimationFrame(updateOverlayPosition))
         overlayObserver.observe(overlayRef.value)
@@ -206,7 +191,6 @@ watch(isLocked, (locked) => {
       }
     })
   } else {
-    // 解锁后停止监听 Overlay
     overlayObserver?.disconnect()
   }
 })
@@ -218,7 +202,6 @@ watch(isLocked, (locked) => {
     class="encrypted-block"
     :class="{ 'is-locked': isLocked }"
   >
-    <!-- 遮罩层容器 -->
     <Transition name="fade">
       <div 
         v-if="isLocked" 
@@ -227,10 +210,8 @@ watch(isLocked, (locked) => {
         :class="[`layout-${layoutMode}`, { 'shake': isShaking }]"
       >
         <div class="interaction-card">
-          <!-- 区域1: 信息展示 -->
           <div v-if="layoutMode !== 'mini'" class="info-section">
             <div v-if="layoutMode === 'normal'" class="lock-icon" v-html="icon"></div>
-            
             <div class="text-group">
               <h3 v-if="layoutMode !== 'mini'" class="lock-title">{{ title }}</h3>
               <div v-if="layoutMode === 'normal'" class="lock-texts">
@@ -239,7 +220,6 @@ watch(isLocked, (locked) => {
             </div>
           </div>
 
-          <!-- 区域2: 交互区域 -->
           <div class="input-section">
             <div class="input-group">
               <input
@@ -256,7 +236,6 @@ watch(isLocked, (locked) => {
               </button>
             </div>
             
-            <!-- 错误提示 -->
             <Transition name="slide-fade">
               <p v-if="errorMsg && layoutMode !== 'mini'" class="error-msg">{{ errorMsg }}</p>
             </Transition>
@@ -265,7 +244,6 @@ watch(isLocked, (locked) => {
       </div>
     </Transition>
     
-    <!-- 内容区域 -->
     <div 
       ref="contentRef" 
       class="encrypted-content"
@@ -274,7 +252,6 @@ watch(isLocked, (locked) => {
       <slot />
     </div>
     
-    <!-- 重新锁定按钮 -->
     <Transition name="fade">
       <button v-if="!isLocked" class="relock-btn" @click="relock" title="重新锁定">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -292,20 +269,17 @@ watch(isLocked, (locked) => {
   margin: 1.5rem 0;
   border-radius: 12px;
   overflow: hidden;
-  /* 移除 min-height，高度完全由内容决定 */
 }
 
 .encrypted-block.is-locked {
   user-select: none;
   background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
-  /* 确保有足够的Padding避免内容太贴边（可选） */
 }
 
 :root.dark .encrypted-block.is-locked {
   background: linear-gradient(135deg, #1f1f23 0%, #18181b 100%);
 }
 
-/* --- 内容区域 --- */
 .encrypted-content {
   transition: opacity 0.3s, filter 0.3s;
 }
@@ -316,15 +290,13 @@ watch(isLocked, (locked) => {
   pointer-events: none;
 }
 
-/* --- 遮罩层与卡片 --- */
 .encrypted-overlay-wrapper {
   position: absolute; 
   left: 50%;
-  /* top 由 JS 计算 */
   z-index: 10;
   width: 90%;
   max-width: 340px;
-  will-change: top, transform; /* 性能优化 */
+  will-change: top, transform;
 }
 
 .interaction-card {
@@ -344,15 +316,12 @@ watch(isLocked, (locked) => {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
-/* --- 布局模式适配 --- */
-
-/* Normal Mode */
+/* Layout Modes */
 .layout-normal .interaction-card {
   padding: 1.5rem;
   text-align: center;
 }
 
-/* Compact Mode (Height < 240px) */
 .layout-compact .interaction-card {
   padding: 1rem;
   display: flex;
@@ -360,21 +329,14 @@ watch(isLocked, (locked) => {
   gap: 0.5rem;
   text-align: center;
 }
-.layout-compact .lock-title {
-  margin: 0;
-  font-size: 1rem;
-}
+.layout-compact .lock-title { margin: 0; font-size: 1rem; }
 
-/* --- Mini Mode (Height < 100px) 修正版 --- */
-.layout-mini {
-  /* 允许稍微宽一点 */
-  max-width: 300px; 
-}
-
+/* Mini Mode */
+.layout-mini { max-width: 300px; }
 .layout-mini .interaction-card {
-  /* 左侧留白给文字，右侧紧贴按钮 */
+  /* 上下 padding 均等，确保胶囊内部垂直平衡 */
   padding: 4px 6px 4px 14px; 
-  border-radius: 99px; /* 胶囊形状 */
+  border-radius: 99px;
   display: flex;
   align-items: center;
   background: rgba(255, 255, 255, 0.98);
@@ -382,37 +344,19 @@ watch(isLocked, (locked) => {
   white-space: nowrap;
   height: auto;
 }
+:root.dark .layout-mini .interaction-card { background: rgba(40, 40, 45, 0.98); }
 
-:root.dark .layout-mini .interaction-card {
-  background: rgba(40, 40, 45, 0.98);
-}
-
-.layout-mini .input-section {
-  flex: 1;
-  min-width: 0;
-  margin: 0;
-}
-
-.layout-mini .input-group {
-  border: none;
-  background: transparent;
-  box-shadow: none;
-  border-radius: 0;
-}
+.layout-mini .input-section { flex: 1; min-width: 0; margin: 0; }
+.layout-mini .input-group { border: none; background: transparent; box-shadow: none; border-radius: 0; }
 
 .layout-mini .password-input {
   padding: 0;
-  /* 修正：字体大小恢复正常，不再是缩小的 */
   font-size: 15px;
   height: 36px;
-  line-height: 36px;
+  line-height: 36px; /* 辅助垂直居中 */
 }
-.layout-mini .password-input::placeholder {
-  font-size: 14px;
-  opacity: 0.7;
-}
+.layout-mini .password-input::placeholder { font-size: 14px; opacity: 0.7; }
 
-/* 修正：按钮在 mini 模式下保持固定大小圆型 */
 .layout-mini .unlock-btn {
   width: 32px;
   height: 32px;
@@ -421,32 +365,13 @@ watch(isLocked, (locked) => {
   flex-shrink: 0;
   padding: 0;
 }
+.layout-mini .unlock-btn svg { width: 18px !important; height: 18px !important; }
 
-/* 修正：强制图标大小，防止变小 */
-.layout-mini .unlock-btn svg {
-  width: 18px !important;
-  height: 18px !important;
-}
-
-
-/* --- 通用组件样式 --- */
-.lock-icon {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-}
-.lock-title {
-  font-weight: 700;
-  color: #111827;
-  margin-bottom: 0.25rem;
-}
+/* General */
+.lock-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.lock-title { font-weight: 700; color: #111827; margin-bottom: 0.25rem; }
 :root.dark .lock-title { color: #f3f4f6; }
-
-.lock-texts {
-  font-size: 0.85rem;
-  color: #6b7280;
-  margin-bottom: 1rem;
-  line-height: 1.4;
-}
+.lock-texts { font-size: 0.85rem; color: #6b7280; margin-bottom: 1rem; line-height: 1.4; }
 
 .input-group {
   display: flex;
@@ -456,14 +381,8 @@ watch(isLocked, (locked) => {
   transition: 0.2s;
   overflow: hidden;
 }
-.input-group:focus-within {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
-}
-:root.dark .input-group {
-  background: #27272a;
-  border-color: #3f3f46;
-}
+.input-group:focus-within { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1); }
+:root.dark .input-group { background: #27272a; border-color: #3f3f46; }
 
 .password-input {
   flex: 1;
@@ -489,14 +408,9 @@ watch(isLocked, (locked) => {
 }
 .unlock-btn:hover { background: #4f46e5; }
 .unlock-btn:active { background: #4338ca; }
-.unlock-btn svg { display: block; } /* 消除可能的行高偏移 */
+.unlock-btn svg { display: block; }
 
-.error-msg {
-  color: #ef4444;
-  font-size: 0.75rem;
-  margin-top: 0.5rem;
-  line-height: 1.2;
-}
+.error-msg { color: #ef4444; font-size: 0.75rem; margin-top: 0.5rem; line-height: 1.2; }
 
 .relock-btn {
   position: absolute;
@@ -519,10 +433,7 @@ watch(isLocked, (locked) => {
   color: #ccc;
 }
 
-/* 动画 */
-.shake {
-  animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-}
+.shake { animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
 @keyframes shake {
   10%, 90% { transform: translate3d(-51%, 0, 0); }
   20%, 80% { transform: translate3d(-49%, 0, 0); }
