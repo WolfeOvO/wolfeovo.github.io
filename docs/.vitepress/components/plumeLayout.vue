@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, h, render as vueRender } from 'vue'
 import { useData, useRoute } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import BlogHome from './blogHome.vue'
@@ -12,20 +12,8 @@ const route = useRoute()
 
 const isPlume = ref(false)
 
-const isHomePage = computed(() => {
-  return frontmatter.value.layout === 'home'
-})
-
-const showBlogHome = computed(() => {
-  return isPlume.value && isHomePage.value
-})
-
-const blogNavItems = [
-  { text: '博客', link: '/', icon: '📝' },
-  { text: '标签', link: '/blog/tags', icon: '🏷️' },
-  { text: '归档', link: '/blog/archives', icon: '📅' },
-  { text: '合辑', link: '/blog/series', icon: '📚' }
-]
+const isHomePage = computed(() => frontmatter.value.layout === 'home')
+const showBlogHome = computed(() => isPlume.value && isHomePage.value)
 
 const isBlogPost = computed(() => {
   const path = route.path
@@ -43,11 +31,8 @@ function checkPlumeMode() {
 
 function enforceModeByRoute(path) {
   if (typeof document === 'undefined') return
-  const isBlogSection = path.startsWith('/blog/')
-  const htmlEl = document.documentElement
-
-  if (isBlogSection && htmlEl.getAttribute('data-skin') !== 'plume') {
-    htmlEl.setAttribute('data-skin', 'plume')
+  if (path.startsWith('/blog/') && document.documentElement.getAttribute('data-skin') !== 'plume') {
+    document.documentElement.setAttribute('data-skin', 'plume')
     isPlume.value = true
     localStorage.setItem('wolfe-theme-mode', 'plume')
   }
@@ -57,7 +42,6 @@ watch(
   () => route.path,
   (newPath) => {
     enforceModeByRoute(newPath)
-
     if (typeof localStorage !== 'undefined') {
       const currentIsPlume = document.documentElement.getAttribute('data-skin') === 'plume'
       if (currentIsPlume) {
@@ -77,33 +61,42 @@ watch(
 onMounted(() => {
   checkPlumeMode()
 
-  const observer = new MutationObserver(() => {
-    checkPlumeMode()
-  })
+  const observer = new MutationObserver(() => checkPlumeMode())
   observer.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ['data-skin']
   })
+
+  // DOM 注入切换按钮
+  const navbar = document.querySelector('.VPNavBarExtra')
+    || document.querySelector('.VPNavBarAppearance')
+    || document.querySelector('.VPNavBarSocialLinks')
+  if (navbar && navbar.parentElement) {
+    const host = document.createElement('div')
+    host.className = 'theme-toggle-host'
+    host.style.display = 'flex'
+    host.style.alignItems = 'center'
+    navbar.parentElement.insertBefore(host, navbar)
+    vueRender(h(ThemeToggle), host)
+  }
 })
 </script>
 
 <template>
   <Layout>
     <!-- 博客模式导航 -->
-    <template #nav-bar-content-before v-if="isPlume">
-      <nav class="plume-nav">
-          <a v-for="item in blogNavItems" :key="item.link" :href="item.link" class="plume-nav-link" :class="{ active: item.link === '/' ? isHomePage : route.path.startsWith(item.link) }"><span class="plume-nav-icon">{{ item.icon }}</span> {{ item.text }}</a>
-          <span class="plume-nav-icon">{{ item.icon }}</span>
-          {{ item.text }}
+    <template #nav-bar-content-before>
+      <nav v-show="isPlume" class="plume-nav">
+        <a v-for="item in [
+          { text: '博客', link: '/', icon: '📝' },
+          { text: '标签', link: '/blog/tags', icon: '🏷️' },
+          { text: '归档', link: '/blog/archives', icon: '📅' },
+          { text: '合辑', link: '/blog/series', icon: '📚' }
+        ]" :key="item.link" :href="item.link" class="plume-nav-link" :class="{ active: item.link === '/' ? isHomePage : route.path.startsWith(item.link) }"><span class="plume-nav-icon">{{ item.icon }}</span> {{ item.text }}</a>
       </nav>
     </template>
 
-    <!-- ★ 切换按钮：通过插槽渲染，不再用 DOM 注入 -->
-    <template #nav-bar-content-after>
-      <ThemeToggle />
-    </template>
-
-    <!-- 博客模式首页 -->
+    <!-- 博客首页 -->
     <template #home-hero-before v-if="showBlogHome">
       <div class="plume-blog-overlay">
         <BlogHome />
@@ -151,6 +144,8 @@ html[data-skin="plume"] .plume-nav {
   font-weight: 600;
 }
 
+.plume-nav-icon { font-size: 14px; }
+
 html[data-skin="plume"] .VPNavBarMenu { display: none !important; }
 html[data-skin="plume"] .VPHero { display: none !important; }
 html[data-skin="plume"] .VPFeatures { display: none !important; }
@@ -173,6 +168,5 @@ html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content { max-width: 100% !imp
 
 @media (max-width: 960px) {
   html[data-skin="plume"] .plume-nav { display: none; }
-  html[data-skin="plume"] .VPNavBarMenu { display: none !important; }
 }
 </style>
