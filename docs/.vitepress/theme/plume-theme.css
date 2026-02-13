@@ -65,15 +65,9 @@ html[data-skin="plume"] .VPSidebar {
   display: none !important;
 }
 
-/* ========== 博客模式：隐藏默认首页 ========== */
-html[data-skin="plume"] .VPHome {
-  display: none !important;
-}
-
-/* 隐藏默认内容区域（首页时） */
-html[data-skin="plume"] .is-home .VPContent {
-  display: none !important;
-}
+/* ========== 博客模式：首页容器保留（博客内容通过插槽注入在里面） ========== */
+/* 注意：不能隐藏 .VPHome 或 .VPContent，因为博客覆盖层在其内部 */
+/* .VPHero 和 .VPFeatures 的隐藏已在 plumeLayout.vue 中处理 */
 
 /* ========== 博客主体区域 ========== */
 html[data-skin="plume"] .plume-blog-overlay {
