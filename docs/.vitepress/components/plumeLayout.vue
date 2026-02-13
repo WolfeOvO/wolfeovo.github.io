@@ -5,7 +5,7 @@ import defaultTheme from 'vitepress/theme'
 import blogHome from './blogHome.vue'
 import themeToggle from './themeToggle.vue'
 
-const { Layout } = DefaultTheme
+const { Layout } = defaultTheme
 const { frontmatter } = useData()
 const route = useRoute()
 
