@@ -82,7 +82,7 @@ function formatDate(dateStr) {
       </div>
 
       <!-- 标签云 -->
-      <div class="tag-cloud-section">
+      <div class="tag-cloud-section" v-if="tagStats.length > 0">
         <div class="tag-cloud">
           <button
             v-for="tag in tagStats"

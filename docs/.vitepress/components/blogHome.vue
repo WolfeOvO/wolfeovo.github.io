@@ -118,22 +118,6 @@ function formatDate(dateStr) {
         </div>
       </div>
 
-      <!-- 快捷导航 -->
-      <div class="quick-nav">
-        <h3 class="nav-title">📌 快捷导航</h3>
-        <nav>
-          <a href="/blog/tags" class="nav-item">
-            <span class="nav-icon">🏷️</span> 标签
-          </a>
-          <a href="/blog/archives" class="nav-item">
-            <span class="nav-icon">📅</span> 归档
-          </a>
-          <a href="/blog/series" class="nav-item">
-            <span class="nav-icon">📚</span> 合辑
-          </a>
-        </nav>
-      </div>
-
       <!-- 标签云预览 -->
       <div class="tag-cloud" v-if="allTags.length > 0">
         <div class="tag-cloud-header">
