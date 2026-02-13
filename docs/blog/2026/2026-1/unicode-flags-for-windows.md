@@ -1,3 +1,7 @@
+---
+title: 为 Windows 10 和 11 打补丁以显示 Unicode 国旗表情 🇨🇳
+date: 2026-02-14
+---
 # 为 Windows 10 和 11 打补丁以显示 Unicode 国旗表情 🇨🇳
 
 <lc url="https://github.com/tuannvbg/unicode-flags-for-windows" />
