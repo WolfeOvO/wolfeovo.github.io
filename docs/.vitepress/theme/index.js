@@ -12,9 +12,9 @@ import sidebar from '../components/sidebarDirectory.vue'
 import downloadCard from '../components/downloadCard.vue'
 import copyMessage from '../components/copyMessage.vue'
 import encryptedBlock from '../components/encryptedBlock.vue'
-import plumeLayout from '../components/PlumeLayout.vue'    // ← 加
-import themeToggle from '../components/ThemeToggle.vue'     // ← 加
-import blogHome from '../components/BlogHome.vue'           // ← 加
+import plumeLayout from '../components/plumeLayout.vue'
+import themeToggle from '../components/themeToggle.vue'
+import blogHome from '../components/blogHome.vue'
 
 // 插件
 import { enhanceAppWithTabs } from 'vitepress-plugin-tabs/client'
