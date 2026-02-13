@@ -1,11 +1,11 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
 import { useData, useRoute } from 'vitepress'
-import defaultTheme from 'vitepress/theme'
+import DefaultTheme from 'vitepress/theme'
 import blogHome from './blogHome.vue'
 import themeToggle from './themeToggle.vue'
 
-const { Layout } = defaultTheme
+const { Layout } = DefaultTheme
 const { frontmatter } = useData()
 const route = useRoute()
 
