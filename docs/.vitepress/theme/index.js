@@ -11,7 +11,7 @@ import linkCard from '../components/linkCard.vue'
 import sidebar from '../components/sidebarDirectory.vue'
 import downloadCard from '../components/downloadCard.vue'
 import copyMessage from '../components/copyMessage.vue'
-import encryptedBlock from '../components/encryptedBlock.vue'
+import EncryptedBlock from '../components/encryptedBlock.vue'
 import plumeLayout from '../components/plumeLayout.vue'
 import themeToggle from '../components/themeToggle.vue'
 import blogHome from '../components/blogHome.vue'
@@ -115,7 +115,7 @@ export default {
     app.component('lc', linkCard)
     app.component('sidebar', sidebar)
     app.component('dc', downloadCard)
-    app.component('eb', encryptedBlock)
+    app.component('EncryptedBlock', encryptedBlock)
     app.component('tt', themeToggle)
     app.component('bh', blogHome)
   },
