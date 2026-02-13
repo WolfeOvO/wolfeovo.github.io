@@ -1,9 +1,9 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, h, render as vueRender } from 'vue'
 import { useData, useRoute } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
-import blogHome from './blogHome.vue'
-import themeToggle from './themeToggle.vue'
+import BlogHome from './blogHome.vue'
+import ThemeToggle from './themeToggle.vue'
 
 const { Layout } = DefaultTheme
 const { frontmatter } = useData()
@@ -15,22 +15,10 @@ const isHomePage = computed(() => {
   return frontmatter.value.layout === 'home'
 })
 
-// 检测是否在博客相关页面
-const isBlogPage = computed(() => {
-  return route.path.startsWith('/blog/')
-})
-
-// 是否为博客特殊页面（标签、归档）
-const isBlogSpecialPage = computed(() => {
-  const path = route.path
-  return path.includes('/blog/tags') || path.includes('/blog/archives')
-})
-
 const showBlogHome = computed(() => {
   return isPlume.value && isHomePage.value
 })
 
-// 博客模式的导航项
 const blogNavItems = [
   { text: '博客', link: '/', icon: 'blog' },
   { text: '标签', link: '/blog/tags', icon: 'tag' },
@@ -45,8 +33,56 @@ function checkPlumeMode() {
   }
 }
 
+// ====== 用 DOM 直接注入切换按钮（绕过 VitePress 插槽问题）======
+let toggleInjected = false
+
+function injectToggleButton() {
+  if (typeof document === 'undefined' || toggleInjected) return
+
+  // 目标：在 VPNavBarAppearance（亮/暗切换）前面插入
+  const appearance = document.querySelector('.VPNavBarAppearance')
+  if (appearance && appearance.parentNode) {
+    const host = document.createElement('div')
+    host.id = 'plume-toggle-host'
+    host.style.display = 'flex'
+    host.style.alignItems = 'center'
+    appearance.parentNode.insertBefore(host, appearance)
+    vueRender(h(ThemeToggle), host)
+    toggleInjected = true
+    return
+  }
+
+  // 备选：如果没找到 Appearance，找 VPNavBarSocialLinks
+  const social = document.querySelector('.VPNavBarSocialLinks')
+  if (social && social.parentNode) {
+    const host = document.createElement('div')
+    host.id = 'plume-toggle-host'
+    host.style.display = 'flex'
+    host.style.alignItems = 'center'
+    social.parentNode.insertBefore(host, social)
+    vueRender(h(ThemeToggle), host)
+    toggleInjected = true
+    return
+  }
+
+  // 最终备选：插到 .content-body 末尾
+  const contentBody = document.querySelector('.VPNavBar .content-body')
+  if (contentBody) {
+    const host = document.createElement('div')
+    host.id = 'plume-toggle-host'
+    host.style.display = 'flex'
+    host.style.alignItems = 'center'
+    contentBody.appendChild(host)
+    vueRender(h(ThemeToggle), host)
+    toggleInjected = true
+  }
+}
+
 onMounted(() => {
   checkPlumeMode()
+
+  // 注入按钮（加小延迟确保 VitePress nav 已渲染）
+  setTimeout(injectToggleButton, 100)
 
   // 监听 data-skin 属性变化
   const observer = new MutationObserver(() => {
@@ -61,11 +97,6 @@ onMounted(() => {
 
 <template>
   <Layout>
-    <!-- 在导航栏右侧注入主题切换按钮 -->
-    <template #nav-bar-content-after>
-      <ThemeToggle />
-    </template>
-
     <!-- 博客模式：在导航栏注入自定义博客导航 -->
     <template #nav-bar-content-before v-if="isPlume">
       <nav class="plume-nav">
@@ -74,9 +105,9 @@ onMounted(() => {
           :key="item.link"
           :href="item.link"
           class="plume-nav-link"
-          :class="{ 
-            active: item.link === '/' 
-              ? isHomePage 
+          :class="{
+            active: item.link === '/'
+              ? isHomePage
               : route.path.startsWith(item.link)
           }"
         >
@@ -141,7 +172,7 @@ html[data-skin="plume"] .VPNavBarMenu {
   display: none !important;
 }
 
-/* ====== Plume 模式下隐藏默认首页元素 ====== */
+/* ====== Plume 模式下隐藏 Hero 和 Features（保留 VPHome 容器） ====== */
 html[data-skin="plume"] .VPHero {
   display: none !important;
 }
@@ -158,7 +189,6 @@ html[data-skin="plume"] .VPFeatures {
   padding-top: 8px;
 }
 
-/* 默认模式下隐藏博客覆盖层 */
 html:not([data-skin="plume"]) .plume-blog-overlay {
   display: none !important;
 }
@@ -176,7 +206,7 @@ html[data-skin="plume"].dark .VPContent.is-home {
   background: var(--plume-bg, #161820) !important;
 }
 
-/* ====== 博客模式：博客特殊页面（标签/归档）隐藏侧边栏 ====== */
+/* ====== 博客模式：隐藏侧边栏 ====== */
 html[data-skin="plume"] .VPSidebar {
   display: none !important;
 }
@@ -194,20 +224,14 @@ html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
   max-width: 100% !important;
 }
 
-/* ====== 博客模式：移动端导航适配 ====== */
+/* ====== 移动端适配 ====== */
 @media (max-width: 960px) {
   html[data-skin="plume"] .plume-nav {
     display: none;
   }
-  
-  /* 移动端恢复默认导航，通过汉堡菜单访问 */
+
   html[data-skin="plume"] .VPNavBarMenu {
     display: none !important;
   }
-}
-
-/* ====== 移动端博客菜单 (VPNavScreen 内) ====== */
-html[data-skin="plume"] .VPNavScreenMenu {
-  /* 允许默认的mobile menu显示 */
 }
 </style>
