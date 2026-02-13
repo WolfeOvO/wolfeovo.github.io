@@ -11,13 +11,17 @@ const searchQuery = ref('')
 
 const posts = computed(() => blogPosts || [])
 
-// 标签列表
+// 标签列表（带计数）
 const allTags = computed(() => {
-  const tags = new Set()
+  const map = {}
   posts.value.forEach(p => {
-    if (p.tags) p.tags.forEach(t => tags.add(t))
+    if (p.tags) p.tags.forEach(t => {
+      map[t] = (map[t] || 0) + 1
+    })
   })
-  return [...tags]
+  return Object.entries(map)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
 })
 
 // 过滤后的文章
@@ -63,15 +67,16 @@ function formatDate(dateStr) {
         <h2 class="profile-name">Wolfe</h2>
         <p class="profile-desc">の储物间 · 互联网集大成者</p>
 
+        <!-- 统计数据（仿 ermao.net） -->
         <div class="profile-stats">
-          <div class="stat-item">
-            <span class="stat-num">{{ posts.length }}</span>
-            <span class="stat-label">文章</span>
-          </div>
-          <div class="stat-item">
+          <a href="/blog/tags" class="stat-item stat-link">
             <span class="stat-num">{{ allTags.length }}</span>
             <span class="stat-label">标签</span>
-          </div>
+          </a>
+          <a href="/blog/archives" class="stat-item stat-link">
+            <span class="stat-num">{{ posts.length }}</span>
+            <span class="stat-label">文章</span>
+          </a>
         </div>
 
         <div class="profile-links">
@@ -93,29 +98,41 @@ function formatDate(dateStr) {
       <div class="quick-nav">
         <h3 class="nav-title">📌 快捷导航</h3>
         <nav>
-          <a
-            v-for="item in (theme.nav || [])"
-            :key="item.link"
-            :href="item.link"
-            class="nav-item"
-          >
-            {{ item.text }}
+          <a href="/blog/tags" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            标签
+          </a>
+          <a href="/blog/archives" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            归档
+          </a>
+          <a href="/储物间/储物间目录" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/></svg>
+            储物间
+          </a>
+          <a href="/墙外指南/墙外指南目录" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+            墙外指南
           </a>
         </nav>
       </div>
 
-      <!-- 标签云 -->
+      <!-- 标签云预览 -->
       <div class="tag-cloud" v-if="allTags.length > 0">
-        <h3 class="nav-title">🏷️ 标签</h3>
+        <div class="tag-cloud-header">
+          <h3 class="nav-title">🏷️ 标签</h3>
+          <a href="/blog/tags" class="see-all">查看全部 →</a>
+        </div>
         <div class="tags-wrap">
           <button
-            v-for="tag in allTags"
-            :key="tag"
+            v-for="tag in allTags.slice(0, 10)"
+            :key="tag.name"
             class="tag-btn"
-            :class="{ active: activeTag === tag }"
-            @click="toggleTag(tag)"
+            :class="{ active: activeTag === tag.name }"
+            @click="toggleTag(tag.name)"
           >
-            {{ tag }}
+            {{ tag.name }}
+            <span class="tag-count">{{ tag.count }}</span>
           </button>
         </div>
       </div>
@@ -255,11 +272,12 @@ function formatDate(dateStr) {
   line-height: 1.5;
 }
 
+/* ========== Profile Stats (仿 ermao.net) ========== */
 .profile-stats {
   display: flex;
   justify-content: center;
-  gap: 32px;
-  padding: 12px 0;
+  gap: 0;
+  padding: 0;
   border-top: 1px solid var(--vp-c-divider);
   border-bottom: 1px solid var(--vp-c-divider);
   margin-bottom: 16px;
@@ -270,6 +288,23 @@ function formatDate(dateStr) {
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  padding: 12px 0;
+  flex: 1;
+}
+
+.stat-link {
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-radius: 0;
+}
+
+.stat-link:first-child {
+  border-right: 1px solid var(--vp-c-divider);
+}
+
+.stat-link:hover {
+  background: var(--vp-c-brand-soft);
 }
 
 .stat-num {
@@ -329,7 +364,9 @@ function formatDate(dateStr) {
 }
 
 .nav-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 14px;
@@ -344,7 +381,33 @@ function formatDate(dateStr) {
   padding-left: 16px;
 }
 
+.nav-item svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.nav-item:hover svg {
+  opacity: 1;
+}
+
 /* ========== Tag Cloud ========== */
+.tag-cloud-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.see-all {
+  font-size: 12px;
+  color: var(--vp-c-text-3);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.see-all:hover {
+  color: var(--vp-c-brand-1);
+}
+
 .tags-wrap {
   display: flex;
   flex-wrap: wrap;
@@ -352,6 +415,9 @@ function formatDate(dateStr) {
 }
 
 .tag-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 4px 12px;
   border: 1px solid var(--vp-c-divider);
   border-radius: 20px;
@@ -366,6 +432,21 @@ function formatDate(dateStr) {
   background: var(--vp-c-brand-soft);
   border-color: var(--vp-c-brand-1);
   color: var(--vp-c-brand-1);
+}
+
+.tag-count {
+  font-size: 10px;
+  color: var(--vp-c-text-3);
+  background: var(--vp-c-bg);
+  padding: 0 5px;
+  border-radius: 8px;
+  line-height: 16px;
+}
+
+.tag-btn:hover .tag-count,
+.tag-btn.active .tag-count {
+  background: var(--vp-c-brand-1);
+  color: #fff;
 }
 
 /* ========== Main Content ========== */

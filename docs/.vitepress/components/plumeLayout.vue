@@ -1,12 +1,13 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useData } from 'vitepress'
-import DefaultTheme from 'vitepress/theme'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useData, useRoute } from 'vitepress'
+import defaultTheme from 'vitepress/theme'
 import blogHome from './blogHome.vue'
 import themeToggle from './themeToggle.vue'
 
 const { Layout } = DefaultTheme
 const { frontmatter } = useData()
+const route = useRoute()
 
 const isPlume = ref(false)
 
@@ -14,9 +15,29 @@ const isHomePage = computed(() => {
   return frontmatter.value.layout === 'home'
 })
 
-const showblogHome = computed(() => {
+// 检测是否在博客相关页面
+const isBlogPage = computed(() => {
+  return route.path.startsWith('/blog/')
+})
+
+// 是否为博客特殊页面（标签、归档）
+const isBlogSpecialPage = computed(() => {
+  const path = route.path
+  return path.includes('/blog/tags') || path.includes('/blog/archives')
+})
+
+const showBlogHome = computed(() => {
   return isPlume.value && isHomePage.value
 })
+
+// 博客模式的导航项
+const blogNavItems = [
+  { text: '博客', link: '/', icon: 'blog' },
+  { text: '标签', link: '/blog/tags', icon: 'tag' },
+  { text: '归档', link: '/blog/archives', icon: 'archive' },
+  { text: '储物间', link: '/储物间/储物间目录', icon: 'storage' },
+  { text: '墙外指南', link: '/墙外指南/墙外指南目录', icon: 'guide' },
+]
 
 function checkPlumeMode() {
   if (typeof document !== 'undefined') {
@@ -42,19 +63,84 @@ onMounted(() => {
   <Layout>
     <!-- 在导航栏右侧注入主题切换按钮 -->
     <template #nav-bar-content-after>
-      <themeToggle />
+      <ThemeToggle />
     </template>
 
-    <!-- 在首页 hero 之前注入博客首页 -->
-    <template #home-hero-before v-if="showblogHome">
+    <!-- 博客模式：在导航栏注入自定义博客导航 -->
+    <template #nav-bar-content-before v-if="isPlume">
+      <nav class="plume-nav">
+        <a
+          v-for="item in blogNavItems"
+          :key="item.link"
+          :href="item.link"
+          class="plume-nav-link"
+          :class="{ 
+            active: item.link === '/' 
+              ? isHomePage 
+              : route.path.startsWith(item.link)
+          }"
+        >
+          <svg v-if="item.icon === 'blog'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <svg v-else-if="item.icon === 'tag'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          <svg v-else-if="item.icon === 'archive'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <svg v-else-if="item.icon === 'storage'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="10" y2="12.01"/></svg>
+          <svg v-else-if="item.icon === 'guide'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          {{ item.text }}
+        </a>
+      </nav>
+    </template>
+
+    <!-- 博客模式首页：注入博客首页 -->
+    <template #home-hero-before v-if="showBlogHome">
       <div class="plume-blog-overlay">
-        <blogHome />
+        <BlogHome />
       </div>
     </template>
   </Layout>
 </template>
 
 <style>
+/* ====== 博客模式导航 ====== */
+.plume-nav {
+  display: none;
+}
+
+html[data-skin="plume"] .plume-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 16px;
+}
+
+.plume-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--vp-c-text-2);
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.plume-nav-link:hover {
+  color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+}
+
+.plume-nav-link.active {
+  color: var(--vp-c-brand-1);
+  font-weight: 600;
+}
+
+/* ====== 博客模式：隐藏默认导航菜单 ====== */
+html[data-skin="plume"] .VPNavBarMenu {
+  display: none !important;
+}
+
 /* ====== Plume 模式下隐藏默认首页元素 ====== */
 html[data-skin="plume"] .VPHero {
   display: none !important;
@@ -88,5 +174,40 @@ html[data-skin="plume"] .VPContent.is-home {
 
 html[data-skin="plume"].dark .VPContent.is-home {
   background: var(--plume-bg, #161820) !important;
+}
+
+/* ====== 博客模式：博客特殊页面（标签/归档）隐藏侧边栏 ====== */
+html[data-skin="plume"] .VPSidebar {
+  display: none !important;
+}
+
+/* 博客模式下文档页面全宽 */
+html[data-skin="plume"] .VPDoc .container {
+  max-width: 100% !important;
+}
+
+html[data-skin="plume"] .VPDoc:not(.has-sidebar) .container {
+  max-width: 100% !important;
+}
+
+html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
+  max-width: 100% !important;
+}
+
+/* ====== 博客模式：移动端导航适配 ====== */
+@media (max-width: 960px) {
+  html[data-skin="plume"] .plume-nav {
+    display: none;
+  }
+  
+  /* 移动端恢复默认导航，通过汉堡菜单访问 */
+  html[data-skin="plume"] .VPNavBarMenu {
+    display: none !important;
+  }
+}
+
+/* ====== 移动端博客菜单 (VPNavScreen 内) ====== */
+html[data-skin="plume"] .VPNavScreenMenu {
+  /* 允许默认的mobile menu显示 */
 }
 </style>

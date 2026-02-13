@@ -11,10 +11,12 @@ import linkCard from '../components/linkCard.vue'
 import sidebar from '../components/sidebarDirectory.vue'
 import downloadCard from '../components/downloadCard.vue'
 import copyMessage from '../components/copyMessage.vue'
-import encryptedBlock from '../components/encryptedBlock.vue'
+import EncryptedBlock from '../components/encryptedBlock.vue'
 import plumeLayout from '../components/plumeLayout.vue'
 import themeToggle from '../components/themeToggle.vue'
 import blogHome from '../components/blogHome.vue'
+import blogTags from '../components/blogTags.vue'
+import blogArchives from '../components/blogArchives.vue'
 
 // 插件
 import { enhanceAppWithTabs } from 'vitepress-plugin-tabs/client'
@@ -115,9 +117,11 @@ export default {
     app.component('lc', linkCard)
     app.component('sidebar', sidebar)
     app.component('dc', downloadCard)
-    app.component('eb', encryptedBlock)
+    app.component('eb', EncryptedBlock)
     app.component('tt', themeToggle)
     app.component('bh', blogHome)
+    app.component('bt', blogTags)
+    app.component('ba', blogArchives)
   },
 
   setup() {

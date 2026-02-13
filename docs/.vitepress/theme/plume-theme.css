@@ -1,6 +1,7 @@
 /* ================================================================
    Plume Theme Skin — 仿 ermao.net (vuepress-theme-plume) 风格
    当 html[data-skin="plume"] 时生效
+   两个模式彻底分离：普通模式 = VitePress 默认，博客模式 = Plume
    ================================================================ */
 
 /* ========== 色彩变量覆盖 ========== */
@@ -54,33 +55,23 @@ html[data-skin="plume"] .VPNavBar .title {
   letter-spacing: -0.02em;
 }
 
-/* 导航链接样式 */
-html[data-skin="plume"] .VPNavBarMenuLink {
-  font-weight: 500 !important;
-  border-radius: 8px !important;
-  transition: all 0.2s !important;
-}
-
-html[data-skin="plume"] .VPNavBarMenuLink:hover {
-  background: var(--vp-c-brand-soft) !important;
-  color: var(--vp-c-brand-1) !important;
-}
-
-html[data-skin="plume"] .VPNavBarMenuLink.active {
-  color: var(--vp-c-brand-1) !important;
-  font-weight: 600 !important;
-}
-
-/* ========== 隐藏默认首页元素（保留 slot 内容） ========== */
-html[data-skin="plume"] .VPHero {
+/* ========== 博客模式：完全替换导航菜单 ========== */
+html[data-skin="plume"] .VPNavBarMenu {
   display: none !important;
 }
 
-html[data-skin="plume"] .VPFeatures {
-  display: none !important;
-}
-
+/* ========== 博客模式：隐藏侧边栏 ========== */
 html[data-skin="plume"] .VPSidebar {
+  display: none !important;
+}
+
+/* ========== 博客模式：隐藏默认首页 ========== */
+html[data-skin="plume"] .VPHome {
+  display: none !important;
+}
+
+/* 隐藏默认内容区域（首页时） */
+html[data-skin="plume"] .is-home .VPContent {
   display: none !important;
 }
 
@@ -98,6 +89,19 @@ html[data-skin="plume"] .VPDoc {
 }
 
 html[data-skin="plume"] .VPDoc .container {
+  max-width: var(--plume-content-max-width) !important;
+}
+
+/* 博客模式文档页全宽适配 */
+html[data-skin="plume"] .VPDoc:not(.has-sidebar) .container {
+  max-width: var(--plume-content-max-width) !important;
+}
+
+html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
+  max-width: 100% !important;
+}
+
+html[data-skin="plume"] .VPDoc.has-sidebar .container {
   max-width: var(--plume-content-max-width) !important;
 }
 
@@ -125,6 +129,34 @@ html[data-skin="plume"] .vp-doc h2 {
 html[data-skin="plume"] .vp-doc h2:first-of-type {
   border-top: none;
   padding-top: 0;
+}
+
+/* ========== 标签页和归档页专属样式（博客模式下） ========== */
+html[data-skin="plume"] .blog-tags-page,
+html[data-skin="plume"] .blog-archives-page {
+  /* 移除 vp-doc 卡片化的影响 */
+}
+
+/* 博客特殊页面中，vp-doc 容器透明化 */
+html[data-skin="plume"] .vp-doc:has(.blog-tags-page),
+html[data-skin="plume"] .vp-doc:has(.blog-archives-page) {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0 !important;
+  margin: 0;
+}
+
+/* 兼容不支持 :has 的浏览器 - 通过 page class 控制 */
+html[data-skin="plume"] .blog-tags-page .page-header,
+html[data-skin="plume"] .blog-archives-page .page-header {
+  background: transparent;
+}
+
+/* 标签/归档页面背景适配 */
+html[data-skin="plume"] .blog-tags-page .tag-cloud,
+html[data-skin="plume"] .blog-archives-page .year-header {
+  background: var(--plume-card-bg, var(--vp-c-bg));
 }
 
 /* ========== 大纲（TOC）卡片化 ========== */
@@ -156,7 +188,7 @@ html[data-skin="plume"] .vp-doc div[class*='language-'] {
   border: 1px solid var(--plume-card-border);
 }
 
-/* ========== 自定义容器在 plume 主题下的额外优化 ========== */
+/* ========== 自定义容器优化 ========== */
 html[data-skin="plume"] .vp-doc .custom-block {
   border-radius: var(--plume-radius);
 }
@@ -168,7 +200,6 @@ html[data-skin="plume"] * {
   transition-timing-function: ease;
 }
 
-/* 不影响已有的 transition */
 html[data-skin="plume"] .post-card,
 html[data-skin="plume"] .profile-card,
 html[data-skin="plume"] .nav-item,
@@ -194,4 +225,16 @@ html[data-skin="plume"] ::-webkit-scrollbar-thumb {
 
 html[data-skin="plume"] ::-webkit-scrollbar-thumb:hover {
   background: var(--vp-c-text-3);
+}
+
+/* ========== 移动端适配 ========== */
+@media (max-width: 960px) {
+  /* 移动端博客导航使用汉堡菜单 */
+  html[data-skin="plume"] .plume-nav {
+    display: none !important;
+  }
+  
+  html[data-skin="plume"] .vp-doc {
+    padding: 20px !important;
+  }
 }

@@ -6,6 +6,11 @@ export default createContentLoader('blog/**/*.md', {
   includeSrc: false,
   transform(rawData) {
     return rawData
+      // 排除特殊页面（标签页、归档页等）
+      .filter(page => {
+        const url = page.url.toLowerCase()
+        return !url.includes('/tags') && !url.includes('/archives')
+      })
       .map(page => ({
         title: page.frontmatter.title || extractTitle(page.url),
         url: page.url,

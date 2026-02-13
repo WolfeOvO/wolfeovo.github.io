@@ -2393,3 +2393,29 @@
   opacity: 0;
   transform: translateX(-50%) translateY(8px);
 }
+/* ================================================================
+   两个模式的导航栏条件显示
+   普通模式：隐藏标签/归档导航项
+   博客模式：完全由 plume-nav 接管（CSS 在 plume-theme.css 处理）
+   ================================================================ */
+
+/* 普通模式（非 plume）：隐藏博客专属导航项 */
+html:not([data-skin="plume"]) .VPNavBarMenuLink[href="/blog/tags"],
+html:not([data-skin="plume"]) .VPNavBarMenuLink[href="/blog/tags.html"],
+html:not([data-skin="plume"]) .VPNavBarMenuLink[href="/blog/archives"],
+html:not([data-skin="plume"]) .VPNavBarMenuLink[href="/blog/archives.html"] {
+  display: none !important;
+}
+
+/* 普通模式移动端菜单中也隐藏博客导航项 */
+html:not([data-skin="plume"]) .VPNavScreenMenuLink[href="/blog/tags"],
+html:not([data-skin="plume"]) .VPNavScreenMenuLink[href="/blog/tags.html"],
+html:not([data-skin="plume"]) .VPNavScreenMenuLink[href="/blog/archives"],
+html:not([data-skin="plume"]) .VPNavScreenMenuLink[href="/blog/archives.html"] {
+  display: none !important;
+}
+
+/* 博客模式移动端菜单中：将"首页"重命名为"博客"的视觉效果 */
+html[data-skin="plume"] .VPNavScreenMenuLink[href="/"] {
+  /* 保持显示，在博客模式下"首页"即为博客首页 */
+}
