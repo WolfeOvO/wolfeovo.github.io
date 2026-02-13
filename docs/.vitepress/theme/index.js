@@ -1,4 +1,5 @@
 import './style.css'
+import './plume-theme.css'
 import DefaultTheme from 'vitepress/theme'
 import { h, render, onMounted, watch } from 'vue'
 import { useRoute } from 'vitepress'
@@ -10,7 +11,10 @@ import linkCard from '../components/linkCard.vue'
 import sidebar from '../components/sidebarDirectory.vue'
 import downloadCard from '../components/downloadCard.vue'
 import copyMessage from '../components/copyMessage.vue'
-import EncryptedBlock from '../components/encryptedBlock.vue'
+import encryptedBlock from '../components/encryptedBlock.vue'
+import plumeLayout from '../components/PlumeLayout.vue'    // ← 加
+import themeToggle from '../components/ThemeToggle.vue'     // ← 加
+import blogHome from '../components/BlogHome.vue'           // ← 加
 
 // 插件
 import { enhanceAppWithTabs } from 'vitepress-plugin-tabs/client'
@@ -98,6 +102,7 @@ function setupSpoiler() {
 
 export default {
   extends: DefaultTheme,
+  Layout: plumeLayout,
 
   enhanceApp({ app }) {
     // 注册插件
@@ -110,7 +115,9 @@ export default {
     app.component('lc', linkCard)
     app.component('sidebar', sidebar)
     app.component('dc', downloadCard)
-    app.component('EncryptedBlock', EncryptedBlock)
+    app.component('eb', encryptedBlock)
+    app.component('tt', ThemeToggle)
+    app.component('bh', BlogHome)
   },
 
   setup() {

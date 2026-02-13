@@ -1,0 +1,198 @@
+/* ================================================================
+   Plume Theme Skin — 仿 ermao.net (vuepress-theme-plume) 风格
+   当 html[data-skin="plume"] 时生效
+   ================================================================ */
+
+/* ========== 色彩变量覆盖 ========== */
+html[data-skin="plume"] {
+  --vp-c-brand-1: #5b8df0;
+  --vp-c-brand-2: #7aa5f7;
+  --vp-c-brand-3: #9ebefb;
+  --vp-c-brand-soft: rgba(91, 141, 240, 0.12);
+  --plume-bg: #f5f7fa;
+  --plume-card-bg: #ffffff;
+  --plume-card-border: rgba(0, 0, 0, 0.06);
+  --plume-card-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  --plume-card-shadow-hover: 0 8px 28px rgba(0, 0, 0, 0.08);
+  --plume-radius: 12px;
+  --plume-nav-height: 60px;
+  --plume-content-max-width: 1200px;
+}
+
+html[data-skin="plume"].dark {
+  --plume-bg: #161820;
+  --plume-card-bg: #1e2030;
+  --plume-card-border: rgba(255, 255, 255, 0.06);
+  --plume-card-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  --plume-card-shadow-hover: 0 8px 28px rgba(0, 0, 0, 0.3);
+}
+
+/* ========== 全局背景 ========== */
+html[data-skin="plume"] body {
+  background: var(--plume-bg) !important;
+}
+
+html[data-skin="plume"] .Layout {
+  background: var(--plume-bg);
+}
+
+/* ========== 顶部导航栏 ========== */
+html[data-skin="plume"] .VPNav {
+  background: var(--plume-card-bg) !important;
+  border-bottom: 1px solid var(--plume-card-border) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+html[data-skin="plume"] .VPNavBar {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+
+html[data-skin="plume"] .VPNavBar .title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* 导航链接样式 */
+html[data-skin="plume"] .VPNavBarMenuLink {
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  transition: all 0.2s !important;
+}
+
+html[data-skin="plume"] .VPNavBarMenuLink:hover {
+  background: var(--vp-c-brand-soft) !important;
+  color: var(--vp-c-brand-1) !important;
+}
+
+html[data-skin="plume"] .VPNavBarMenuLink.active {
+  color: var(--vp-c-brand-1) !important;
+  font-weight: 600 !important;
+}
+
+/* ========== 隐藏默认首页、侧边栏 ========== */
+html[data-skin="plume"] .VPHome {
+  display: none !important;
+}
+
+html[data-skin="plume"] .VPSidebar {
+  display: none !important;
+}
+
+/* 隐藏默认内容区域（首页时） */
+html[data-skin="plume"] .is-home .VPContent {
+  display: none !important;
+}
+
+/* ========== 博客主体区域 ========== */
+html[data-skin="plume"] .plume-blog-overlay {
+  display: block !important;
+  padding-top: var(--vp-nav-height, 64px);
+  min-height: 100vh;
+  background: var(--plume-bg);
+}
+
+/* ========== 文档页面美化 ========== */
+html[data-skin="plume"] .VPDoc {
+  padding-top: 24px !important;
+}
+
+html[data-skin="plume"] .VPDoc .container {
+  max-width: var(--plume-content-max-width) !important;
+}
+
+/* 文档内容卡片化 */
+html[data-skin="plume"] .vp-doc {
+  background: var(--plume-card-bg);
+  border-radius: var(--plume-radius);
+  border: 1px solid var(--plume-card-border);
+  box-shadow: var(--plume-card-shadow);
+  padding: 32px !important;
+  margin-bottom: 24px;
+}
+
+html[data-skin="plume"] .vp-doc h1 {
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--vp-c-brand-soft);
+  margin-bottom: 24px;
+}
+
+html[data-skin="plume"] .vp-doc h2 {
+  padding-top: 16px;
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+html[data-skin="plume"] .vp-doc h2:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+/* ========== 大纲（TOC）卡片化 ========== */
+html[data-skin="plume"] .VPDocAside .VPDocAsideOutline {
+  background: var(--plume-card-bg);
+  border: 1px solid var(--plume-card-border);
+  border-radius: var(--plume-radius);
+  padding: 16px;
+  box-shadow: var(--plume-card-shadow);
+}
+
+/* ========== Footer 优化 ========== */
+html[data-skin="plume"] .VPFooter {
+  background: var(--plume-card-bg) !important;
+  border-top: 1px solid var(--plume-card-border) !important;
+}
+
+/* ========== 搜索框美化 ========== */
+html[data-skin="plume"] .VPNavBarSearch .DocSearch-Button,
+html[data-skin="plume"] #local-search .search-button {
+  border-radius: 10px !important;
+  background: var(--vp-c-bg-soft) !important;
+  border: 1px solid var(--plume-card-border) !important;
+}
+
+/* ========== 代码块优化 ========== */
+html[data-skin="plume"] .vp-doc div[class*='language-'] {
+  border-radius: var(--plume-radius) !important;
+  border: 1px solid var(--plume-card-border);
+}
+
+/* ========== 自定义容器在 plume 主题下的额外优化 ========== */
+html[data-skin="plume"] .vp-doc .custom-block {
+  border-radius: var(--plume-radius);
+}
+
+/* ========== 过渡动画 ========== */
+html[data-skin="plume"] * {
+  transition-property: background-color, border-color, box-shadow;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
+}
+
+/* 不影响已有的 transition */
+html[data-skin="plume"] .post-card,
+html[data-skin="plume"] .profile-card,
+html[data-skin="plume"] .nav-item,
+html[data-skin="plume"] .tag-btn,
+html[data-skin="plume"] .social-link,
+html[data-skin="plume"] .theme-toggle-btn {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ========== 滚动条美化 ========== */
+html[data-skin="plume"] ::-webkit-scrollbar {
+  width: 6px;
+}
+
+html[data-skin="plume"] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html[data-skin="plume"] ::-webkit-scrollbar-thumb {
+  background: var(--vp-c-divider);
+  border-radius: 3px;
+}
+
+html[data-skin="plume"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--vp-c-text-3);
+}
