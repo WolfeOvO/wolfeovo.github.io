@@ -115,7 +115,7 @@ export default {
     app.component('lc', linkCard)
     app.component('sidebar', sidebar)
     app.component('dc', downloadCard)
-    app.component('encryptedBlock', encryptedBlock)
+    app.component('eb', encryptedBlock)
     app.component('tt', themeToggle)
     app.component('bh', blogHome)
   },

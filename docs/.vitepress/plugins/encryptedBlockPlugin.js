@@ -266,7 +266,7 @@ function encryptedBlockPlugin(md) {
     const contentIdAttr = ` content-id="${contentId}"`
     const levelAttr = ` :level="${level}"`
     
-    return `<EncryptedBlock${iconAttr}${titleAttr}${textsAttr}${pwdAttr}${contentIdAttr}${levelAttr}>\n\n${renderedContent}\n\n</EncryptedBlock>`
+    return `<eb${iconAttr}${titleAttr}${textsAttr}${pwdAttr}${contentIdAttr}${levelAttr}>\n\n${renderedContent}\n\n</eb>`
   }
 }
 
