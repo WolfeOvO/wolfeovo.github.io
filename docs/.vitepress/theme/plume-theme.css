@@ -71,17 +71,16 @@ html[data-skin="plume"] .VPNavBarMenuLink.active {
   font-weight: 600 !important;
 }
 
-/* ========== 隐藏默认首页、侧边栏 ========== */
-html[data-skin="plume"] .VPHome {
+/* ========== 隐藏默认首页元素（保留 slot 内容） ========== */
+html[data-skin="plume"] .VPHero {
+  display: none !important;
+}
+
+html[data-skin="plume"] .VPFeatures {
   display: none !important;
 }
 
 html[data-skin="plume"] .VPSidebar {
-  display: none !important;
-}
-
-/* 隐藏默认内容区域（首页时） */
-html[data-skin="plume"] .is-home .VPContent {
   display: none !important;
 }
 
