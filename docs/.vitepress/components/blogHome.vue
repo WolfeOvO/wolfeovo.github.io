@@ -11,7 +11,6 @@ const searchQuery = ref('')
 
 const posts = computed(() => blogPosts || [])
 
-// 标签列表（带计数）
 const allTags = computed(() => {
   const map = {}
   posts.value.forEach(p => {
@@ -24,7 +23,22 @@ const allTags = computed(() => {
     .sort((a, b) => b.count - a.count)
 })
 
-// 过滤后的文章
+// 所有合辑
+const allSeries = computed(() => {
+  const map = {}
+  posts.value.forEach(p => {
+    if (p.series && !map[p.series]) {
+      map[p.series] = {
+        name: p.series,
+        icon: p.series_icon || '',
+        count: 0
+      }
+    }
+    if (p.series) map[p.series].count++
+  })
+  return Object.values(map).sort((a, b) => b.count - a.count)
+})
+
 const filteredPosts = computed(() => {
   let result = posts.value
   if (activeTag.value) {
@@ -39,6 +53,13 @@ const filteredPosts = computed(() => {
   }
   return result
 })
+
+// 默认文章图标（根据 index 循环）
+const defaultIcons = ['📄', '📝', '📰', '📋', '🗒️', '📑', '🔖', '📃']
+function getPostIcon(post, index) {
+  if (post.icon) return post.icon
+  return defaultIcons[index % defaultIcons.length]
+}
 
 function navigateTo(url) {
   router.go(url)
@@ -58,7 +79,7 @@ function formatDate(dateStr) {
 
 <template>
   <div class="plume-blog-home">
-    <!-- Profile Card -->
+    <!-- Profile Sidebar -->
     <aside class="blog-profile">
       <div class="profile-card">
         <div class="profile-avatar">
@@ -67,7 +88,6 @@ function formatDate(dateStr) {
         <h2 class="profile-name">Wolfe</h2>
         <p class="profile-desc">の储物间 · 互联网集大成者</p>
 
-        <!-- 统计数据（仿 ermao.net） -->
         <div class="profile-stats">
           <a href="/blog/tags" class="stat-item stat-link">
             <span class="stat-num">{{ allTags.length }}</span>
@@ -76,6 +96,10 @@ function formatDate(dateStr) {
           <a href="/blog/archives" class="stat-item stat-link">
             <span class="stat-num">{{ posts.length }}</span>
             <span class="stat-label">文章</span>
+          </a>
+          <a href="/blog/series" class="stat-item stat-link">
+            <span class="stat-num">{{ allSeries.length }}</span>
+            <span class="stat-label">合辑</span>
           </a>
         </div>
 
@@ -99,14 +123,14 @@ function formatDate(dateStr) {
         <h3 class="nav-title">📌 快捷导航</h3>
         <nav>
           <a href="/blog/tags" class="nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-            标签
+            <span class="nav-icon">🏷️</span> 标签
           </a>
           <a href="/blog/archives" class="nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            归档
+            <span class="nav-icon">📅</span> 归档
           </a>
-          <!-- 移除“储物间”和“墙外指南”快捷导航，确保博客模式下不跳转到站点其它内容 -->
+          <a href="/blog/series" class="nav-item">
+            <span class="nav-icon">📚</span> 合辑
+          </a>
         </nav>
       </div>
 
@@ -155,13 +179,23 @@ function formatDate(dateStr) {
       <!-- 文章列表 -->
       <div class="post-list">
         <article
-          v-for="post in filteredPosts"
+          v-for="(post, index) in filteredPosts"
           :key="post.url"
           class="post-card"
           @click="navigateTo(post.url)"
         >
+          <!-- 文章图标 -->
+          <div class="post-icon-badge">
+            <span class="post-icon">{{ getPostIcon(post, index) }}</span>
+          </div>
+
           <div class="post-content">
-            <h2 class="post-title">{{ post.title }}</h2>
+            <div class="post-header-line">
+              <h2 class="post-title">{{ post.title }}</h2>
+              <span v-if="post.series" class="post-series-badge">
+                📚 {{ post.series }}
+              </span>
+            </div>
             <p class="post-desc" v-if="post.description">{{ post.description }}</p>
             <div class="post-meta">
               <span class="post-date" v-if="post.date">
@@ -255,7 +289,6 @@ function formatDate(dateStr) {
   font-weight: 700;
   color: var(--vp-c-text-1);
   margin: 0 0 6px;
-  letter-spacing: -0.02em;
 }
 
 .profile-desc {
@@ -265,12 +298,10 @@ function formatDate(dateStr) {
   line-height: 1.5;
 }
 
-/* ========== Profile Stats (仿 ermao.net) ========== */
+/* ========== Profile Stats ========== */
 .profile-stats {
   display: flex;
   justify-content: center;
-  gap: 0;
-  padding: 0;
   border-top: 1px solid var(--vp-c-divider);
   border-bottom: 1px solid var(--vp-c-divider);
   margin-bottom: 16px;
@@ -289,11 +320,11 @@ function formatDate(dateStr) {
   text-decoration: none;
   cursor: pointer;
   transition: background 0.2s;
-  border-radius: 0;
+  border-right: 1px solid var(--vp-c-divider);
 }
 
-.stat-link:first-child {
-  border-right: 1px solid var(--vp-c-divider);
+.stat-link:last-child {
+  border-right: none;
 }
 
 .stat-link:hover {
@@ -374,13 +405,9 @@ function formatDate(dateStr) {
   padding-left: 16px;
 }
 
-.nav-item svg {
+.nav-icon {
+  font-size: 15px;
   flex-shrink: 0;
-  opacity: 0.7;
-}
-
-.nav-item:hover svg {
-  opacity: 1;
 }
 
 /* ========== Tag Cloud ========== */
@@ -464,7 +491,6 @@ function formatDate(dateStr) {
   display: flex;
   align-items: center;
   gap: 8px;
-  letter-spacing: -0.02em;
 }
 
 .title-icon {
@@ -526,9 +552,27 @@ function formatDate(dateStr) {
   transform: translateY(-2px);
 }
 
-.post-card:hover .post-arrow {
-  color: var(--vp-c-brand-1);
-  transform: translateX(4px);
+/* 文章图标徽章 */
+.post-icon-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--vp-c-bg-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.25s;
+}
+
+.post-card:hover .post-icon-badge {
+  background: var(--vp-c-brand-soft);
+  transform: scale(1.05);
+}
+
+.post-icon {
+  font-size: 24px;
+  line-height: 1;
 }
 
 .post-content {
@@ -536,23 +580,44 @@ function formatDate(dateStr) {
   min-width: 0;
 }
 
+.post-header-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
 .post-title {
   font-size: 17px;
   font-weight: 600;
   color: var(--vp-c-text-1);
-  margin: 0 0 6px;
+  margin: 0;
   line-height: 1.4;
   transition: color 0.2s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .post-card:hover .post-title {
   color: var(--vp-c-brand-1);
 }
 
+.post-series-badge {
+  font-size: 11px;
+  color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft);
+  padding: 2px 8px;
+  border-radius: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
 .post-desc {
   font-size: 14px;
   color: var(--vp-c-text-2);
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -595,6 +660,11 @@ function formatDate(dateStr) {
   transition: all 0.25s;
 }
 
+.post-card:hover .post-arrow {
+  color: var(--vp-c-brand-1);
+  transform: translateX(4px);
+}
+
 /* ========== Empty State ========== */
 .empty-state {
   text-align: center;
@@ -627,49 +697,26 @@ function formatDate(dateStr) {
     gap: 12px;
   }
 
-  .profile-card {
-    flex: 1;
-    min-width: 250px;
-  }
-
-  .quick-nav {
-    flex: 1;
-    min-width: 200px;
-  }
-
-  .tag-cloud {
-    width: 100%;
-  }
+  .profile-card { flex: 1; min-width: 250px; }
+  .quick-nav { flex: 1; min-width: 200px; }
+  .tag-cloud { width: 100%; }
 
   .blog-header {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .search-input {
-    width: 100%;
-  }
-
-  .blog-search {
-    width: 100%;
-  }
+  .search-input { width: 100%; }
+  .blog-search { width: 100%; }
 }
 
 @media (max-width: 640px) {
-  .profile-card {
-    min-width: 100%;
-  }
-
-  .quick-nav {
-    min-width: 100%;
-  }
-
-  .post-card {
-    padding: 16px;
-  }
-
-  .post-title {
-    font-size: 15px;
-  }
+  .profile-card { min-width: 100%; }
+  .quick-nav { min-width: 100%; }
+  .post-card { padding: 16px; }
+  .post-title { font-size: 15px; }
+  .post-icon-badge { width: 40px; height: 40px; border-radius: 10px; }
+  .post-icon { font-size: 20px; }
+  .post-series-badge { display: none; }
 }
 </style>

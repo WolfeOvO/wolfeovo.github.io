@@ -17,6 +17,8 @@ import themeToggle from '../components/themeToggle.vue'
 import blogHome from '../components/blogHome.vue'
 import blogTags from '../components/blogTags.vue'
 import blogArchives from '../components/blogArchives.vue'
+import blogSeries from '../components/blogSeries.vue'
+import blogSeriesNav from '../components/blogSeriesNav.vue'
 
 // 插件
 import { enhanceAppWithTabs } from 'vitepress-plugin-tabs/client'
@@ -122,6 +124,8 @@ export default {
     app.component('bh', blogHome)
     app.component('bt', blogTags)
     app.component('ba', blogArchives)
+    app.component('bs', blogSeries)
+    app.component('bsn', blogSeriesNav)
   },
 
   setup() {

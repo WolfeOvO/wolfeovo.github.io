@@ -81,25 +81,5 @@ export const sidebar = {
         }
       ]
     }
-  ],
-  '/blog/': [
-    {
-      items: [
-        {
-          text: '2026 年',
-          collapsed: false,
-          items: [
-            { 
-              text: '1 月',
-              base: '/blog/2026/2026-1/',
-              collapsed: true,
-              items: [
-                { text: '为 Windows 10 和 11 打补丁以显示 Unicode 国旗表情 🇨🇳', link: 'unicode-flags-for-windows' }
-              ]
-             }
-          ]
-         }
-      ]
-    }
   ]
 }

@@ -3,6 +3,7 @@ import { ref, onMounted, computed, h, render as vueRender, watch, nextTick } fro
 import { useData, useRoute } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import BlogHome from './blogHome.vue'
+import BlogSeriesNav from './blogSeriesNav.vue'
 import ThemeToggle from './themeToggle.vue'
 
 const { Layout } = DefaultTheme
@@ -22,8 +23,18 @@ const showBlogHome = computed(() => {
 const blogNavItems = [
   { text: '博客', link: '/', icon: 'blog' },
   { text: '标签', link: '/blog/tags', icon: 'tag' },
-  { text: '归档', link: '/blog/archives', icon: 'archive' }
+  { text: '归档', link: '/blog/archives', icon: 'archive' },
+  { text: '合辑', link: '/blog/series', icon: 'series' }
 ]
+
+// 判断是否是博客文章页面（用于注入合辑导航）
+const isBlogPost = computed(() => {
+  const path = route.path
+  return path.startsWith('/blog/') &&
+    !path.startsWith('/blog/tags') &&
+    !path.startsWith('/blog/archives') &&
+    !path.startsWith('/blog/series')
+})
 
 function checkPlumeMode() {
   if (typeof document !== 'undefined') {
@@ -31,35 +42,18 @@ function checkPlumeMode() {
   }
 }
 
-// ====== 核心逻辑：根据路由自动管理模式 ======
+// ====== 根据路由自动切换模式（仅处理 /blog/ 页面） ======
 function enforceModeByRoute(path) {
   if (typeof document === 'undefined') return
 
   const isBlogSection = path.startsWith('/blog/')
-  const isHome = path === '/' || path === '/index.html'
   const htmlEl = document.documentElement
-  const toggleHost = document.getElementById('plume-toggle-host')
 
-  // 1. 模式强制逻辑
-  if (isBlogSection) {
-    // 如果在 /blog/ 下，必须是 Plume 模式
-    if (htmlEl.getAttribute('data-skin') !== 'plume') {
-      htmlEl.setAttribute('data-skin', 'plume')
-      isPlume.value = true
-    }
-  } else if (!isHome) {
-    // 如果不在 /blog/ 且不在首页（即在文档区），必须是普通模式
-    if (htmlEl.getAttribute('data-skin') === 'plume') {
-      htmlEl.removeAttribute('data-skin')
-      isPlume.value = false
-    }
-  }
-  // 如果是首页 (isHome)，保持当前状态不变（允许用户手动切换）
-
-  // 2. 切换按钮可见性控制
-  // 为了防止在文档页误触导致样式错乱，只在首页显示切换按钮
-  if (toggleHost) {
-    toggleHost.style.display = isHome ? 'flex' : 'none'
+  // 如果用户导航到 /blog/ 下的页面，自动切入博客模式
+  if (isBlogSection && htmlEl.getAttribute('data-skin') !== 'plume') {
+    htmlEl.setAttribute('data-skin', 'plume')
+    isPlume.value = true
+    localStorage.setItem('wolfe-theme-mode', 'plume')
   }
 }
 
@@ -72,7 +66,7 @@ watch(
   { immediate: true }
 )
 
-// ====== 注入切换按钮 ======
+// ====== 注入切换按钮（始终显示） ======
 let toggleInjected = false
 
 function injectToggleButton() {
@@ -85,10 +79,9 @@ function injectToggleButton() {
   if (appearance && appearance.parentNode) {
     const host = document.createElement('div')
     host.id = 'plume-toggle-host'
-    host.style.display = 'none' // 默认隐藏，由 enforceModeByRoute 控制显示
+    host.style.display = 'flex'   // 始终显示
     host.style.alignItems = 'center'
     
-    // 插入逻辑：如果是 Appearance 或 SocialLinks，插在前面；否则 append
     if (appearance.classList.contains('content-body')) {
       appearance.appendChild(host)
     } else {
@@ -97,19 +90,15 @@ function injectToggleButton() {
 
     vueRender(h(ThemeToggle), host)
     toggleInjected = true
-    
-    // 注入完成后立即检查一次状态，确保按钮显隐正确
-    enforceModeByRoute(route.path)
   }
 }
 
 onMounted(() => {
   checkPlumeMode()
   
-  // 注入按钮
   setTimeout(injectToggleButton, 100)
 
-  // 监听 data-skin 属性变化（处理手动切换的情况）
+  // 监听 data-skin 属性变化
   const observer = new MutationObserver(() => {
     checkPlumeMode()
   })
@@ -139,6 +128,7 @@ onMounted(() => {
           <svg v-if="item.icon === 'blog'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           <svg v-else-if="item.icon === 'tag'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
           <svg v-else-if="item.icon === 'archive'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <svg v-else-if="item.icon === 'series'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="M8 7h8"/><path d="M8 11h6"/></svg>
           {{ item.text }}
         </a>
       </nav>
@@ -149,6 +139,11 @@ onMounted(() => {
       <div class="plume-blog-overlay">
         <BlogHome />
       </div>
+    </template>
+
+    <!-- 博客文章底部：注入合辑导航 -->
+    <template #doc-after v-if="isBlogPost">
+      <BlogSeriesNav />
     </template>
   </Layout>
 </template>
@@ -195,7 +190,7 @@ html[data-skin="plume"] .VPNavBarMenu {
   display: none !important;
 }
 
-/* ====== Plume 模式下隐藏 Hero 和 Features（保留 VPHome 容器） ====== */
+/* ====== Plume 模式下隐藏 Hero 和 Features ====== */
 html[data-skin="plume"] .VPHero {
   display: none !important;
 }

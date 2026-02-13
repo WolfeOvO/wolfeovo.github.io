@@ -9,7 +9,7 @@ export default createContentLoader('blog/**/*.md', {
       // 排除特殊页面（标签页、归档页等）
       .filter(page => {
         const url = page.url.toLowerCase()
-        return !url.includes('/tags') && !url.includes('/archives')
+        return !url.includes('/tags') && !url.includes('/archives') && !url.includes('/series')
       })
       .map(page => ({
         title: page.frontmatter.title || extractTitle(page.url),
@@ -17,6 +17,10 @@ export default createContentLoader('blog/**/*.md', {
         date: page.frontmatter.date || extractDateFromUrl(page.url),
         tags: page.frontmatter.tags || [],
         description: page.frontmatter.description || page.excerpt || '',
+        series: page.frontmatter.series || '',
+        series_order: page.frontmatter.series_order || 0,
+        icon: page.frontmatter.icon || '',
+        series_icon: page.frontmatter.series_icon || '',
       }))
       .sort((a, b) => {
         // 按日期降序
