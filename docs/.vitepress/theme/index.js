@@ -116,8 +116,8 @@ export default {
     app.component('sidebar', sidebar)
     app.component('dc', downloadCard)
     app.component('eb', encryptedBlock)
-    app.component('tt', ThemeToggle)
-    app.component('bh', BlogHome)
+    app.component('tt', themeToggle)
+    app.component('bh', blogHome)
   },
 
   setup() {
