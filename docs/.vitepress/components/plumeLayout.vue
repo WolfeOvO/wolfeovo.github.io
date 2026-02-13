@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, h, render as vueRender } from 'vue'
+import { ref, onMounted, computed, h, render as vueRender, watch, nextTick } from 'vue'
 import { useData, useRoute } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import BlogHome from './blogHome.vue'
@@ -22,9 +22,7 @@ const showBlogHome = computed(() => {
 const blogNavItems = [
   { text: '博客', link: '/', icon: 'blog' },
   { text: '标签', link: '/blog/tags', icon: 'tag' },
-  { text: '归档', link: '/blog/archives', icon: 'archive' },
-  { text: '储物间', link: '/储物间/储物间目录', icon: 'storage' },
-  { text: '墙外指南', link: '/墙外指南/墙外指南目录', icon: 'guide' },
+  { text: '归档', link: '/blog/archives', icon: 'archive' }
 ]
 
 function checkPlumeMode() {
@@ -33,58 +31,85 @@ function checkPlumeMode() {
   }
 }
 
-// ====== 用 DOM 直接注入切换按钮（绕过 VitePress 插槽问题）======
+// ====== 核心逻辑：根据路由自动管理模式 ======
+function enforceModeByRoute(path) {
+  if (typeof document === 'undefined') return
+
+  const isBlogSection = path.startsWith('/blog/')
+  const isHome = path === '/' || path === '/index.html'
+  const htmlEl = document.documentElement
+  const toggleHost = document.getElementById('plume-toggle-host')
+
+  // 1. 模式强制逻辑
+  if (isBlogSection) {
+    // 如果在 /blog/ 下，必须是 Plume 模式
+    if (htmlEl.getAttribute('data-skin') !== 'plume') {
+      htmlEl.setAttribute('data-skin', 'plume')
+      isPlume.value = true
+    }
+  } else if (!isHome) {
+    // 如果不在 /blog/ 且不在首页（即在文档区），必须是普通模式
+    if (htmlEl.getAttribute('data-skin') === 'plume') {
+      htmlEl.removeAttribute('data-skin')
+      isPlume.value = false
+    }
+  }
+  // 如果是首页 (isHome)，保持当前状态不变（允许用户手动切换）
+
+  // 2. 切换按钮可见性控制
+  // 为了防止在文档页误触导致样式错乱，只在首页显示切换按钮
+  if (toggleHost) {
+    toggleHost.style.display = isHome ? 'flex' : 'none'
+  }
+}
+
+// 监听路由变化
+watch(
+  () => route.path,
+  (newPath) => {
+    enforceModeByRoute(newPath)
+  },
+  { immediate: true }
+)
+
+// ====== 注入切换按钮 ======
 let toggleInjected = false
 
 function injectToggleButton() {
   if (typeof document === 'undefined' || toggleInjected) return
 
-  // 目标：在 VPNavBarAppearance（亮/暗切换）前面插入
-  const appearance = document.querySelector('.VPNavBarAppearance')
+  const appearance = document.querySelector('.VPNavBarAppearance') || 
+                     document.querySelector('.VPNavBarSocialLinks') ||
+                     document.querySelector('.VPNavBar .content-body')
+
   if (appearance && appearance.parentNode) {
     const host = document.createElement('div')
     host.id = 'plume-toggle-host'
-    host.style.display = 'flex'
+    host.style.display = 'none' // 默认隐藏，由 enforceModeByRoute 控制显示
     host.style.alignItems = 'center'
-    appearance.parentNode.insertBefore(host, appearance)
-    vueRender(h(ThemeToggle), host)
-    toggleInjected = true
-    return
-  }
+    
+    // 插入逻辑：如果是 Appearance 或 SocialLinks，插在前面；否则 append
+    if (appearance.classList.contains('content-body')) {
+      appearance.appendChild(host)
+    } else {
+      appearance.parentNode.insertBefore(host, appearance)
+    }
 
-  // 备选：如果没找到 Appearance，找 VPNavBarSocialLinks
-  const social = document.querySelector('.VPNavBarSocialLinks')
-  if (social && social.parentNode) {
-    const host = document.createElement('div')
-    host.id = 'plume-toggle-host'
-    host.style.display = 'flex'
-    host.style.alignItems = 'center'
-    social.parentNode.insertBefore(host, social)
     vueRender(h(ThemeToggle), host)
     toggleInjected = true
-    return
-  }
-
-  // 最终备选：插到 .content-body 末尾
-  const contentBody = document.querySelector('.VPNavBar .content-body')
-  if (contentBody) {
-    const host = document.createElement('div')
-    host.id = 'plume-toggle-host'
-    host.style.display = 'flex'
-    host.style.alignItems = 'center'
-    contentBody.appendChild(host)
-    vueRender(h(ThemeToggle), host)
-    toggleInjected = true
+    
+    // 注入完成后立即检查一次状态，确保按钮显隐正确
+    enforceModeByRoute(route.path)
   }
 }
 
 onMounted(() => {
   checkPlumeMode()
-
-  // 注入按钮（加小延迟确保 VitePress nav 已渲染）
+  
+  // 注入按钮
   setTimeout(injectToggleButton, 100)
 
-  // 监听 data-skin 属性变化
+  // 监听 data-skin 属性变化（处理手动切换的情况）
   const observer = new MutationObserver(() => {
     checkPlumeMode()
   })
@@ -114,8 +139,6 @@ onMounted(() => {
           <svg v-if="item.icon === 'blog'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           <svg v-else-if="item.icon === 'tag'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
           <svg v-else-if="item.icon === 'archive'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <svg v-else-if="item.icon === 'storage'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8"/><line x1="10" y1="12" x2="10" y2="12.01"/></svg>
-          <svg v-else-if="item.icon === 'guide'" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
           {{ item.text }}
         </a>
       </nav>
