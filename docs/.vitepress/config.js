@@ -62,10 +62,7 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: '储物间', link: '/储物间/储物间目录' },
-      { text: '墙外指南', link: '/墙外指南/墙外指南目录' },
-      { text: '标签', link: '/blog/tags' },
-      { text: '归档', link: '/blog/archives' },
-      { text: '合辑', link: '/blog/series' }
+      { text: '墙外指南', link: '/墙外指南/墙外指南目录' }
     ],
 
     sidebar: sidebar,

@@ -115,6 +115,7 @@ onMounted(() => {
 </template>
 
 <style>
+
 /* ====== 切换按钮（全局样式，不用 scoped） ====== */
 .wolfe-toggle-btn {
   display: inline-flex;
