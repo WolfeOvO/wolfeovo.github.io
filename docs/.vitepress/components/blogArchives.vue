@@ -268,10 +268,22 @@ function formatDate(dateStr) {
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
+    min-width: 0; 
   }
   
   .item-date {
     font-size: 12px;
+  }
+
+  .item-title {
+    /* 允许文字在移动端换行 */
+    white-space: normal; 
+    
+    /* 或者如果要单行省略号，必须强制宽度 */
+    /* width: 100%; */
+    
+    /* 稍微调整行高以适应多行显示 */
+    line-height: 1.4; 
   }
   
   .item-tags {
