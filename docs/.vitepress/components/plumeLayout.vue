@@ -272,7 +272,16 @@ html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
 
 @media (max-width: 960px) {
   html[data-skin="plume"] .plume-nav {
-    display: none;
+    display: flex; /* 确保显示 */
+    flex-wrap: wrap; /* 允许换行 */
+    gap: 8px; /* 缩小间距 */
+    margin-left: 8px;
+    justify-content: center; /* 居中显示 */
+  }
+  
+  .plume-nav-link {
+    padding: 2px 8px; /* 缩小按钮大小 */
+    font-size: 12px; /* 缩小字号 */
   }
 }
 </style>
