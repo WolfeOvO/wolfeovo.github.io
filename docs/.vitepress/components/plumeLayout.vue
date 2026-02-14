@@ -3,7 +3,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useData, useRoute } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import BlogHome from './blogHome.vue'
-import IconRenderer from './IconRenderer.vue'
+import IconRenderer from './iconRenderer.vue'
 
 const { Layout } = DefaultTheme
 const { frontmatter, theme } = useData()
