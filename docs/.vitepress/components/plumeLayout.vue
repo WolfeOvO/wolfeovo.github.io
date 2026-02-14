@@ -36,12 +36,14 @@ function enforceModeByRoute(path) {
   const htmlEl = document.documentElement
 
   if (isBlogSection) {
+    // 访问 /blog/ 下的页面 → 强制进入博客模式
     if (htmlEl.getAttribute('data-skin') !== 'plume') {
       htmlEl.setAttribute('data-skin', 'plume')
       localStorage.setItem('wolfe-theme-mode', 'plume')
       isPlume.value = true
     }
   } else if (!isHome) {
+    // 访问非首页的普通文档 → 强制退出博客模式
     if (htmlEl.getAttribute('data-skin') === 'plume') {
       htmlEl.removeAttribute('data-skin')
       localStorage.setItem('wolfe-theme-mode', 'default')
@@ -50,12 +52,15 @@ function enforceModeByRoute(path) {
   }
 }
 
+// ★ 简化后的切换逻辑：始终跳转到首页 /
 function toggleMode() {
   if (isPlume.value) {
+    // 博客模式 → 普通模式，回到首页（显示 homepage.md）
     document.documentElement.removeAttribute('data-skin')
     localStorage.setItem('wolfe-theme-mode', 'default')
     isPlume.value = false
   } else {
+    // 普通模式 → 博客模式，回到首页（显示 blogHome）
     document.documentElement.setAttribute('data-skin', 'plume')
     localStorage.setItem('wolfe-theme-mode', 'plume')
     isPlume.value = true
@@ -83,34 +88,25 @@ onMounted(() => {
 
 <template>
   <Layout>
+    <!-- 博客模式导航 -->
     <template #nav-bar-content-before>
       <nav class="plume-nav">
-        <a v-for="item in navItems" :key="item.link" :href="item.link" class="plume-nav-link" 
-           :class="{ active: item.link === '/' ? isHomePage : route.path.startsWith(item.link) }">
+        <a v-for="item in navItems" :key="item.link" :href="item.link" class="plume-nav-link" :class="{ active: item.link === '/' ? isHomePage : route.path.startsWith(item.link) }">
           <IconRenderer :icon="item.icon" class="plume-nav-icon" />
           {{ item.text }}
         </a>
       </nav>
     </template>
 
-    <template #nav-screen-content-before>
-      <nav v-if="isPlume" class="plume-mobile-nav">
-        <a v-for="item in navItems" :key="item.link" :href="item.link" class="plume-mobile-nav-link"
-           :class="{ active: item.link === '/' ? isHomePage : route.path.startsWith(item.link) }">
-          <IconRenderer :icon="item.icon" class="plume-mobile-nav-icon" />
-          {{ item.text }}
-        </a>
-      </nav>
-    </template>
-
+    <!-- ★ 切换按钮 -->
     <template #nav-bar-content-after>
-      <button class="wolfe-toggle-btn" :class="{ active: isPlume }" 
-              :title="isPlume ? '切换到文档模式' : '切换到博客模式'" @click="toggleMode">
+      <button class="wolfe-toggle-btn" :class="{ active: isPlume }" :title="isPlume ? '切换到文档模式' : '切换到博客模式'" @click="toggleMode">
         <svg v-if="!isPlume" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
         <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path><line x1="9" y1="7" x2="16" y2="7"></line><line x1="9" y1="11" x2="14" y2="11"></line></svg>
       </button>
     </template>
 
+    <!-- 博客首页 -->
     <template #home-hero-before v-if="showBlogHome">
       <div class="plume-blog-overlay">
         <BlogHome />
@@ -120,10 +116,12 @@ onMounted(() => {
 </template>
 
 <style>
-/* 1. 基础元素隐藏 */
-.VPNavBarMenu .VPLink[href*="/blog/series"] { display: none !important; }
+/* ====== 隐藏普通模式导航栏中的"合辑"链接 ====== */
+.VPNavBarMenu .VPLink[href*="/blog/series"] {
+  display: none !important;
+}
 
-/* 2. 模式切换按钮样式 */
+/* ====== 切换按钮 ====== */
 .wolfe-toggle-btn {
   display: inline-flex;
   align-items: center;
@@ -135,20 +133,52 @@ onMounted(() => {
   background: transparent;
   color: var(--vp-c-text-2);
   cursor: pointer;
-  transition: all 0.25s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  overflow: hidden;
   margin-left: 4px;
+  padding: 0;
 }
-.wolfe-toggle-btn:hover, .wolfe-toggle-btn.active { color: var(--vp-c-brand-1); background: var(--vp-c-default-soft); }
 
-/* 3. 桌面端博客导航样式 (原版布局) */
-.plume-nav { display: none; }
+.wolfe-toggle-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: var(--vp-c-default-soft);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.wolfe-toggle-btn:hover::before {
+  opacity: 1;
+}
+
+.wolfe-toggle-btn:hover {
+  color: var(--vp-c-brand-1);
+}
+
+.wolfe-toggle-btn.active {
+  color: var(--vp-c-brand-1);
+}
+
+.wolfe-toggle-btn svg {
+  position: relative;
+  z-index: 1;
+}
+
+/* ====== 博客模式导航 ====== */
+.plume-nav {
+  display: none;
+}
+
 html[data-skin="plume"] .plume-nav {
   display: flex;
   align-items: center;
   gap: 4px;
   margin-left: 16px;
 }
+
 .plume-nav-link {
   display: inline-flex;
   align-items: center;
@@ -162,59 +192,122 @@ html[data-skin="plume"] .plume-nav {
   transition: all 0.2s;
   white-space: nowrap;
 }
-.plume-nav-link:hover, .plume-nav-link.active {
-  color: var(--vp-c-brand-1);
-  background: var(--vp-c-brand-soft);
-}
-.plume-nav-link.active { font-weight: 600; }
-.plume-nav-icon { font-size: 14px; }
 
-/* 4. ★ 修复：手机端弹出菜单专用样式 */
-.plume-mobile-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 24px;
-  border-bottom: 1px solid var(--vp-c-divider);
+.plume-nav-icon {
+  font-size: 14px;
 }
-.plume-mobile-nav-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
-  font-size: 16px;
-  color: var(--vp-c-text-1);
-  text-decoration: none;
-  border-radius: 8px;
+
+.plume-nav-icon.icon-image {
+  width: 16px;
+  height: 16px;
 }
-.plume-mobile-nav-link.active {
+
+.plume-nav-link:hover {
   color: var(--vp-c-brand-1);
   background: var(--vp-c-brand-soft);
 }
 
-/* 5. 博客模式全局布局覆盖 (原版逻辑) */
-html[data-skin="plume"] .VPNavBarMenu { display: none !important; }
-html[data-skin="plume"] .VPHero,
-html[data-skin="plume"] .VPFeatures,
-html[data-skin="plume"] .VPSidebar { display: none !important; }
+.plume-nav-link.active {
+  color: var(--vp-c-brand-1);
+  font-weight: 600;
+}
 
-.plume-blog-overlay { position: relative; z-index: 1; width: 100%; padding-top: 8px; }
+/* ====== 博客模式隐藏默认导航 ====== */
+html[data-skin="plume"] .VPNavBarMenu {
+  display: none !important;
+}
 
-html[data-skin="plume"] .VPContent.is-home { background: var(--plume-bg, #f5f7fa) !important; }
-html[data-skin="plume"].dark .VPContent.is-home { background: var(--plume-bg, #161820) !important; }
+html[data-skin="plume"] .VPHero {
+  display: none !important;
+}
 
-/* 隐藏首页默认 Markdown 容器 */
-html[data-skin="plume"] .VPContent.is-home .vp-doc.container { display: none !important; }
+html[data-skin="plume"] .VPFeatures {
+  display: none !important;
+}
 
-/* 宽度调整 (原版布局) */
-html[data-skin="plume"] .VPDoc .container,
-html[data-skin="plume"] .VPDoc:not(.has-sidebar) .container,
+/* ====== 博客覆盖层 ====== */
+.plume-blog-overlay {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding-top: 8px;
+}
+
+html:not([data-skin="plume"]) .plume-blog-overlay {
+  display: none !important;
+}
+
+html[data-skin="plume"] .VPHome {
+  background: transparent !important;
+}
+
+html[data-skin="plume"] .VPContent.is-home {
+  background: var(--plume-bg, #f5f7fa) !important;
+}
+
+html[data-skin="plume"].dark .VPContent.is-home {
+  background: var(--plume-bg, #161820) !important;
+}
+
+/* 隐藏首页默认的 Markdown 内容容器 */
+html[data-skin="plume"] .VPContent.is-home .vp-doc.container {
+  display: none !important;
+}
+
+html[data-skin="plume"] .VPSidebar {
+  display: none !important;
+}
+
+html[data-skin="plume"] .VPDoc .container {
+  max-width: 100% !important;
+}
+
+html[data-skin="plume"] .VPDoc:not(.has-sidebar) .container {
+  max-width: 100% !important;
+}
+
 html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
   max-width: 100% !important;
 }
 
-/* 手机端屏蔽桌面版顶栏 */
 @media (max-width: 960px) {
-  html[data-skin="plume"] .plume-nav { display: none; }
+  /* 手机端：把导航“挪”到顶栏下方 */
+  html[data-skin="plume"] .plume-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: calc(var(--vp-nav-height) + env(safe-area-inset-top));
+    z-index: 50;
+
+    margin: 0;
+    padding: 10px 12px;
+
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    background: color-mix(in srgb, var(--vp-c-bg) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--vp-c-divider);
+  }
+
+  html[data-skin="plume"] .plume-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 让内容别被“挪下来的导航”挡住（高度很克制，够用且简洁） */
+  html[data-skin="plume"] .VPContent {
+    padding-top: 52px;
+  }
+
+  /* 手机端按钮更紧凑更精致 */
+  html[data-skin="plume"] .plume-nav-link {
+    padding: 6px 10px;
+    border-radius: 999px;
+  }
 }
 </style>
