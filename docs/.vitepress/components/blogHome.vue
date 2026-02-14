@@ -11,6 +11,7 @@ const searchQuery = ref('')
 
 const posts = computed(() => blogPosts || [])
 
+// 标签列表（带计数）
 const allTags = computed(() => {
   const map = {}
   posts.value.forEach(p => {
@@ -23,22 +24,7 @@ const allTags = computed(() => {
     .sort((a, b) => b.count - a.count)
 })
 
-// 所有合辑
-const allSeries = computed(() => {
-  const map = {}
-  posts.value.forEach(p => {
-    if (p.series && !map[p.series]) {
-      map[p.series] = {
-        name: p.series,
-        icon: p.series_icon || '',
-        count: 0
-      }
-    }
-    if (p.series) map[p.series].count++
-  })
-  return Object.values(map).sort((a, b) => b.count - a.count)
-})
-
+// 过滤后的文章
 const filteredPosts = computed(() => {
   let result = posts.value
   if (activeTag.value) {
@@ -53,13 +39,6 @@ const filteredPosts = computed(() => {
   }
   return result
 })
-
-// 默认文章图标（根据 index 循环）
-const defaultIcons = ['📄', '📝', '📰', '📋', '🗒️', '📑', '🔖', '📃']
-function getPostIcon(post, index) {
-  if (post.icon) return post.icon
-  return defaultIcons[index % defaultIcons.length]
-}
 
 function navigateTo(url) {
   router.go(url)
@@ -79,7 +58,7 @@ function formatDate(dateStr) {
 
 <template>
   <div class="plume-blog-home">
-    <!-- Profile Sidebar -->
+    <!-- Profile Card -->
     <aside class="blog-profile">
       <div class="profile-card">
         <div class="profile-avatar">
@@ -88,6 +67,7 @@ function formatDate(dateStr) {
         <h2 class="profile-name">Wolfe</h2>
         <p class="profile-desc">の储物间 · 互联网集大成者</p>
 
+        <!-- 统计数据 -->
         <div class="profile-stats">
           <a href="/blog/tags" class="stat-item stat-link">
             <span class="stat-num">{{ allTags.length }}</span>
@@ -96,10 +76,6 @@ function formatDate(dateStr) {
           <a href="/blog/archives" class="stat-item stat-link">
             <span class="stat-num">{{ posts.length }}</span>
             <span class="stat-label">文章</span>
-          </a>
-          <a href="/blog/series" class="stat-item stat-link">
-            <span class="stat-num">{{ allSeries.length }}</span>
-            <span class="stat-label">合辑</span>
           </a>
         </div>
 
@@ -112,13 +88,13 @@ function formatDate(dateStr) {
             class="social-link"
           >
             <svg v-if="link.icon === 'github'" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
             </svg>
           </a>
         </div>
       </div>
 
-      <!-- 标签云预览 -->
+      <!-- 标签云预览（有标签时才显示） -->
       <div class="tag-cloud" v-if="allTags.length > 0">
         <div class="tag-cloud-header">
           <h3 class="nav-title">🏷️ 标签</h3>
@@ -148,8 +124,8 @@ function formatDate(dateStr) {
         </h1>
         <div class="blog-search">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
           <input
             v-model="searchQuery"
@@ -163,44 +139,24 @@ function formatDate(dateStr) {
       <!-- 文章列表 -->
       <div class="post-list">
         <article
-          v-for="(post, index) in filteredPosts"
+          v-for="post in filteredPosts"
           :key="post.url"
           class="post-card"
           @click="navigateTo(post.url)"
         >
-          <!-- 文章图标 -->
-          <div class="post-icon-badge">
-            <span class="post-icon">{{ getPostIcon(post, index) }}</span>
-          </div>
-
           <div class="post-content">
-            <div class="post-header-line">
-              <h2 class="post-title">{{ post.title }}</h2>
-              <span v-if="post.series" class="post-series-badge">
-                📚 {{ post.series }}
-              </span>
-            </div>
+            <h2 class="post-title">{{ post.title }}</h2>
             <p class="post-desc" v-if="post.description">{{ post.description }}</p>
             <div class="post-meta">
               <span class="post-date" v-if="post.date">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-                {{ formatDate(post.date) }}
+                📅 {{ formatDate(post.date) }}
               </span>
               <div class="post-tags" v-if="post.tags && post.tags.length">
                 <span v-for="tag in post.tags" :key="tag" class="post-tag">{{ tag }}</span>
               </div>
             </div>
           </div>
-          <div class="post-arrow">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </div>
+          <div class="post-arrow">›</div>
         </article>
 
         <!-- Empty State -->
@@ -273,6 +229,7 @@ function formatDate(dateStr) {
   font-weight: 700;
   color: var(--vp-c-text-1);
   margin: 0 0 6px;
+  letter-spacing: -0.02em;
 }
 
 .profile-desc {
@@ -286,6 +243,8 @@ function formatDate(dateStr) {
 .profile-stats {
   display: flex;
   justify-content: center;
+  gap: 0;
+  padding: 0;
   border-top: 1px solid var(--vp-c-divider);
   border-bottom: 1px solid var(--vp-c-divider);
   margin-bottom: 16px;
@@ -304,11 +263,11 @@ function formatDate(dateStr) {
   text-decoration: none;
   cursor: pointer;
   transition: background 0.2s;
-  border-right: 1px solid var(--vp-c-divider);
+  border-radius: 0;
 }
 
-.stat-link:last-child {
-  border-right: none;
+.stat-link:first-child {
+  border-right: 1px solid var(--vp-c-divider);
 }
 
 .stat-link:hover {
@@ -350,8 +309,8 @@ function formatDate(dateStr) {
   transform: translateY(-2px);
 }
 
-/* ========== Quick Nav ========== */
-.quick-nav, .tag-cloud {
+/* ========== Tag Cloud ========== */
+.tag-cloud {
   background: var(--vp-c-bg);
   border: 1px solid var(--vp-c-divider);
   border-radius: 16px;
@@ -365,36 +324,6 @@ function formatDate(dateStr) {
   margin: 0 0 12px;
 }
 
-.quick-nav nav {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  color: var(--vp-c-text-2);
-  text-decoration: none;
-  transition: all 0.2s;
-}
-
-.nav-item:hover {
-  background: var(--vp-c-brand-soft);
-  color: var(--vp-c-brand-1);
-  padding-left: 16px;
-}
-
-.nav-icon {
-  font-size: 15px;
-  flex-shrink: 0;
-}
-
-/* ========== Tag Cloud ========== */
 .tag-cloud-header {
   display: flex;
   align-items: center;
@@ -475,6 +404,7 @@ function formatDate(dateStr) {
   display: flex;
   align-items: center;
   gap: 8px;
+  letter-spacing: -0.02em;
 }
 
 .title-icon {
@@ -536,27 +466,9 @@ function formatDate(dateStr) {
   transform: translateY(-2px);
 }
 
-/* 文章图标徽章 */
-.post-icon-badge {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  background: var(--vp-c-bg-soft);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.25s;
-}
-
-.post-card:hover .post-icon-badge {
-  background: var(--vp-c-brand-soft);
-  transform: scale(1.05);
-}
-
-.post-icon {
-  font-size: 24px;
-  line-height: 1;
+.post-card:hover .post-arrow {
+  color: var(--vp-c-brand-1);
+  transform: translateX(4px);
 }
 
 .post-content {
@@ -564,44 +476,23 @@ function formatDate(dateStr) {
   min-width: 0;
 }
 
-.post-header-line {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 4px;
-}
-
 .post-title {
   font-size: 17px;
   font-weight: 600;
   color: var(--vp-c-text-1);
-  margin: 0;
+  margin: 0 0 6px;
   line-height: 1.4;
   transition: color 0.2s;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .post-card:hover .post-title {
   color: var(--vp-c-brand-1);
 }
 
-.post-series-badge {
-  font-size: 11px;
-  color: var(--vp-c-brand-1);
-  background: var(--vp-c-brand-soft);
-  padding: 2px 8px;
-  border-radius: 8px;
-  white-space: nowrap;
-  flex-shrink: 0;
-  font-weight: 500;
-}
-
 .post-desc {
   font-size: 14px;
   color: var(--vp-c-text-2);
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -641,12 +532,8 @@ function formatDate(dateStr) {
 .post-arrow {
   color: var(--vp-c-text-3);
   flex-shrink: 0;
+  font-size: 24px;
   transition: all 0.25s;
-}
-
-.post-card:hover .post-arrow {
-  color: var(--vp-c-brand-1);
-  transform: translateX(4px);
 }
 
 /* ========== Empty State ========== */
@@ -681,26 +568,40 @@ function formatDate(dateStr) {
     gap: 12px;
   }
 
-  .profile-card { flex: 1; min-width: 250px; }
-  .quick-nav { flex: 1; min-width: 200px; }
-  .tag-cloud { width: 100%; }
+  .profile-card {
+    flex: 1;
+    min-width: 250px;
+  }
+
+  .tag-cloud {
+    width: 100%;
+  }
 
   .blog-header {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .search-input { width: 100%; }
-  .blog-search { width: 100%; }
+  .search-input {
+    width: 100%;
+  }
+
+  .blog-search {
+    width: 100%;
+  }
 }
 
 @media (max-width: 640px) {
-  .profile-card { min-width: 100%; }
-  .quick-nav { min-width: 100%; }
-  .post-card { padding: 16px; }
-  .post-title { font-size: 15px; }
-  .post-icon-badge { width: 40px; height: 40px; border-radius: 10px; }
-  .post-icon { font-size: 20px; }
-  .post-series-badge { display: none; }
+  .profile-card {
+    min-width: 100%;
+  }
+
+  .post-card {
+    padding: 16px;
+  }
+
+  .post-title {
+    font-size: 15px;
+  }
 }
 </style>

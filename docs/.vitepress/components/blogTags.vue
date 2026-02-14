@@ -24,19 +24,18 @@ const tagStats = computed(() => {
       })
     }
   })
-  // 按数量降序排列
   return Object.entries(map)
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count)
 })
 
-// 标签大小计算（根据文章数量）
+// 标签大小计算
 function tagSize(count) {
   const max = Math.max(...tagStats.value.map(t => t.count), 1)
   const min = Math.min(...tagStats.value.map(t => t.count), 1)
   if (max === min) return 14
   const ratio = (count - min) / (max - min)
-  return Math.round(13 + ratio * 11) // 13px ~ 24px
+  return Math.round(13 + ratio * 11)
 }
 
 // 选中标签后过滤的文章
@@ -47,7 +46,6 @@ const filteredPosts = computed(() => {
 
 function selectTag(tag) {
   activeTag.value = activeTag.value === tag ? '' : tag
-  // 更新 URL 参数
   if (typeof window !== 'undefined') {
     const url = new URL(window.location)
     if (activeTag.value) {
@@ -81,7 +79,7 @@ function formatDate(dateStr) {
         <h2 class="page-title">标签</h2>
       </div>
 
-      <!-- 标签云 -->
+      <!-- 标签云（有标签时才显示） -->
       <div class="tag-cloud-section" v-if="tagStats.length > 0">
         <div class="tag-cloud">
           <button
@@ -215,14 +213,8 @@ function formatDate(dateStr) {
 }
 
 @keyframes fadeSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .tagged-header {
@@ -244,9 +236,7 @@ function formatDate(dateStr) {
   color: var(--vp-c-brand-1);
 }
 
-.tag-icon {
-  font-size: 18px;
-}
+.tag-icon { font-size: 18px; }
 
 .tagged-count {
   font-size: 14px;
