@@ -58,7 +58,6 @@ function formatDate(dateStr) {
 
 <template>
   <div class="plume-blog-home">
-    <!-- Profile Card -->
     <aside class="blog-profile">
       <div class="profile-card">
         <div class="profile-avatar">
@@ -67,7 +66,6 @@ function formatDate(dateStr) {
         <h2 class="profile-name">Wolfe</h2>
         <p class="profile-desc">の储物间 · 互联网集大成者</p>
 
-        <!-- 统计数据 -->
         <div class="profile-stats">
           <a href="/blog/tags" class="stat-item stat-link">
             <span class="stat-num">{{ allTags.length }}</span>
@@ -96,10 +94,7 @@ function formatDate(dateStr) {
             </svg>
           </a>
         </div>
-      </div>
-
-    <!-- Post List -->
-    <main class="blog-main">
+      </div> </aside> <main class="blog-main">
       <div class="blog-header">
         <h1 class="blog-title">
           <span class="title-icon">📝</span>
@@ -119,7 +114,6 @@ function formatDate(dateStr) {
         </div>
       </div>
 
-      <!-- 文章列表 -->
       <div class="post-list">
         <article
           v-for="post in filteredPosts"
@@ -142,7 +136,6 @@ function formatDate(dateStr) {
           <div class="post-arrow">›</div>
         </article>
 
-        <!-- Empty State -->
         <div v-if="filteredPosts.length === 0" class="empty-state">
           <div class="empty-icon">📭</div>
           <p v-if="searchQuery || activeTag">没有找到匹配的文章</p>
