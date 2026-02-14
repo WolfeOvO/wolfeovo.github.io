@@ -3,7 +3,6 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useData, useRoute } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import BlogHome from './blogHome.vue'
-import ThemeToggle from './themeToggle.vue'
 
 const { Layout } = DefaultTheme
 const { frontmatter } = useData()
@@ -14,23 +13,14 @@ const isPlume = ref(false)
 const isHomePage = computed(() => frontmatter.value.layout === 'home')
 const showBlogHome = computed(() => isPlume.value && isHomePage.value)
 
-// 博客导航条目（用 emoji 避免 SVG 模板编译问题）
-const blogNavItems = [
-  { text: '博客', link: '/', icon: '📝' },
-  { text: '标签', link: '/blog/tags', icon: '🏷️' },
-  { text: '归档', link: '/blog/archives', icon: '📅' }
-]
-
 function checkPlumeMode() {
   if (typeof document !== 'undefined') {
     isPlume.value = document.documentElement.getAttribute('data-skin') === 'plume'
   }
 }
 
-// 根据路由自动管理模式
 function enforceModeByRoute(path) {
   if (typeof document === 'undefined') return
-
   const isBlogSection = path.startsWith('/blog/')
   const isHome = path === '/' || path === '/index.html'
   const htmlEl = document.documentElement
@@ -49,7 +39,6 @@ function enforceModeByRoute(path) {
     }
   }
 
-  // 记录最后访问的页面
   if (typeof localStorage !== 'undefined') {
     const currentIsPlume = htmlEl.getAttribute('data-skin') === 'plume'
     if (currentIsPlume) {
@@ -60,9 +49,30 @@ function enforceModeByRoute(path) {
   }
 }
 
+function toggleMode() {
+  if (isPlume.value) {
+    document.documentElement.removeAttribute('data-skin')
+    localStorage.setItem('wolfe-theme-mode', 'default')
+    isPlume.value = false
+    const lastPage = localStorage.getItem('wolfe-last-normal-page')
+    window.location.href = (lastPage && lastPage !== '/' && lastPage !== '/index.html') ? lastPage : '/'
+  } else {
+    document.documentElement.setAttribute('data-skin', 'plume')
+    localStorage.setItem('wolfe-theme-mode', 'plume')
+    isPlume.value = true
+    const lastPage = localStorage.getItem('wolfe-last-blog-page')
+    window.location.href = (lastPage && lastPage !== '/') ? lastPage : '/'
+  }
+}
+
 watch(() => route.path, (newPath) => enforceModeByRoute(newPath), { immediate: true })
 
 onMounted(() => {
+  const saved = localStorage.getItem('wolfe-theme-mode')
+  if (saved === 'plume') {
+    document.documentElement.setAttribute('data-skin', 'plume')
+    isPlume.value = true
+  }
   checkPlumeMode()
 
   const observer = new MutationObserver(() => checkPlumeMode())
@@ -75,22 +85,23 @@ onMounted(() => {
 
 <template>
   <Layout>
-    <!-- 博客模式导航（仅 plume 模式可见，由 CSS 控制） -->
+    <!-- 博客模式导航 -->
     <template #nav-bar-content-before>
       <nav class="plume-nav">
-        <a
-          v-for="item in blogNavItems"
-          :key="item.link"
-          :href="item.link"
-          class="plume-nav-link"
-          :class="{ active: item.link === '/' ? isHomePage : route.path.startsWith(item.link) }"
-        >{{ item.icon }} {{ item.text }}</a>
+        <a v-for="item in [
+          { text: '博客', link: '/', icon: '📝' },
+          { text: '标签', link: '/blog/tags', icon: '🏷️' },
+          { text: '归档', link: '/blog/archives', icon: '📅' }
+        ]" :key="item.link" :href="item.link" class="plume-nav-link" :class="{ active: item.link === '/' ? isHomePage : route.path.startsWith(item.link) }">{{ item.icon }} {{ item.text }}</a>
       </nav>
     </template>
 
-    <!-- 切换按钮（始终可见，通过插槽渲染在 VitePress 上下文中） -->
+    <!-- ★ 切换按钮（直接内联，不用单独组件） -->
     <template #nav-bar-content-after>
-      <ThemeToggle />
+      <button class="wolfe-toggle-btn" :class="{ active: isPlume }" :title="isPlume ? '切换到文档模式' : '切换到博客模式'" @click="toggleMode">
+        <svg v-if="!isPlume" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+        <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path><line x1="9" y1="7" x2="16" y2="7"></line><line x1="9" y1="11" x2="14" y2="11"></line></svg>
+      </button>
     </template>
 
     <!-- 博客首页 -->
@@ -103,6 +114,52 @@ onMounted(() => {
 </template>
 
 <style>
+/* ====== 切换按钮（全局样式，不用 scoped） ====== */
+.wolfe-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--vp-c-text-2);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  margin-left: 4px;
+  padding: 0;
+}
+
+.wolfe-toggle-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: var(--vp-c-default-soft);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.wolfe-toggle-btn:hover::before {
+  opacity: 1;
+}
+
+.wolfe-toggle-btn:hover {
+  color: var(--vp-c-brand-1);
+}
+
+.wolfe-toggle-btn.active {
+  color: var(--vp-c-brand-1);
+}
+
+.wolfe-toggle-btn svg {
+  position: relative;
+  z-index: 1;
+}
+
 /* ====== 博客模式导航 ====== */
 .plume-nav {
   display: none;
@@ -139,12 +196,11 @@ html[data-skin="plume"] .plume-nav {
   font-weight: 600;
 }
 
-/* ====== 博客模式：隐藏默认导航菜单 ====== */
+/* ====== 博客模式隐藏默认导航 ====== */
 html[data-skin="plume"] .VPNavBarMenu {
   display: none !important;
 }
 
-/* ====== Plume 模式下隐藏 Hero 和 Features ====== */
 html[data-skin="plume"] .VPHero {
   display: none !important;
 }
@@ -153,7 +209,7 @@ html[data-skin="plume"] .VPFeatures {
   display: none !important;
 }
 
-/* ====== Plume 博客覆盖层 ====== */
+/* ====== 博客覆盖层 ====== */
 .plume-blog-overlay {
   position: relative;
   z-index: 1;
@@ -165,7 +221,6 @@ html:not([data-skin="plume"]) .plume-blog-overlay {
   display: none !important;
 }
 
-/* VPHome 背景 */
 html[data-skin="plume"] .VPHome {
   background: transparent !important;
 }
@@ -178,12 +233,10 @@ html[data-skin="plume"].dark .VPContent.is-home {
   background: var(--plume-bg, #161820) !important;
 }
 
-/* ====== 博客模式：隐藏侧边栏 ====== */
 html[data-skin="plume"] .VPSidebar {
   display: none !important;
 }
 
-/* 博客模式下文档页面全宽 */
 html[data-skin="plume"] .VPDoc .container {
   max-width: 100% !important;
 }
@@ -196,7 +249,6 @@ html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
   max-width: 100% !important;
 }
 
-/* ====== 移动端适配 ====== */
 @media (max-width: 960px) {
   html[data-skin="plume"] .plume-nav {
     display: none;

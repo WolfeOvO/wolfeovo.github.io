@@ -13,7 +13,6 @@ import downloadCard from '../components/downloadCard.vue'
 import copyMessage from '../components/copyMessage.vue'
 import encryptedBlock from '../components/encryptedBlock.vue'
 import plumeLayout from '../components/plumeLayout.vue'
-import themeToggle from '../components/themeToggle.vue'
 import blogHome from '../components/blogHome.vue'
 import blogTags from '../components/blogTags.vue'
 import blogArchives from '../components/blogArchives.vue'
@@ -120,7 +119,6 @@ export default {
     app.component('sidebar', sidebar)
     app.component('dc', downloadCard)
     app.component('eb', encryptedBlock)
-    app.component('tt', themeToggle)
     app.component('bh', blogHome)
     app.component('bt', blogTags)
     app.component('ba', blogArchives)
