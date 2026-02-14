@@ -67,17 +67,38 @@ onMounted(() => {
     attributeFilter: ['data-skin']
   })
 
-  // DOM 注入切换按钮
-  const navbar = document.querySelector('.VPNavBarExtra')
-    || document.querySelector('.VPNavBarAppearance')
-    || document.querySelector('.VPNavBarSocialLinks')
-  if (navbar && navbar.parentElement) {
-    const host = document.createElement('div')
-    host.className = 'theme-toggle-host'
-    host.style.display = 'flex'
-    host.style.alignItems = 'center'
-    navbar.parentElement.insertBefore(host, navbar)
-    vueRender(h(ThemeToggle), host)
+  // DOM 注入切换按钮（可靠版：反复尝试多个选择器）
+  function tryInjectToggle() {
+    if (document.querySelector('.theme-toggle-host')) return true
+    const selectors = [
+      '.VPSocialLinks',
+      '.VPNavBarSocialLinks',
+      '.VPNavBarExtra',
+      '.VPNavBarAppearance',
+      '[class*="socialLinks"]',
+      '[class*="appearance"]',
+      '[class*="extra"]'
+    ]
+    for (const sel of selectors) {
+      const el = document.querySelector(sel)
+      if (el && el.parentElement) {
+        const host = document.createElement('div')
+        host.className = 'theme-toggle-host'
+        host.style.display = 'flex'
+        host.style.alignItems = 'center'
+        el.parentElement.insertBefore(host, el)
+        vueRender(h(ThemeToggle), host)
+        return true
+      }
+    }
+    return false
+  }
+
+  if (!tryInjectToggle()) {
+    let attempts = 0
+    const timer = setInterval(() => {
+      if (tryInjectToggle() || ++attempts > 20) clearInterval(timer)
+    }, 200)
   }
 })
 </script>
