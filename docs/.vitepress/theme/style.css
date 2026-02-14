@@ -2306,32 +2306,6 @@
   }
 }
 
-/* Spoiler 高斯模糊样式 */
-.spoiler {
-  display: inline;
-  padding: 0 2px;
-  border-radius: 4px;
-  cursor: pointer;
-  user-select: none;
-  filter: blur(5px);
-  -webkit-filter: blur(5px);
-  transition: filter 0.3s ease, -webkit-filter 0.3s ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .spoiler:hover {
-    filter: blur(0);
-    -webkit-filter: blur(0);
-    user-select: auto;
-  }
-}
-
-.spoiler.revealed {
-  filter: blur(0);
-  -webkit-filter: blur(0);
-  user-select: auto;
-}
-
 .vp-doc div[class*='language-'] > button.copy::before {
   display: none !important;
   content: none !important;
@@ -2418,4 +2392,49 @@ html:not([data-skin="plume"]) .VPNavScreenMenuLink[href="/blog/archives.html"] {
 /* 博客模式移动端菜单中：将"首页"重命名为"博客"的视觉效果 */
 html[data-skin="plume"] .VPNavScreenMenuLink[href="/"] {
   /* 保持显示，在博客模式下"首页"即为博客首页 */
+}
+
+/* 基础 Spoiler 样式 */
+.spoiler {
+  border-radius: 4px;
+  cursor: pointer;
+  
+  /* 核心模糊效果 */
+  filter: blur(6px); /* 稍微加大一点模糊度以防万一 */
+  -webkit-filter: blur(6px);
+  transition: filter 0.3s ease, -webkit-filter 0.3s ease;
+  
+  /* 隐藏时禁止选中文字，防止复制剧透 */
+  user-select: none; 
+}
+
+/* 行内模式 (span) */
+span.spoiler {
+  display: inline;
+  padding: 0 4px;
+  background-color: rgba(100, 100, 100, 0.2); /* 可选：给行内文字一点淡淡的背景提示位置 */
+}
+
+/* 块级模式 (div) */
+div.spoiler.spoiler-block {
+  display: block;
+  padding: 10px;
+  margin: 10px 0;
+  background-color: rgba(100, 100, 100, 0.1); /* 可选：给块级区域一点背景 */
+}
+
+/* 交互 1: 电脑端悬浮显示 (仅在支持 hover 的设备生效) */
+@media (hover: hover) and (pointer: fine) {
+  .spoiler:hover {
+    filter: blur(0);
+    -webkit-filter: blur(0);
+    user-select: text; /* 悬浮时允许复制 */
+  }
+}
+
+/* 交互 2: 移动端点击后显示 (通过 JS 添加 .revealed 类) */
+.spoiler.revealed {
+  filter: blur(0);
+  -webkit-filter: blur(0);
+  user-select: text; /* 显示时允许复制 */
 }
