@@ -268,6 +268,16 @@ const stableRelease = ref(null)
 const prereleaseRelease = ref(null)
 const allReleases = ref([])
 
+// 监听 props 变化，确保外部改变 prerelease 时组件更新
+watch(() => props.prerelease, (val) => {
+    // 只有当存在对应的 release 时才切换，避免无效切换
+    if (val && prereleaseRelease.value) {
+        isPrerelease.value = true
+    } else if (!val && stableRelease.value) {
+        isPrerelease.value = false
+    }
+})
+
 // 当前活动的 release（根据切换状态）
 const release = computed(() => {
     if (props.showBothVersions) {
@@ -387,6 +397,7 @@ const fetchRelease = async () => {
         stableRelease.value = data.find(r => !r.prerelease && !r.draft) || null
         prereleaseRelease.value = data.find(r => r.prerelease && !r.draft) || null
 
+        // 如果没有明确的 pre-release 标记，尝试根据 tag 名称查找
         if (!prereleaseRelease.value) {
             const possiblePrerelease = data.find(r => 
                 !r.draft && /alpha|beta|rc|preview|dev|nightly|canary/i.test(r.tag_name)
@@ -396,11 +407,13 @@ const fetchRelease = async () => {
             }
         }
 
+        // 初始化版本状态：优先尊崇 props.prerelease
         if (props.prerelease && prereleaseRelease.value) {
             isPrerelease.value = true
         } else if (!props.prerelease && stableRelease.value) {
             isPrerelease.value = false
         } else {
+            // 如果上述条件都不满足（例如 pre=true 但没有 pre 版本），则智能回退
             isPrerelease.value = !stableRelease.value && !!prereleaseRelease.value
         }
 
@@ -494,8 +507,18 @@ const handleButtonClick = (e) => {
     e.stopPropagation()
     if (loading.value || error.value || matchedAssets.value.length === 0) return
 
-    modalIsPrerelease.value = isPrerelease.value
-    
+    // 修复的核心逻辑：
+    // 根据当前显示的 release 对象来决定弹窗的类型，而不仅仅依赖 isPrerelease 状态
+    // 这样能确保如果视图上显示的是 pre-release，弹窗打开的也是 pre-release
+    if (release.value === prereleaseRelease.value) {
+        modalIsPrerelease.value = true;
+    } else if (release.value === stableRelease.value) {
+        modalIsPrerelease.value = false;
+    } else {
+        // 回退策略
+        modalIsPrerelease.value = isPrerelease.value;
+    }
+
     if (hasMultipleFiles.value) {
         showFileList.value = true
         showModal.value = true
@@ -785,7 +808,7 @@ onMounted(() => {
             </button>
         </template>
 
-        <!-- 弹窗 (保持原逻辑) -->
+        <!-- 弹窗 -->
         <Teleport to="body">
             <Transition name="modal">
                 <div v-if="showModal" class="gh-modal-overlay" @click.self="closeModal">

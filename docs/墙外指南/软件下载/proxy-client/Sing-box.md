@@ -17,6 +17,8 @@ The universal proxy platform.<br>
 
 ## 下载
 
+<!-- tabs:start -->
+
 === "正式版" @1
 
 | 系统 | 下载 |
@@ -36,6 +38,8 @@ The universal proxy platform.<br>
 | Android | **SFA APK**<br><gtl icon="android" owner="SagerNet" repo="sing-box" :prerelease="true" mode="button" label="Universal" arch="Universal" arch-color="#228242" match="SFA-universal.apk" /><br><gtl icon="android" owner="SagerNet" repo="sing-box" :prerelease="true" mode="button" label="ARM64-v8a" arch="ARMv8" arch-color="#4ebb5c" match="SFA-arm64-v8a.apk" /><br><gtl icon="android" owner="SagerNet" repo="sing-box" :prerelease="true" mode="button" label="Armeabi-v7a" arch="ARMv7" arch-color="#8cdb96" match="SFA-armeabi-v7a.apk" /> |
 | MacOS | **Darwin**<br><gtl icon="apple" owner="SagerNet" repo="sing-box" :prerelease="true" mode="button" label="Intel (AMD64)" arch="x64" arch-color="#0e0e0e" match="darwin-amd64.tar.gz" /><br><gtl icon="apple" owner="SagerNet" repo="sing-box" :prerelease="true" mode="button" label="Silicon (ARM64)" arch="arm64" arch-color="#10a8d9" match="darwin-arm64.tar.gz" /> |
 | Linux<br>(Common) | <gtl icon="linux" owner="SagerNet" repo="sing-box" :prerelease="true" mode="button" label="AMD64 Tar" arch="x64" arch-color="#e04726" match="linux-amd64.tar.gz" /><br><gtl icon="linux" owner="SagerNet" repo="sing-box" :prerelease="true" mode="button" label="ARM64 Tar" arch="arm64" arch-color="#e04726" match="linux-arm64.tar.gz" /><br><gtl icon="linux" owner="SagerNet" repo="sing-box" :prerelease="true" mode="button" label="RISC-V 64" arch="riscv" arch-color="#a85932" match="linux-riscv64.tar.gz" /><br><gtl icon="linux" owner="SagerNet" repo="sing-box" :prerelease="true" mode="button" label="Loong64" arch="loong" arch-color="#a83259" match="linux-loong64.tar.gz" /> |
+
+<!-- tabs:end -->
 
 ## 发布面板
 
