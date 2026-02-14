@@ -88,6 +88,7 @@ onMounted(() => {
     <!-- 博客模式导航 -->
     <template #nav-bar-content-before>
       <nav class="plume-nav">
+        <!-- 修正：恢复了“合辑”按钮，确保博客模式下显示 -->
         <a v-for="item in [
           { text: '博客', link: '/', icon: '📝' },
           { text: '标签', link: '/blog/tags', icon: '🏷️' },
@@ -115,6 +116,11 @@ onMounted(() => {
 </template>
 
 <style>
+/* ====== 修正：隐藏普通模式（原生导航栏）下的“合辑”链接 ====== */
+/* 这将匹配原生导航栏中链接包含 /blog/series 的元素并隐藏 */
+.VPNavBarMenu .VPLink[href*="/blog/series"] {
+  display: none !important;
+}
 
 /* ====== 切换按钮（全局样式，不用 scoped） ====== */
 .wolfe-toggle-btn {
@@ -233,6 +239,11 @@ html[data-skin="plume"] .VPContent.is-home {
 
 html[data-skin="plume"].dark .VPContent.is-home {
   background: var(--plume-bg, #161820) !important;
+}
+
+/* 隐藏首页默认的 Markdown 内容容器 */
+html[data-skin="plume"] .VPContent.is-home .vp-doc.container {
+  display: none !important;
 }
 
 html[data-skin="plume"] .VPSidebar {
