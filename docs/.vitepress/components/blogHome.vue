@@ -77,6 +77,10 @@ function formatDate(dateStr) {
             <span class="stat-num">{{ posts.length }}</span>
             <span class="stat-label">文章</span>
           </a>
+          <a href="/blog/series" class="stat-item stat-link">
+            <span class="stat-num">{{ posts.length }}</span>
+            <span class="stat-label">合辑</span>
+          </a>
         </div>
 
         <div class="profile-links">
@@ -93,27 +97,6 @@ function formatDate(dateStr) {
           </a>
         </div>
       </div>
-
-      <!-- 标签云预览（有标签时才显示） -->
-      <div class="tag-cloud" v-if="allTags.length > 0">
-        <div class="tag-cloud-header">
-          <h3 class="nav-title">🏷️ 标签</h3>
-          <a href="/blog/tags" class="see-all">查看全部 →</a>
-        </div>
-        <div class="tags-wrap">
-          <button
-            v-for="tag in allTags.slice(0, 10)"
-            :key="tag.name"
-            class="tag-btn"
-            :class="{ active: activeTag === tag.name }"
-            @click="toggleTag(tag.name)"
-          >
-            {{ tag.name }}
-            <span class="tag-count">{{ tag.count }}</span>
-          </button>
-        </div>
-      </div>
-    </aside>
 
     <!-- Post List -->
     <main class="blog-main">

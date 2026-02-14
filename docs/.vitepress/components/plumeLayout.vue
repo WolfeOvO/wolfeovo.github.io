@@ -91,7 +91,8 @@ onMounted(() => {
         <a v-for="item in [
           { text: '博客', link: '/', icon: '📝' },
           { text: '标签', link: '/blog/tags', icon: '🏷️' },
-          { text: '归档', link: '/blog/archives', icon: '📅' }
+          { text: '归档', link: '/blog/archives', icon: '📅' },
+          { text: '合辑', link: '/blog/series', icon: '📚' }
         ]" :key="item.link" :href="item.link" class="plume-nav-link" :class="{ active: item.link === '/' ? isHomePage : route.path.startsWith(item.link) }">{{ item.icon }} {{ item.text }}</a>
       </nav>
     </template>
