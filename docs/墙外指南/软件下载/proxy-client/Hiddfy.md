@@ -30,29 +30,25 @@
 
 ## 下载
 
-::: warning
-下面还没完善不要看！！！
-:::
-
 <!-- tabs:start -->
 
 === "正式版" @1
 
 | 系统 | 下载 |
 | :--: | :--: |
-| Windows | <gtl icon="windows" owner="hiddify" repo="hiddfy-app" mode="button" label="Setup" arch="x64" arch-color="#367e98" match="windows-amd64-setup.exe" /><br><gtl icon="windows" owner="hiddify" repo="hiddfy-app" mode="button" label="Portable" arch="x86" arch-color="#6bb3cb" match="windows-amd64.zip" /> |
-| Android | <gtl icon="android" owner="hiddify" repo="hiddfy-app" mode="button" label="APK" arch="ARMv8" arch-color="#228242" match="android-arm64-v8a.apk" /><br><gtl icon="android" owner="hiddify" repo="hiddfy-app" mode="button" label="APK" arch="ARMv7" arch-color="#4ebb5c" match="android-armeabi-v7a.apk" /><br><gtl icon="android" owner="hiddify" repo="hiddfy-app" mode="button" label="APK" arch="x86_64" arch-color="#98e68c" match="android-x86_64.apk" /> |
-| MacOS | <gtl icon="apple" owner="hiddify" repo="hiddfy-app" mode="button" label="DMG" arch="Apple Silicon" arch-color="#0e0e0e" match="macos-arm64.dmg" /><br><gtl icon="apple" owner="hiddify" repo="hiddfy-app" mode="button" label="DMG" arch="Inter x64" arch-color="#10a8d9" match="macos-amd64.dmg" /> |
-| Linux | <gtl icon="linux" owner="hiddify" repo="hiddfy-app" mode="button" label="AppImage" arch="x64" arch-color="#e04726" match="linux-amd64.AppImage" /><br><gtl icon="debian" owner="hiddify" repo="hiddfy-app" mode="button" label="DebPackage" arch="ARMv8" arch-color="#f4996b" match="linux-arm64.deb" /><br><gtl icon="fedora" owner="hiddify" repo="hiddfy-app" mode="button" label="RPMPackage" arch="x64" arch-color="#dda62e" match="linux-amd64.rpm" /> |
+| Windows | <gtl icon="windows" owner="hiddify" repo="hiddify-app" mode="button" label="Setup" arch="x64" arch-color="#367e98" match="Windows-Setup-x64.exe" /><br><gtl icon="windows" owner="hiddify" repo="hiddify-app" mode="button" label="Portable" arch="x64" arch-color="#6bb3cb" match="Windows-Portable-x64.zip" /> |
+| Android | <gtl icon="android" owner="hiddify" repo="hiddify-app" mode="button" label="Universal" arch="All" arch-color="#228242" match="Android-universal.apk" /><br><gtl icon="android" owner="hiddify" repo="hiddify-app" mode="button" label="APK" arch="ARMv8" arch-color="#4ebb5c" match="Android-arm64-v8a.apk" /><br><gtl icon="android" owner="hiddify" repo="hiddify-app" mode="button" label="APK" arch="ARMv7" arch-color="#98e68c" match="Android-armeabi-v7a.apk" /> |
+| MacOS | <gtl icon="apple" owner="hiddify" repo="hiddify-app" mode="button" label="DMG" arch="Apple Silicon" arch-color="#0e0e0e" match="MacOS-arm64.dmg" /><br><gtl icon="apple" owner="hiddify" repo="hiddify-app" mode="button" label="DMG" arch="Intel x64" arch-color="#10a8d9" match="MacOS-x64.dmg" /> |
+| Linux | <gtl icon="linux" owner="hiddify" repo="hiddify-app" mode="button" label="AppImage" arch="x64" arch-color="#e04726" match="Linux-x64.AppImage" /><br><gtl icon="debian" owner="hiddify" repo="hiddify-app" mode="button" label="DebPackage" arch="ARMv8" arch-color="#f4996b" match="Linux-arm64.deb" /><br><gtl icon="fedora" owner="hiddify" repo="hiddify-app" mode="button" label="RPMPackage" arch="x64" arch-color="#dda62e" match="Linux-x64.rpm" /> |
 
 === "测试版" @1
 
 | 系统 | 下载 |
 | :--: | :--: |
-| Windows | <gtl icon="windows" owner="hiddify" repo="hiddfy-app" :prerelease="true" mode="button" label="Setup" arch="x64" arch-color="#367e98" match="windows-amd64-setup.exe" /><br><gtl icon="windows" owner="hiddify" repo="hiddfy-app" :prerelease="true" mode="button" label="Portable" arch="x86" arch-color="#6bb3cb" match="windows-amd64.zip" /> |
-| Android | <gtl icon="android" owner="hiddify" repo="hiddfy-app" :prerelease="true" mode="button" label="APK" arch="ARMv8" arch-color="#228242" match="android-arm64-v8a.apk" /><br><gtl icon="android" owner="hiddify" repo="hiddfy-app" :prerelease="true" mode="button" label="APK" arch="ARMv7" arch-color="#4ebb5c" match="android-armeabi-v7a.apk" /><br><gtl icon="android" owner="hiddify" repo="hiddfy-app" :prerelease="true" mode="button" label="APK" arch="x86_64" arch-color="#98e68c" match="android-x86_64.apk" /> |
-| MacOS | <gtl icon="apple" owner="hiddify" repo="hiddfy-app" :prerelease="true" mode="button" label="DMG" arch="Apple Silicon" arch-color="#0e0e0e" match="macos-arm64.dmg" /><br><gtl icon="apple" owner="hiddify" repo="hiddfy-app" :prerelease="true" mode="button" label="DMG" arch="Inter x64" arch-color="#10a8d9" match="macos-amd64.dmg" /> |
-| Linux | <gtl icon="linux" owner="hiddify" repo="hiddfy-app" :prerelease="true" mode="button" label="AppImage" arch="x64" arch-color="#e04726" match="linux-amd64.AppImage" /><br><gtl icon="debian" owner="hiddify" repo="hiddfy-app" :prerelease="true" mode="button" label="DebPackage" arch="ARMv8" arch-color="#f4996b" match="linux-arm64.deb" /><br><gtl icon="fedora" owner="hiddify" repo="hiddfy-app" :prerelease="true" mode="button" label="RPMPackage" arch="x64" arch-color="#dda62e" match="linux-amd64.rpm" /> |
+| Windows | <gtl icon="windows" owner="hiddify" repo="hiddify-app" :prerelease="true" mode="button" label="Setup" arch="x64" arch-color="#367e98" match="Windows-Setup-x64.exe" /><br><gtl icon="windows" owner="hiddify" repo="hiddify-app" :prerelease="true" mode="button" label="Portable" arch="x64" arch-color="#6bb3cb" match="Windows-Portable-x64.zip" /> |
+| Android | <gtl icon="android" owner="hiddify" repo="hiddify-app" :prerelease="true" mode="button" label="Universal" arch="All" arch-color="#228242" match="Android-universal.apk" /><br><gtl icon="android" owner="hiddify" repo="hiddify-app" :prerelease="true" mode="button" label="APK" arch="ARMv8" arch-color="#4ebb5c" match="Android-arm64-v8a.apk" /><br><gtl icon="android" owner="hiddify" repo="hiddify-app" :prerelease="true" mode="button" label="APK" arch="ARMv7" arch-color="#98e68c" match="Android-armeabi-v7a.apk" /> |
+| MacOS | <gtl icon="apple" owner="hiddify" repo="hiddify-app" :prerelease="true" mode="button" label="DMG" arch="Apple Silicon" arch-color="#0e0e0e" match="MacOS-arm64.dmg" /><br><gtl icon="apple" owner="hiddify" repo="hiddify-app" :prerelease="true" mode="button" label="DMG" arch="Intel x64" arch-color="#10a8d9" match="MacOS-x64.dmg" /> |
+| Linux | <gtl icon="linux" owner="hiddify" repo="hiddify-app" :prerelease="true" mode="button" label="AppImage" arch="x64" arch-color="#e04726" match="Linux-x64.AppImage" /><br><gtl icon="debian" owner="hiddify" repo="hiddify-app" :prerelease="true" mode="button" label="DebPackage" arch="ARMv8" arch-color="#f4996b" match="Linux-arm64.deb" /><br><gtl icon="fedora" owner="hiddify" repo="hiddify-app" :prerelease="true" mode="button" label="RPMPackage" arch="x64" arch-color="#dda62e" match="Linux-x64.rpm" /> |
 
 <!-- tabs:end -->
 
@@ -60,5 +56,5 @@
 
 | 发行版本 | 下载次数 | 下载地址 |
 | :---: | :---: | :---: |
-| Github Release 正式版 | <gtl owner="hiddify" repo="hiddfy-app" mode="badge" :showVersion="false" /> | <gtl owner="hiddify" repo="hiddfy-app" mode="badge" :showDownloads="false" /> |
-| Github Release 测试版 | <gtl owner="hiddify" repo="hiddfy-app" mode="badge" :showVersion="false" prerelease /> | <gtl owner="hiddify" repo="hiddfy-app" mode="badge" :showDownloads="false" prerelease /> |
+| Github Release 正式版 | <gtl owner="hiddify" repo="hiddify-app" mode="badge" :showVersion="false" /> | <gtl owner="hiddify" repo="hiddify-app" mode="badge" :showDownloads="false" /> |
+| Github Release 测试版 | <gtl owner="hiddify" repo="hiddify-app" mode="badge" :showVersion="false" prerelease /> | <gtl owner="hiddify" repo="hiddify-app" mode="badge" :showDownloads="false" prerelease /> |
