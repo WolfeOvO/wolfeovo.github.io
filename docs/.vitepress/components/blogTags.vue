@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRouter, useData } from 'vitepress'
 import { data as blogPosts } from '../blog.data.js'
-import IconRenderer from './IconRenderer.vue'
+import IconRenderer from './iconRenderer.vue'
 
 const router = useRouter()
 const { theme } = useData()
