@@ -3,15 +3,25 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useData, useRoute } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import BlogHome from './blogHome.vue'
+import IconRenderer from './IconRenderer.vue'
 
 const { Layout } = DefaultTheme
-const { frontmatter } = useData()
+const { frontmatter, theme } = useData()
 const route = useRoute()
 
 const isPlume = ref(false)
 
 const isHomePage = computed(() => frontmatter.value.layout === 'home')
 const showBlogHome = computed(() => isPlume.value && isHomePage.value)
+
+// 博客导航图标配置
+const blogIcons = computed(() => theme.value.blogIcons || {})
+const navItems = computed(() => [
+  { text: '博客', link: '/', icon: blogIcons.value.home || '📝' },
+  { text: '标签', link: '/blog/tags', icon: blogIcons.value.tags || '🏷️' },
+  { text: '归档', link: '/blog/archives', icon: blogIcons.value.archives || '📅' },
+  { text: '合辑', link: '/blog/series', icon: blogIcons.value.series || '📚' },
+])
 
 function checkPlumeMode() {
   if (typeof document !== 'undefined') {
@@ -26,43 +36,36 @@ function enforceModeByRoute(path) {
   const htmlEl = document.documentElement
 
   if (isBlogSection) {
+    // 访问 /blog/ 下的页面 → 强制进入博客模式
     if (htmlEl.getAttribute('data-skin') !== 'plume') {
       htmlEl.setAttribute('data-skin', 'plume')
       localStorage.setItem('wolfe-theme-mode', 'plume')
       isPlume.value = true
     }
   } else if (!isHome) {
+    // 访问非首页的普通文档 → 强制退出博客模式
     if (htmlEl.getAttribute('data-skin') === 'plume') {
       htmlEl.removeAttribute('data-skin')
       localStorage.setItem('wolfe-theme-mode', 'default')
       isPlume.value = false
     }
   }
-
-  if (typeof localStorage !== 'undefined') {
-    const currentIsPlume = htmlEl.getAttribute('data-skin') === 'plume'
-    if (currentIsPlume) {
-      localStorage.setItem('wolfe-last-blog-page', path)
-    } else {
-      localStorage.setItem('wolfe-last-normal-page', path)
-    }
-  }
 }
 
+// ★ 简化后的切换逻辑：始终跳转到首页 /
 function toggleMode() {
   if (isPlume.value) {
+    // 博客模式 → 普通模式，回到首页（显示 homepage.md）
     document.documentElement.removeAttribute('data-skin')
     localStorage.setItem('wolfe-theme-mode', 'default')
     isPlume.value = false
-    const lastPage = localStorage.getItem('wolfe-last-normal-page')
-    window.location.href = (lastPage && lastPage !== '/' && lastPage !== '/index.html') ? lastPage : '/'
   } else {
+    // 普通模式 → 博客模式，回到首页（显示 blogHome）
     document.documentElement.setAttribute('data-skin', 'plume')
     localStorage.setItem('wolfe-theme-mode', 'plume')
     isPlume.value = true
-    const lastPage = localStorage.getItem('wolfe-last-blog-page')
-    window.location.href = (lastPage && lastPage !== '/') ? lastPage : '/'
   }
+  window.location.href = '/'
 }
 
 watch(() => route.path, (newPath) => enforceModeByRoute(newPath), { immediate: true })
@@ -88,17 +91,14 @@ onMounted(() => {
     <!-- 博客模式导航 -->
     <template #nav-bar-content-before>
       <nav class="plume-nav">
-        <!-- 修正：恢复了“合辑”按钮，确保博客模式下显示 -->
-        <a v-for="item in [
-          { text: '博客', link: '/', icon: '📝' },
-          { text: '标签', link: '/blog/tags', icon: '🏷️' },
-          { text: '归档', link: '/blog/archives', icon: '📅' },
-          { text: '合辑', link: '/blog/series', icon: '📚' }
-        ]" :key="item.link" :href="item.link" class="plume-nav-link" :class="{ active: item.link === '/' ? isHomePage : route.path.startsWith(item.link) }">{{ item.icon }} {{ item.text }}</a>
+        <a v-for="item in navItems" :key="item.link" :href="item.link" class="plume-nav-link" :class="{ active: item.link === '/' ? isHomePage : route.path.startsWith(item.link) }">
+          <IconRenderer :icon="item.icon" class="plume-nav-icon" />
+          {{ item.text }}
+        </a>
       </nav>
     </template>
 
-    <!-- ★ 切换按钮（直接内联，不用单独组件） -->
+    <!-- ★ 切换按钮 -->
     <template #nav-bar-content-after>
       <button class="wolfe-toggle-btn" :class="{ active: isPlume }" :title="isPlume ? '切换到文档模式' : '切换到博客模式'" @click="toggleMode">
         <svg v-if="!isPlume" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
@@ -116,13 +116,12 @@ onMounted(() => {
 </template>
 
 <style>
-/* ====== 修正：隐藏普通模式（原生导航栏）下的“合辑”链接 ====== */
-/* 这将匹配原生导航栏中链接包含 /blog/series 的元素并隐藏 */
+/* ====== 隐藏普通模式导航栏中的"合辑"链接 ====== */
 .VPNavBarMenu .VPLink[href*="/blog/series"] {
   display: none !important;
 }
 
-/* ====== 切换按钮（全局样式，不用 scoped） ====== */
+/* ====== 切换按钮 ====== */
 .wolfe-toggle-btn {
   display: inline-flex;
   align-items: center;
@@ -192,6 +191,15 @@ html[data-skin="plume"] .plume-nav {
   border-radius: 8px;
   transition: all 0.2s;
   white-space: nowrap;
+}
+
+.plume-nav-icon {
+  font-size: 14px;
+}
+
+.plume-nav-icon.icon-image {
+  width: 16px;
+  height: 16px;
 }
 
 .plume-nav-link:hover {

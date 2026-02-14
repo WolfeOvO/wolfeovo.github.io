@@ -1,10 +1,16 @@
 <script setup>
 import { computed } from 'vue'
-import { useRouter } from 'vitepress'
+import { useRouter, useData } from 'vitepress'
 import { data as blogPosts } from '../blog.data.js'
+import IconRenderer from './IconRenderer.vue'
 
 const router = useRouter()
+const { theme } = useData()
 const posts = computed(() => blogPosts || [])
+
+// 博客图标配置
+const blogIcons = computed(() => theme.value.blogIcons || {})
+const archivesIcon = computed(() => blogIcons.value.archives || '📅')
 
 // 按年份分组逻辑
 const yearGroups = computed(() => {
@@ -50,7 +56,10 @@ function formatDate(dateStr) {
 <template>
   <div class="archives-container">
     <div class="archives-header">
-      <h1 class="title">文章归档</h1>
+      <h1 class="title">
+        <IconRenderer :icon="archivesIcon" size="32px" fallback="📅" />
+        文章归档
+      </h1>
       <p class="subtitle">目前共计 {{ posts.length }} 篇文章</p>
     </div>
 
@@ -75,6 +84,7 @@ function formatDate(dateStr) {
             
             <div class="item-content">
               <span class="item-date">{{ formatDate(post.date) }}</span>
+              <IconRenderer v-if="post.icon" :icon="post.icon" size="18px" class="item-icon" />
               <h3 class="item-title">{{ post.title }}</h3>
               <div v-if="post.tags && post.tags.length" class="item-tags">
                 <span v-for="tag in post.tags.slice(0, 2)" :key="tag" class="mini-tag">
@@ -106,6 +116,10 @@ function formatDate(dateStr) {
   font-weight: 700;
   color: var(--vp-c-text-1);
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 .subtitle {
@@ -215,6 +229,10 @@ function formatDate(dateStr) {
   font-family: var(--vp-font-family-mono);
   color: var(--vp-c-text-3);
   min-width: 50px;
+}
+
+.item-icon {
+  flex-shrink: 0;
 }
 
 .item-title {

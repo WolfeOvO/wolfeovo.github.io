@@ -18,6 +18,7 @@ import blogTags from '../components/blogTags.vue'
 import blogArchives from '../components/blogArchives.vue'
 import blogSeries from '../components/blogSeries.vue'
 import blogSeriesNav from '../components/blogSeriesNav.vue'
+import iconRenderer from '../components/iconRenderer.vue'
 
 // 插件
 import { enhanceAppWithTabs } from 'vitepress-plugin-tabs/client'
@@ -124,6 +125,7 @@ export default {
     app.component('ba', blogArchives)
     app.component('bs', blogSeries)
     app.component('bsn', blogSeriesNav)
+    app.component('ir', iconRenderer)
   },
 
   setup() {

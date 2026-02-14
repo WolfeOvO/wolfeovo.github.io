@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useData, useRouter } from 'vitepress'
 import { data as blogPosts } from '../blog.data.js'
+import IconRenderer from './IconRenderer.vue'
 
 const { theme } = useData()
 const router = useRouter()
@@ -10,6 +11,12 @@ const activeTag = ref('')
 const searchQuery = ref('')
 
 const posts = computed(() => blogPosts || [])
+
+// 博客图标配置
+const blogIcons = computed(() => theme.value.blogIcons || {})
+const postsIcon = computed(() => blogIcons.value.posts || '📝')
+const tagsIcon = computed(() => blogIcons.value.tags || '🏷️')
+const seriesIcon = computed(() => blogIcons.value.series || '📚')
 
 // 标签列表（带计数）
 const allTags = computed(() => {
@@ -97,7 +104,7 @@ function formatDate(dateStr) {
       </div> </aside> <main class="blog-main">
       <div class="blog-header">
         <h1 class="blog-title">
-          <span class="title-icon">📝</span>
+          <IconRenderer :icon="postsIcon" size="28px" fallback="📝" />
           博客文章
         </h1>
         <div class="blog-search">
@@ -122,7 +129,10 @@ function formatDate(dateStr) {
           @click="navigateTo(post.url)"
         >
           <div class="post-content">
-            <h2 class="post-title">{{ post.title }}</h2>
+            <h2 class="post-title">
+              <IconRenderer v-if="post.icon" :icon="post.icon" size="18px" class="post-icon" />
+              {{ post.title }}
+            </h2>
             <p class="post-desc" v-if="post.description">{{ post.description }}</p>
             <div class="post-meta">
               <span class="post-date" v-if="post.date">
@@ -383,10 +393,6 @@ function formatDate(dateStr) {
   letter-spacing: -0.02em;
 }
 
-.title-icon {
-  font-size: 28px;
-}
-
 .blog-search {
   display: flex;
   align-items: center;
@@ -459,6 +465,13 @@ function formatDate(dateStr) {
   margin: 0 0 6px;
   line-height: 1.4;
   transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.post-icon {
+  flex-shrink: 0;
 }
 
 .post-card:hover .post-title {

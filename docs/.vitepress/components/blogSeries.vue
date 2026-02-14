@@ -1,11 +1,17 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useRouter } from 'vitepress'
+import { useRouter, useData } from 'vitepress'
 import { data as blogPosts } from '../blog.data.js'
+import IconRenderer from './IconRenderer.vue'
 
 const router = useRouter()
+const { theme } = useData()
 const posts = computed(() => blogPosts || [])
 const expandedSeries = ref({})
+
+// 博客图标配置
+const blogIcons = computed(() => theme.value.blogIcons || {})
+const seriesPageIcon = computed(() => blogIcons.value.series || '📚')
 
 // 柔和的主题色调色板（亮/暗模式通用）
 const colorPalette = [
@@ -100,7 +106,10 @@ function cardStyle(index) {
 <template>
   <div class="series-page">
     <div class="series-header">
-      <h1 class="title">合辑</h1>
+      <h1 class="title">
+        <IconRenderer :icon="seriesPageIcon" size="28px" fallback="📚" />
+        合辑
+      </h1>
       <p class="subtitle">共 {{ seriesGroups.length }} 个合辑，{{ posts.filter(p => p.series).length }} 篇文章</p>
     </div>
 
@@ -126,7 +135,7 @@ function cardStyle(index) {
           <!-- 合辑标题栏 -->
           <div class="series-card-header" @click="toggleSeries(group.name)">
             <div class="series-info">
-              <span class="series-icon">{{ group.customIcon || getIcon(index) }}</span>
+              <IconRenderer :icon="group.customIcon || getIcon(index)" size="22px" class="series-icon" />
               <h2 class="series-name">{{ group.name }}</h2>
               <span class="series-count">{{ group.count }} 篇</span>
             </div>
@@ -151,7 +160,7 @@ function cardStyle(index) {
               @click="navigateTo(post.url)"
             >
               <span class="post-order">
-                <template v-if="post.icon">{{ post.icon }}</template>
+                <IconRenderer v-if="post.icon" :icon="post.icon" size="16px" />
                 <template v-else>{{ pIndex + 1 }}</template>
               </span>
               <div class="post-info">
@@ -186,6 +195,9 @@ function cardStyle(index) {
   font-weight: 700;
   color: var(--vp-c-text-1);
   margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .subtitle {
@@ -250,7 +262,6 @@ function cardStyle(index) {
 }
 
 .series-icon {
-  font-size: 22px;
   flex-shrink: 0;
 }
 

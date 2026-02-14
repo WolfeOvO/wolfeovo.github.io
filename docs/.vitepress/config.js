@@ -67,6 +67,16 @@ export default defineConfig({
 
     sidebar: sidebar,
 
+    // 博客模式各页面的自定义图标
+    // 支持：文字/emoji（如 '📝'）、SVG 字符串（如 '<svg ...>...</svg>'）、
+    // 图片路径（如 '/media/icon/blog.svg' 或 '/media/icon/blog.ico'）
+    blogIcons: {
+      posts: '📝',       // 博客文章页标题图标
+      tags: '🏷️',       // 标签云页标题图标
+      series: '📚',      // 合辑页标题图标
+      archives: '📅',    // 归档页标题图标
+    },
+
     socialLinks: [
       { icon: 'github', link: 'https://muselink.cc/wolfe' }
       ],

@@ -1,10 +1,16 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { useRouter } from 'vitepress'
+import { useRouter, useData } from 'vitepress'
 import { data as blogPosts } from '../blog.data.js'
+import IconRenderer from './IconRenderer.vue'
 
 const router = useRouter()
+const { theme } = useData()
 const activeTag = ref('')
+
+// 博客图标配置
+const blogIcons = computed(() => theme.value.blogIcons || {})
+const tagsIcon = computed(() => blogIcons.value.tags || '🏷️')
 
 // 从 URL 读取初始标签
 if (typeof window !== 'undefined') {
@@ -76,7 +82,10 @@ function formatDate(dateStr) {
     <div class="tags-container">
       <!-- 标题 -->
       <div class="page-header">
-        <h2 class="page-title">标签</h2>
+        <h2 class="page-title">
+          <IconRenderer :icon="tagsIcon" size="28px" fallback="🏷️" />
+          标签
+        </h2>
       </div>
 
       <!-- 标签云（有标签时才显示） -->
@@ -149,6 +158,9 @@ function formatDate(dateStr) {
   font-weight: 700;
   color: var(--vp-c-text-1);
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* ========== 标签云 ========== */
