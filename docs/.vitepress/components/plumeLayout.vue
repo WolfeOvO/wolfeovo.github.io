@@ -88,9 +88,8 @@ onMounted(() => {
 
 <template>
   <Layout>
-    <!-- 博客模式导航 -->
     <template #nav-bar-content-before>
-      <nav class="plume-nav">
+      <nav class="plume-nav desktop-only">
         <a v-for="item in navItems" :key="item.link" :href="item.link" class="plume-nav-link" :class="{ active: item.link === '/' ? isHomePage : route.path.startsWith(item.link) }">
           <IconRenderer :icon="item.icon" class="plume-nav-icon" />
           {{ item.text }}
@@ -98,7 +97,15 @@ onMounted(() => {
       </nav>
     </template>
 
-    <!-- ★ 切换按钮 -->
+    <template #layout-top>
+      <nav v-if="isPlume" class="plume-nav-mobile">
+        <a v-for="item in navItems" :key="item.link" :href="item.link" class="plume-nav-link" :class="{ active: item.link === '/' ? isHomePage : route.path.startsWith(item.link) }">
+          <IconRenderer :icon="item.icon" class="plume-nav-icon" />
+          {{ item.text }}
+        </a>
+      </nav>
+    </template>
+
     <template #nav-bar-content-after>
       <button class="wolfe-toggle-btn" :class="{ active: isPlume }" :title="isPlume ? '切换到文档模式' : '切换到博客模式'" @click="toggleMode">
         <svg v-if="!isPlume" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
@@ -106,7 +113,6 @@ onMounted(() => {
       </button>
     </template>
 
-    <!-- 博客首页 -->
     <template #home-hero-before v-if="showBlogHome">
       <div class="plume-blog-overlay">
         <BlogHome />
@@ -167,18 +173,68 @@ onMounted(() => {
   z-index: 1;
 }
 
-/* ====== 博客模式导航 ====== */
-.plume-nav {
+/* ====== 博客模式导航 (桌面端) ====== */
+/* 默认隐藏，只有在 html[data-skin="plume"] 且屏幕够大时显示 */
+.plume-nav.desktop-only {
   display: none;
 }
 
-html[data-skin="plume"] .plume-nav {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: 16px;
+@media (min-width: 960px) {
+  html[data-skin="plume"] .plume-nav.desktop-only {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 16px;
+  }
 }
 
+/* ====== 博客模式导航 (移动端) ====== */
+/* 默认隐藏，只有在屏幕小的时候显示 */
+.plume-nav-mobile {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  html[data-skin="plume"] .plume-nav-mobile {
+    /* 1. 强制显示 */
+    display: flex;
+    
+    /* 2. 固定定位，钉在顶部导航栏(约56px-60px)的下方 */
+    position: fixed;
+    top: var(--vp-nav-height); 
+    left: 0;
+    right: 0;
+    z-index: 40; /* 确保层级正确，不要挡住弹窗 */
+
+    /* 3. 样式美化 */
+    margin: 0;
+    padding: 10px 12px;
+    gap: 8px;
+    justify-content: flex-start; /* 或者 center */
+    
+    /* 4. 横向滚动支持 (如果标签很多) */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    /* 5. 背景模糊效果 */
+    background: var(--vp-c-bg); /* 提供一个底色 */
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--vp-c-divider);
+  }
+  
+  /* 隐藏滚动条 */
+  .plume-nav-mobile::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 调整内容间距，防止被这层导航挡住 */
+  html[data-skin="plume"] .VPContent {
+    padding-top: calc(var(--vp-nav-height) + 54px) !important;
+  }
+}
+
+/* 链接通用样式 */
 .plume-nav-link {
   display: inline-flex;
   align-items: center;
@@ -193,10 +249,18 @@ html[data-skin="plume"] .plume-nav {
   white-space: nowrap;
 }
 
+@media (max-width: 960px) {
+  /* 手机端胶囊按钮样式 */
+  .plume-nav-link {
+    background-color: var(--vp-c-bg-alt);
+    padding: 6px 12px;
+    border-radius: 20px;
+  }
+}
+
 .plume-nav-icon {
   font-size: 14px;
 }
-
 .plume-nav-icon.icon-image {
   width: 16px;
   height: 16px;
@@ -210,104 +274,6 @@ html[data-skin="plume"] .plume-nav {
 .plume-nav-link.active {
   color: var(--vp-c-brand-1);
   font-weight: 600;
-}
-
-/* ====== 博客模式隐藏默认导航 ====== */
-html[data-skin="plume"] .VPNavBarMenu {
-  display: none !important;
-}
-
-html[data-skin="plume"] .VPHero {
-  display: none !important;
-}
-
-html[data-skin="plume"] .VPFeatures {
-  display: none !important;
-}
-
-/* ====== 博客覆盖层 ====== */
-.plume-blog-overlay {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  padding-top: 8px;
-}
-
-html:not([data-skin="plume"]) .plume-blog-overlay {
-  display: none !important;
-}
-
-html[data-skin="plume"] .VPHome {
-  background: transparent !important;
-}
-
-html[data-skin="plume"] .VPContent.is-home {
-  background: var(--plume-bg, #f5f7fa) !important;
-}
-
-html[data-skin="plume"].dark .VPContent.is-home {
-  background: var(--plume-bg, #161820) !important;
-}
-
-/* 隐藏首页默认的 Markdown 内容容器 */
-html[data-skin="plume"] .VPContent.is-home .vp-doc.container {
-  display: none !important;
-}
-
-html[data-skin="plume"] .VPSidebar {
-  display: none !important;
-}
-
-html[data-skin="plume"] .VPDoc .container {
-  max-width: 100% !important;
-}
-
-html[data-skin="plume"] .VPDoc:not(.has-sidebar) .container {
-  max-width: 100% !important;
-}
-
-html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
-  max-width: 100% !important;
-}
-
-@media (max-width: 960px) {
-  /* 手机端：把导航“挪”到顶栏下方 */
-  html[data-skin="plume"] .plume-nav {
-    position: fixed;
-    left: 0;
-    right: 0;
-    top: calc(var(--vp-nav-height) + env(safe-area-inset-top));
-    z-index: 50;
-
-    margin: 0;
-    padding: 10px 12px;
-
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-
-    background: color-mix(in srgb, var(--vp-c-bg) 88%, transparent);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--vp-c-divider);
-  }
-
-  html[data-skin="plume"] .plume-nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* 让内容别被“挪下来的导航”挡住（高度很克制，够用且简洁） */
-  html[data-skin="plume"] .VPContent {
-    padding-top: 52px;
-  }
-
-  /* 手机端按钮更紧凑更精致 */
-  html[data-skin="plume"] .plume-nav-link {
-    padding: 6px 10px;
-    border-radius: 999px;
-  }
+  background: var(--vp-c-brand-soft);
 }
 </style>
