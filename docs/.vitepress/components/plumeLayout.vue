@@ -99,7 +99,7 @@ onMounted(() => {
       </nav>
     </template>
 
-    <!-- 2. 移动端导航 (使用 Teleport 确保层级) -->
+    <!-- 2. 移动端导航 -->
     <template #layout-top>
       <ClientOnly>
         <Teleport to="body">
@@ -143,82 +143,70 @@ onMounted(() => {
 
 <style>
 /* ==================================================
-   1. 终极修复：彻底锁定导航栏 (The "Magnetic" Fix)
+   1. 锁定导航栏 (VPNav + VPNavBar)
    ================================================== */
-/* 核心修改：同时锁定 VPNav (父容器) 和 VPNavBar (子容器) */
 html[data-skin="plume"] .VPNav,
 html[data-skin="plume"] .VPNavBar {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
   width: 100% !important;
-  /* 强制禁止 transforms 移动 */
   transform: none !important;
   transition: none !important;
-  /* 确保在最顶层，但不要遮挡移动端菜单 */
   z-index: 20 !important;
 }
-
-/* 修复背景可能透明的问题 */
 html[data-skin="plume"] .VPNavBar {
   background-color: var(--vp-c-bg) !important;
   border-bottom: 1px solid var(--vp-c-divider) !important;
 }
 
 /* ==================================================
-   2. 移动端导航 (Mobile Only)
+   2. 移动端适配 (Mobile Only)
    ================================================== */
-.plume-nav-mobile {
-  display: none;
-}
+.plume-nav-mobile { display: none; }
 
 @media (max-width: 960px) {
   html[data-skin="plume"] .plume-nav-mobile {
     display: flex;
-    /* 固定定位 */
     position: fixed;
-    /* 
-       重要：使用 CSS 变量，但提供兜底值 60px。
-       因为 VPNav 被我们强制固定在 top:0，所以这里紧贴着它 
-    */
+    /* 放在原生导航栏下方 */
     top: var(--vp-nav-height, 60px); 
-    left: 0;
-    right: 0;
-    z-index: 19; /* 放在原生导航栏(z-index:20)下面 */
-
+    left: 0; right: 0;
+    z-index: 19; /* 比原生导航低，比大纲栏高 */
     height: 48px;
     align-items: center;
     padding: 0 16px;
     gap: 12px;
-    
     overflow-x: auto;
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
-
-    /* 加强背景不透明度，防止内容透视干扰 */
     background: rgba(255, 255, 255, 0.98);
     border-bottom: 1px solid var(--vp-c-divider);
     box-shadow: 0 4px 6px rgba(0,0,0,0.04);
   }
   
-  /* 深色模式适配 */
   html[data-skin="plume"].dark .plume-nav-mobile {
     background: rgba(30, 30, 32, 0.98);
   }
+  .plume-nav-mobile::-webkit-scrollbar { display: none; }
 
-  .plume-nav-mobile::-webkit-scrollbar {
-    display: none;
+  /* =========================================================
+     ★ 关键修复：把“大纲栏” (.VPLocalNav) 往下挤
+     解决重叠问题
+     ========================================================= */
+  html[data-skin="plume"] .VPLocalNav {
+    /* 
+      原始值通常是 var(--vp-nav-height) (60px)
+      我们改为：60px (原生导航) + 48px (自定义导航) = 108px
+    */
+    top: calc(var(--vp-nav-height, 60px) + 48px) !important;
+    
+    /* 确保层级在我们的自定义导航之下，避免互相穿插 */
+    z-index: 18 !important; 
   }
 
-  /* ==================================================
-     3. 修复内容被遮挡问题
-     ================================================== */
-  /* 
-     计算公式：
-     原生导航栏 (~60px) + 移动端菜单 (48px) + 额外间距 (20px) 
-     确保内容从约 128px 处开始显示
-  */
+  /* 调整内容区域 Padding，给两个导航栏腾出空间 */
   html[data-skin="plume"] .VPContent, 
   html[data-skin="plume"] .VPContent.is-home {
     padding-top: calc(var(--vp-nav-height, 60px) + 68px) !important;
@@ -232,7 +220,6 @@ html[data-skin="plume"] .VPNavBar {
     font-size: 13px;
     border: 1px solid transparent;
   }
-  
   .plume-nav-mobile .plume-nav-link.active {
     background: var(--vp-c-brand-soft);
     border-color: var(--vp-c-brand-1);
@@ -241,7 +228,7 @@ html[data-skin="plume"] .VPNavBar {
 }
 
 /* ==================================================
-   4. 隐藏默认元素逻辑 (保持不变)
+   3. 隐藏与通用样式 (保持不变)
    ================================================== */
 html[data-skin="plume"] .VPNavBarMenu,
 html[data-skin="plume"] .VPNavBarSearch,
@@ -250,62 +237,34 @@ html[data-skin="plume"] .VPFeatures,
 html[data-skin="plume"] .VPContent.is-home .vp-doc.container {
   display: none !important;
 }
-
-html[data-skin="plume"] .VPHome {
-  background: transparent !important;
-  padding-bottom: 0 !important;
-}
-html[data-skin="plume"] .VPContent.is-home {
-  background: var(--plume-bg, #f5f7fa) !important;
-}
-html[data-skin="plume"].dark .VPContent.is-home {
-  background: var(--plume-bg, #161820) !important;
-}
+html[data-skin="plume"] .VPHome { background: transparent !important; padding-bottom: 0 !important; }
+html[data-skin="plume"] .VPContent.is-home { background: var(--plume-bg, #f5f7fa) !important; }
+html[data-skin="plume"].dark .VPContent.is-home { background: var(--plume-bg, #161820) !important; }
 html[data-skin="plume"] .VPDoc .container,
 html[data-skin="plume"] .VPDoc:not(.has-sidebar) .container,
 html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
-  max-width: 100% !important;
-  padding: 0 !important;
+  max-width: 100% !important; padding: 0 !important;
 }
 
 /* Desktop Only Logic */
-.plume-nav.desktop-only {
-  display: none;
-}
+.plume-nav.desktop-only { display: none; }
 @media (min-width: 960px) {
   html[data-skin="plume"] .plume-nav.desktop-only {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-left: 16px;
+    display: flex; align-items: center; gap: 4px; margin-left: 16px;
   }
 }
 
-/* 通用链接样式 */
 .plume-nav-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--vp-c-text-2);
-  text-decoration: none;
-  border-radius: 8px;
-  transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px;
+  font-size: 14px; font-weight: 500; color: var(--vp-c-text-2);
+  text-decoration: none; border-radius: 8px; transition: all 0.2s;
 }
 .plume-nav-icon { font-size: 14px; }
 .plume-nav-link:hover { color: var(--vp-c-brand-1); }
 .wolfe-toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  margin-left: 4px;
-  color: var(--vp-c-text-2);
-  transition: background 0.2s;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 8px; margin-left: 4px;
+  color: var(--vp-c-text-2); transition: background 0.2s;
 }
 .wolfe-toggle-btn:hover { background: var(--vp-c-bg-alt); color: var(--vp-c-brand-1); }
 .wolfe-toggle-btn.active { color: var(--vp-c-brand-1); }
