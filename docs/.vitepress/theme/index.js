@@ -1,5 +1,4 @@
 import './style.css'
-import './plume-theme.css'
 import DefaultTheme from 'vitepress/theme'
 import { h, render, onMounted, watch } from 'vue'
 import { useRoute } from 'vitepress'

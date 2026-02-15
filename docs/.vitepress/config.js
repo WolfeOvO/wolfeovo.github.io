@@ -10,6 +10,7 @@ import encryptedBlockPlugin from './plugins/encryptedBlockPlugin'
 
 export default defineConfig({
   title: "Wolfeの储物间",
+  base: '/depot/',
   description: "Wolfe 的小破站，始于 2026/1/11",
   ignoreDeadLinks: true,
   lastUpdated: true,
