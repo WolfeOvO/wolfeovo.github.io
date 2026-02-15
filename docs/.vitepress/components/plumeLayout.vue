@@ -122,63 +122,44 @@ onMounted(() => {
 </template>
 
 <style>
-/* ====== 隐藏普通模式导航栏中的"合辑"链接 ====== */
-.VPNavBarMenu .VPLink[href*="/blog/series"] {
+/* ==================================================
+   1. 核心逻辑：博客模式下，强行隐藏默认主题元素
+   ================================================== */
+html[data-skin="plume"] .VPNavBarMenu,
+html[data-skin="plume"] .VPNavBarSearch,
+html[data-skin="plume"] .VPHero,
+html[data-skin="plume"] .VPFeatures,
+html[data-skin="plume"] .VPContent.is-home .vp-doc.container {
   display: none !important;
 }
 
-/* ====== 切换按钮 ====== */
-.wolfe-toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--vp-c-text-2);
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-  margin-left: 4px;
-  padding: 0;
+/* 隐藏首页默认背景，适配深色模式 */
+html[data-skin="plume"] .VPHome {
+  background: transparent !important;
+  padding-bottom: 0 !important;
+}
+html[data-skin="plume"] .VPContent.is-home {
+  background: var(--plume-bg, #f5f7fa) !important;
+}
+html[data-skin="plume"].dark .VPContent.is-home {
+  background: var(--plume-bg, #161820) !important;
 }
 
-.wolfe-toggle-btn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 8px;
-  background: var(--vp-c-default-soft);
-  opacity: 0;
-  transition: opacity 0.2s;
+/* 去除内容最大宽度限制，让博客组件铺满 */
+html[data-skin="plume"] .VPDoc .container,
+html[data-skin="plume"] .VPDoc:not(.has-sidebar) .container,
+html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
+  max-width: 100% !important;
+  padding: 0 !important;
 }
 
-.wolfe-toggle-btn:hover::before {
-  opacity: 1;
-}
-
-.wolfe-toggle-btn:hover {
-  color: var(--vp-c-brand-1);
-}
-
-.wolfe-toggle-btn.active {
-  color: var(--vp-c-brand-1);
-}
-
-.wolfe-toggle-btn svg {
-  position: relative;
-  z-index: 1;
-}
-
-/* ====== 博客模式导航 (桌面端) ====== */
-/* 默认隐藏，只有在 html[data-skin="plume"] 且屏幕够大时显示 */
+/* ==================================================
+   2. 桌面端导航 (Desktop Only)
+   ================================================== */
 .plume-nav.desktop-only {
   display: none;
 }
-
+/* 仅在电脑端(>960px)且为博客模式时显示 */
 @media (min-width: 960px) {
   html[data-skin="plume"] .plume-nav.desktop-only {
     display: flex;
@@ -188,57 +169,86 @@ onMounted(() => {
   }
 }
 
-/* ====== 博客模式导航 (移动端) ====== */
-/* 默认隐藏，只有在屏幕小的时候显示 */
+/* ==================================================
+   3. 移动端导航 (Mobile Only) - 修复磁吸问题
+   ================================================== */
 .plume-nav-mobile {
-  display: none;
+  display: none; /* 默认不显示，防止电脑端出现 */
 }
 
 @media (max-width: 960px) {
+  /* 只有在博客模式下才显示移动端导航 */
   html[data-skin="plume"] .plume-nav-mobile {
-    /* 1. 强制显示 */
     display: flex;
     
-    /* 2. 固定定位，钉在顶部导航栏(约56px-60px)的下方 */
+    /* ★★★ 核心修复：磁吸定位 ★★★ */
     position: fixed;
+    /* 紧贴在 VitePress 原生导航栏(通常60px左右)下方 */
     top: var(--vp-nav-height); 
     left: 0;
     right: 0;
-    z-index: 40; /* 确保层级正确，不要挡住弹窗 */
+    z-index: 20; /* 确保在内容之上，但在侧边栏之下 */
 
-    /* 3. 样式美化 */
-    margin: 0;
-    padding: 10px 12px;
-    gap: 8px;
-    justify-content: flex-start; /* 或者 center */
+    /* 样式美化 */
+    height: 48px; /* 固定高度 */
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
     
-    /* 4. 横向滚动支持 (如果标签很多) */
+    /* 横向滚动 (防止标签太多换行) */
     overflow-x: auto;
+    white-space: nowrap;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    scrollbar-width: none; /* Firefox 隐藏滚动条 */
 
-    /* 5. 背景模糊效果 */
-    background: var(--vp-c-bg); /* 提供一个底色 */
-    backdrop-filter: blur(12px);
+    /* 毛玻璃背景 */
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--vp-c-divider);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
   }
   
-  /* 隐藏滚动条 */
+  /* 深色模式适配 */
+  html[data-skin="plume"].dark .plume-nav-mobile {
+    background: rgba(30, 30, 32, 0.85);
+  }
+
+  /* 隐藏滚动条 (Chrome/Safari) */
   .plume-nav-mobile::-webkit-scrollbar {
     display: none;
   }
 
-  /* 调整内容间距，防止被这层导航挡住 */
+  /* ★★★ 核心修复：防止内容被遮挡 ★★★ */
+  /* 因为导航栏fixed了，所以内容由于脱离文档流会上移，必须加 padding 顶下来 */
   html[data-skin="plume"] .VPContent {
-    padding-top: calc(var(--vp-nav-height) + 54px) !important;
+    /* 原生导航栏高度 + 我们自定义导航栏高度(48px) + 一点间隙 */
+    padding-top: calc(var(--vp-nav-height) + 56px) !important;
+  }
+  
+  /* 调整胶囊样式更像 APP */
+  .plume-nav-mobile .plume-nav-link {
+    flex-shrink: 0; /* 防止被挤压 */
+    background: var(--vp-c-bg-alt);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    border: 1px solid transparent;
+  }
+  
+  .plume-nav-mobile .plume-nav-link.active {
+    background: var(--vp-c-brand-soft);
+    border-color: var(--vp-c-brand-1);
+    color: var(--vp-c-brand-1);
   }
 }
 
-/* 链接通用样式 */
+/* ==================================================
+   4. 通用链接样式
+   ================================================== */
 .plume-nav-link {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   padding: 4px 12px;
   font-size: 14px;
   font-weight: 500;
@@ -246,34 +256,32 @@ onMounted(() => {
   text-decoration: none;
   border-radius: 8px;
   transition: all 0.2s;
-  white-space: nowrap;
-}
-
-@media (max-width: 960px) {
-  /* 手机端胶囊按钮样式 */
-  .plume-nav-link {
-    background-color: var(--vp-c-bg-alt);
-    padding: 6px 12px;
-    border-radius: 20px;
-  }
 }
 
 .plume-nav-icon {
   font-size: 14px;
 }
-.plume-nav-icon.icon-image {
-  width: 16px;
-  height: 16px;
-}
 
 .plume-nav-link:hover {
   color: var(--vp-c-brand-1);
-  background: var(--vp-c-brand-soft);
 }
 
-.plume-nav-link.active {
+.wolfe-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  margin-left: 4px;
+  color: var(--vp-c-text-2);
+  transition: background 0.2s;
+}
+.wolfe-toggle-btn:hover {
+  background: var(--vp-c-bg-alt);
   color: var(--vp-c-brand-1);
-  font-weight: 600;
-  background: var(--vp-c-brand-soft);
+}
+.wolfe-toggle-btn.active {
+  color: var(--vp-c-brand-1);
 }
 </style>
