@@ -5,23 +5,40 @@ import DefaultTheme from 'vitepress/theme'
 import BlogHome from './blogHome.vue'
 import IconRenderer from './iconRenderer.vue'
 
-const { Layout } = DefaultTheme
+// 明确解构并重命名，防止模板中 Layout 变量名冲突导致递归
+const { Layout: VPLayout } = DefaultTheme
 const { frontmatter, theme } = useData()
 const route = useRoute()
 const router = useRouter()
 
+// ========================================================================
+// 配置常量
+// ========================================================================
+const DOCS_HOME = '/docs/homepage'
+const BLOG_HOME = '/'
+const BLOG_PATH_PREFIX = '/blog/'
+
+// 判断路径归属（SSR 安全的纯函数）
+function isBlogSidePath(path) {
+  if (!path) return false
+  return path === '/' || path.includes(BLOG_PATH_PREFIX)
+}
+
+// ========================================================================
+// 状态初始化 (SSR 安全)
+// ========================================================================
 const isPlume = ref(false)
+
+// 在 setup 阶段仅做最简单的路径判断，确保 SSR 生成正确的初始 HTML 结构
+// 此时不读 localStorage，不操作 DOM，避免构建错误
+if (route.path && isBlogSidePath(route.path)) {
+  isPlume.value = true
+}
+
 const isHomePage = computed(() => frontmatter.value.layout === 'home')
 const showBlogHome = computed(() => isPlume.value && isHomePage.value)
 
-// ========================================================================
-// 🛑 配置区：根据您的描述定义的默认入口
-// ========================================================================
-const DOCS_HOME = '/docs/homepage'  // 文档模式的默认首页
-const BLOG_HOME = '/'               // 博客模式的默认首页
-const BLOG_PATH_PREFIX = '/blog/'   // 博客文章路径特征
-
-// 博客导航图标
+// 博客导航配置
 const blogIcons = computed(() => theme.value.blogIcons || {})
 const navItems = computed(() => [
   { text: '博客', link: '/', icon: blogIcons.value.home || '📝' },
@@ -31,139 +48,119 @@ const navItems = computed(() => [
 ])
 
 // ========================================================================
-// 核心功能
+// 客户端逻辑 (仅在浏览器运行)
 // ========================================================================
 
-// 1. 纯粹的模式切换（只动CSS/State）
+// 切换 CSS 和 DOM 属性
 function applyModeState(enable) {
   isPlume.value = enable
-  if (enable) {
-    document.documentElement.setAttribute('data-skin', 'plume')
-    localStorage.setItem('wolfe-theme-mode', 'plume')
-  } else {
-    document.documentElement.removeAttribute('data-skin')
-    localStorage.setItem('wolfe-theme-mode', 'default')
+  if (typeof document !== 'undefined') {
+    if (enable) {
+      document.documentElement.setAttribute('data-skin', 'plume')
+      localStorage.setItem('wolfe-theme-mode', 'plume')
+    } else {
+      document.documentElement.removeAttribute('data-skin')
+      localStorage.setItem('wolfe-theme-mode', 'default')
+    }
   }
 }
 
-// 2. 检查一个路径是不是属于“博客侧”
-function isBlogSidePath(path) {
-  // 首页在 Plume 模式下算博客侧，或者路径包含 /blog/
-  return path === '/' || path.includes(BLOG_PATH_PREFIX)
-}
-
-/**
- * 3. 切换按钮点击事件（核心修复）
- * 逻辑：保存当前现场 -> 计算目标 -> 强制清洗目标 -> 切换CSS -> 跳转
- */
+// 切换按钮逻辑
 async function toggleMode() {
   const currentPath = route.path
   const nextModeIsPlume = !isPlume.value
 
-  // --- A. 保存现场 ---
-  // 如果我现在是文档模式，就把当前页存为“最后文档页”
-  // 如果我现在是博客模式，就把当前页存为“最后博客页”
+  // 1. 保存当前现场
   if (isPlume.value) {
     localStorage.setItem('wolfe-last-blog-path', currentPath)
   } else {
     localStorage.setItem('wolfe-last-doc-path', currentPath)
   }
 
-  // --- B. 计算并清洗目标路径 ---
+  // 2. 计算目标路径
   let targetPath = ''
-
   if (nextModeIsPlume) {
-    // 准备切 -> 博客模式
+    // 准备切往博客
     targetPath = localStorage.getItem('wolfe-last-blog-path') || BLOG_HOME
-    
-    // 【关键修复】如果取出来的路径竟然不是博客侧的（比如是 /docs/homepage），强制回博客首页
-    if (!isBlogSidePath(targetPath)) {
-      targetPath = BLOG_HOME
-    }
+    // 纠错：如果存的是文档路径，强制回博客首页
+    if (!isBlogSidePath(targetPath)) targetPath = BLOG_HOME
   } else {
-    // 准备切 -> 文档模式
+    // 准备切往文档
     targetPath = localStorage.getItem('wolfe-last-doc-path') || DOCS_HOME
-    
-    // 【关键修复】如果取出来的路径竟然是博客侧的（比如 /blog/xxx），强制回文档首页
-    if (isBlogSidePath(targetPath)) {
-      targetPath = DOCS_HOME
-    }
+    // 纠错：如果存的是博客路径，强制回文档首页
+    if (isBlogSidePath(targetPath)) targetPath = DOCS_HOME
   }
 
-  // --- C. 执行切换 ---
-  // 1. 先换 CSS
+  // 3. 执行切换和跳转
   applyModeState(nextModeIsPlume)
-
-  // 2. 再跳转 (如果已经在目标页，比如首页切首页，也要跳一下触发刷新或不做操作)
+  
   if (currentPath !== targetPath) {
     await router.go(targetPath)
   }
 }
 
-// ========================================================================
-// 路由监听：处理“后退”按钮导致的 CSS 不同步
-// ========================================================================
-watch(
-  () => route.path,
-  (newPath) => {
-    if (typeof document === 'undefined') return
-    
-    // 自动判断当前 URL 属于哪一边
-    const belongsToBlog = isBlogSidePath(newPath)
-    
-    // 如果 URL 是博客的，但 CSS 是文档的 -> 强制切成博客 CSS
-    if (belongsToBlog && !isPlume.value) {
-      applyModeState(true)
-    }
-    // 如果 URL 是文档的，但 CSS 是博客的 -> 强制切成文档 CSS
-    // 注意：首页 '/' 比较特殊，如果用户在文档模式下访问根路径，通常还是视为博客入口，所以这里主要判断 /docs/
-    else if (!belongsToBlog && isPlume.value) {
-      // 只有明确进入非博客区域才切回文档模式
-      applyModeState(false)
-    }
-
-    // 每次路由变化，顺便更新一下对应的历史记录（作为备份）
-    nextTick(() => {
-      if (isPlume.value) {
-        localStorage.setItem('wolfe-last-blog-path', newPath)
-      } else {
-        localStorage.setItem('wolfe-last-doc-path', newPath)
-      }
-    })
-  },
-  { immediate: true }
-)
-
-// ========================================================================
-// 初始化
-// ========================================================================
 onMounted(() => {
-  // 1. 根据当前 URL 强行定性
-  // 如果进来就是 /blog/ 或者根路径(通常是博客)，优先展示博客模式
-  // 如果进来是 /docs/，优先展示文档模式
-  if (route.path.includes(BLOG_PATH_PREFIX)) {
-    applyModeState(true)
-  } else if (route.path.startsWith('/docs/')) {
-    applyModeState(false)
+  // === 初始化逻辑 (仅客户端) ===
+  
+  // 1. 再次确认模式（处理 hydration 可能的不一致）
+  const savedMode = localStorage.getItem('wolfe-theme-mode')
+  const currentPath = route.path
+  
+  if (isBlogSidePath(currentPath)) {
+    applyModeState(true) // 路径优先：在博客区域强制开启
+  } else if (currentPath.startsWith('/docs/')) {
+    applyModeState(false) // 路径优先：在文档区域强制关闭
+  } else if (savedMode === 'plume') {
+    applyModeState(true) // 模糊区域：读取缓存
   } else {
-    // 2. 如果是模糊地带（如自定义页面），读取缓存
-    const saved = localStorage.getItem('wolfe-theme-mode')
-    applyModeState(saved === 'plume')
+    applyModeState(false)
   }
 
-  // 3. 监听外部变化（防御性代码）
+  // 2. 注册路由监听 (解决后退键问题 + 自动记录)
+  // 移入 onMounted 彻底解决 SSR 构建死循环问题
+  watch(
+    () => route.path,
+    (newPath) => {
+      const belongsToBlog = isBlogSidePath(newPath)
+      
+      // 强制纠正模式（应对浏览器后退键）
+      if (belongsToBlog && !isPlume.value) {
+        applyModeState(true)
+      } else if (!belongsToBlog && isPlume.value) {
+        // 只有明确进入文档区域才切回，防止在根路径误判
+        if (newPath.startsWith('/docs/') || newPath === DOCS_HOME) {
+           applyModeState(false)
+        }
+      }
+
+      // 记录足迹
+      nextTick(() => {
+        if (isPlume.value) {
+          localStorage.setItem('wolfe-last-blog-path', newPath)
+        } else {
+          localStorage.setItem('wolfe-last-doc-path', newPath)
+        }
+      })
+    }
+  )
+
+  // 3. 防御性监听：防止 data-skin 被外部修改
   const observer = new MutationObserver(() => {
     const hasAttr = document.documentElement.getAttribute('data-skin') === 'plume'
     if (isPlume.value !== hasAttr) {
       isPlume.value = hasAttr
     }
   })
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-skin'] })
+  observer.observe(document.documentElement, { 
+    attributes: true, 
+    attributeFilter: ['data-skin'] 
+  })
 })
 </script>
 
 <template>
-  <Layout>
+  <!-- 使用重命名后的 VPLayout，避免递归 -->
+  <VPLayout>
     <!-- 电脑端导航 -->
     <template #nav-bar-content-before>
       <nav class="plume-nav desktop-only">
@@ -208,7 +205,6 @@ onMounted(() => {
         :title="isPlume ? '切换到文档模式' : '切换到博客模式'" 
         @click="toggleMode"
       >
-        <!-- 图标：文档模式下显示方块，博客模式下显示文档 -->
         <svg v-if="!isPlume" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
         <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path><line x1="9" y1="7" x2="16" y2="7"></line><line x1="9" y1="11" x2="14" y2="11"></line></svg>
       </button>
@@ -220,7 +216,7 @@ onMounted(() => {
         <BlogHome />
       </div>
     </template>
-  </Layout>
+  </VPLayout>
 </template>
 
 <style>
