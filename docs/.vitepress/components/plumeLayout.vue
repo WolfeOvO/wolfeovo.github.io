@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useData, useRoute } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import BlogHome from './blogHome.vue'
@@ -23,57 +23,85 @@ const navItems = computed(() => [
   { text: '合辑', link: '/blog/series', icon: blogIcons.value.series || '📚' },
 ])
 
-function checkPlumeMode() {
-  if (typeof document !== 'undefined') {
-    isPlume.value = document.documentElement.getAttribute('data-skin') === 'plume'
-  }
-}
-
-function enforceModeByRoute(path) {
-  if (typeof document === 'undefined') return
-  const isBlogSection = path.startsWith('/blog/')
-  const isHome = path === '/' || path === '/index.html'
-  const htmlEl = document.documentElement
-
-  if (isBlogSection) {
-    if (htmlEl.getAttribute('data-skin') !== 'plume') {
-      htmlEl.setAttribute('data-skin', 'plume')
-      localStorage.setItem('wolfe-theme-mode', 'plume')
-      isPlume.value = true
-    }
-  } else if (!isHome) {
-    if (htmlEl.getAttribute('data-skin') === 'plume') {
-      htmlEl.removeAttribute('data-skin')
-      localStorage.setItem('wolfe-theme-mode', 'default')
-      isPlume.value = false
-    }
-  }
-}
-
-function toggleMode() {
-  if (isPlume.value) {
-    document.documentElement.removeAttribute('data-skin')
-    localStorage.setItem('wolfe-theme-mode', 'default')
-    isPlume.value = false
-  } else {
+/**
+ * 核心逻辑：应用模式变更
+ * @param {Boolean} enable 是否开启 Plume 模式
+ */
+function applyMode(enable) {
+  isPlume.value = enable
+  if (enable) {
     document.documentElement.setAttribute('data-skin', 'plume')
     localStorage.setItem('wolfe-theme-mode', 'plume')
-    isPlume.value = true
+  } else {
+    document.documentElement.removeAttribute('data-skin')
+    localStorage.setItem('wolfe-theme-mode', 'default')
   }
-  window.location.href = '/'
 }
 
-watch(() => route.path, (newPath) => enforceModeByRoute(newPath), { immediate: true })
+/**
+ * 路由监听逻辑
+ * 1. 如果进入 /blog/ 区域，强制开启 Plume 模式以保证组件正常显示
+ * 2. 如果是其他页面，保持当前状态不变（记忆模式），不强制切回 Default
+ */
+function enforceModeByRoute(path) {
+  if (typeof document === 'undefined') return
+  
+  const isBlogSection = path.startsWith('/blog/')
+  
+  if (isBlogSection) {
+    // 进入博客功能区（如标签、归档），必须确保是 Plume 模式
+    if (!isPlume.value) {
+      applyMode(true)
+    }
+  } 
+  // 移除 else 逻辑，允许在普通文档页保持 Plume 模式
+}
+
+/**
+ * 切换按钮点击事件
+ * 原地无缝切换，带 View Transition 动画
+ */
+function toggleMode() {
+  const nextState = !isPlume.value
+  
+  // 使用 View Transition API 实现丝滑切换动画（如果浏览器支持）
+  if (document.startViewTransition) {
+    document.startViewTransition(async () => {
+      applyMode(nextState)
+      await nextTick() // 等待 DOM 更新
+    })
+  } else {
+    // 降级处理：直接切换
+    applyMode(nextState)
+  }
+  
+  // 移除 window.location.href 跳转，解决返回上一页 CSS 错乱问题
+}
+
+// 监听路由变化
+watch(() => route.path, (newPath) => enforceModeByRoute(newPath))
 
 onMounted(() => {
+  // 初始化：优先读取本地存储
   const saved = localStorage.getItem('wolfe-theme-mode')
   if (saved === 'plume') {
-    document.documentElement.setAttribute('data-skin', 'plume')
-    isPlume.value = true
+    applyMode(true)
+  } else {
+    // 如果没有存储，根据当前路径判断是否默认开启
+    if (route.path.startsWith('/blog/')) {
+      applyMode(true)
+    } else {
+      applyMode(false)
+    }
   }
-  checkPlumeMode()
 
-  const observer = new MutationObserver(() => checkPlumeMode())
+  // 监听外部对 data-skin 的修改（如其他组件修改）
+  const observer = new MutationObserver(() => {
+    const hasAttr = document.documentElement.getAttribute('data-skin') === 'plume'
+    if (isPlume.value !== hasAttr) {
+      isPlume.value = hasAttr
+    }
+  })
   observer.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ['data-skin']
@@ -268,4 +296,12 @@ html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
 }
 .wolfe-toggle-btn:hover { background: var(--vp-c-bg-alt); color: var(--vp-c-brand-1); }
 .wolfe-toggle-btn.active { color: var(--vp-c-brand-1); }
+
+/* ==================================================
+   4. View Transition 动画样式
+   ================================================== */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+}
 </style>
