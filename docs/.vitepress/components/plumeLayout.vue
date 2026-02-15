@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
-import { useData, useRoute } from 'vitepress'
+import { useData, useRoute, useRouter } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import BlogHome from './blogHome.vue'
 import IconRenderer from './iconRenderer.vue'
@@ -8,13 +8,20 @@ import IconRenderer from './iconRenderer.vue'
 const { Layout } = DefaultTheme
 const { frontmatter, theme } = useData()
 const route = useRoute()
+const router = useRouter()
 
 const isPlume = ref(false)
-
 const isHomePage = computed(() => frontmatter.value.layout === 'home')
 const showBlogHome = computed(() => isPlume.value && isHomePage.value)
 
-// 博客导航图标配置
+// ========================================================================
+// 🛑 配置区：根据您的描述定义的默认入口
+// ========================================================================
+const DOCS_HOME = '/docs/homepage'  // 文档模式的默认首页
+const BLOG_HOME = '/'               // 博客模式的默认首页
+const BLOG_PATH_PREFIX = '/blog/'   // 博客文章路径特征
+
+// 博客导航图标
 const blogIcons = computed(() => theme.value.blogIcons || {})
 const navItems = computed(() => [
   { text: '博客', link: '/', icon: blogIcons.value.home || '📝' },
@@ -23,11 +30,12 @@ const navItems = computed(() => [
   { text: '合辑', link: '/blog/series', icon: blogIcons.value.series || '📚' },
 ])
 
-/**
- * 核心逻辑：应用模式变更
- * @param {Boolean} enable 是否开启 Plume 模式
- */
-function applyMode(enable) {
+// ========================================================================
+// 核心功能
+// ========================================================================
+
+// 1. 纯粹的模式切换（只动CSS/State）
+function applyModeState(enable) {
   isPlume.value = enable
   if (enable) {
     document.documentElement.setAttribute('data-skin', 'plume')
@@ -38,80 +46,125 @@ function applyMode(enable) {
   }
 }
 
-/**
- * 路由监听逻辑
- * 1. 如果进入 /blog/ 区域，强制开启 Plume 模式以保证组件正常显示
- * 2. 如果是其他页面，保持当前状态不变（记忆模式），不强制切回 Default
- */
-function enforceModeByRoute(path) {
-  if (typeof document === 'undefined') return
-  
-  const isBlogSection = path.startsWith('/blog/')
-  
-  if (isBlogSection) {
-    // 进入博客功能区（如标签、归档），必须确保是 Plume 模式
-    if (!isPlume.value) {
-      applyMode(true)
-    }
-  } 
-  // 移除 else 逻辑，允许在普通文档页保持 Plume 模式
+// 2. 检查一个路径是不是属于“博客侧”
+function isBlogSidePath(path) {
+  // 首页在 Plume 模式下算博客侧，或者路径包含 /blog/
+  return path === '/' || path.includes(BLOG_PATH_PREFIX)
 }
 
 /**
- * 切换按钮点击事件
- * 原地无缝切换，带 View Transition 动画
+ * 3. 切换按钮点击事件（核心修复）
+ * 逻辑：保存当前现场 -> 计算目标 -> 强制清洗目标 -> 切换CSS -> 跳转
  */
-function toggleMode() {
-  const nextState = !isPlume.value
-  
-  // 使用 View Transition API 实现丝滑切换动画（如果浏览器支持）
-  if (document.startViewTransition) {
-    document.startViewTransition(async () => {
-      applyMode(nextState)
-      await nextTick() // 等待 DOM 更新
+async function toggleMode() {
+  const currentPath = route.path
+  const nextModeIsPlume = !isPlume.value
+
+  // --- A. 保存现场 ---
+  // 如果我现在是文档模式，就把当前页存为“最后文档页”
+  // 如果我现在是博客模式，就把当前页存为“最后博客页”
+  if (isPlume.value) {
+    localStorage.setItem('wolfe-last-blog-path', currentPath)
+  } else {
+    localStorage.setItem('wolfe-last-doc-path', currentPath)
+  }
+
+  // --- B. 计算并清洗目标路径 ---
+  let targetPath = ''
+
+  if (nextModeIsPlume) {
+    // 准备切 -> 博客模式
+    targetPath = localStorage.getItem('wolfe-last-blog-path') || BLOG_HOME
+    
+    // 【关键修复】如果取出来的路径竟然不是博客侧的（比如是 /docs/homepage），强制回博客首页
+    if (!isBlogSidePath(targetPath)) {
+      targetPath = BLOG_HOME
+    }
+  } else {
+    // 准备切 -> 文档模式
+    targetPath = localStorage.getItem('wolfe-last-doc-path') || DOCS_HOME
+    
+    // 【关键修复】如果取出来的路径竟然是博客侧的（比如 /blog/xxx），强制回文档首页
+    if (isBlogSidePath(targetPath)) {
+      targetPath = DOCS_HOME
+    }
+  }
+
+  // --- C. 执行切换 ---
+  // 1. 先换 CSS
+  applyModeState(nextModeIsPlume)
+
+  // 2. 再跳转 (如果已经在目标页，比如首页切首页，也要跳一下触发刷新或不做操作)
+  if (currentPath !== targetPath) {
+    await router.go(targetPath)
+  }
+}
+
+// ========================================================================
+// 路由监听：处理“后退”按钮导致的 CSS 不同步
+// ========================================================================
+watch(
+  () => route.path,
+  (newPath) => {
+    if (typeof document === 'undefined') return
+    
+    // 自动判断当前 URL 属于哪一边
+    const belongsToBlog = isBlogSidePath(newPath)
+    
+    // 如果 URL 是博客的，但 CSS 是文档的 -> 强制切成博客 CSS
+    if (belongsToBlog && !isPlume.value) {
+      applyModeState(true)
+    }
+    // 如果 URL 是文档的，但 CSS 是博客的 -> 强制切成文档 CSS
+    // 注意：首页 '/' 比较特殊，如果用户在文档模式下访问根路径，通常还是视为博客入口，所以这里主要判断 /docs/
+    else if (!belongsToBlog && isPlume.value) {
+      // 只有明确进入非博客区域才切回文档模式
+      applyModeState(false)
+    }
+
+    // 每次路由变化，顺便更新一下对应的历史记录（作为备份）
+    nextTick(() => {
+      if (isPlume.value) {
+        localStorage.setItem('wolfe-last-blog-path', newPath)
+      } else {
+        localStorage.setItem('wolfe-last-doc-path', newPath)
+      }
     })
-  } else {
-    // 降级处理：直接切换
-    applyMode(nextState)
-  }
-  
-  // 移除 window.location.href 跳转，解决返回上一页 CSS 错乱问题
-}
+  },
+  { immediate: true }
+)
 
-// 监听路由变化
-watch(() => route.path, (newPath) => enforceModeByRoute(newPath))
-
+// ========================================================================
+// 初始化
+// ========================================================================
 onMounted(() => {
-  // 初始化：优先读取本地存储
-  const saved = localStorage.getItem('wolfe-theme-mode')
-  if (saved === 'plume') {
-    applyMode(true)
+  // 1. 根据当前 URL 强行定性
+  // 如果进来就是 /blog/ 或者根路径(通常是博客)，优先展示博客模式
+  // 如果进来是 /docs/，优先展示文档模式
+  if (route.path.includes(BLOG_PATH_PREFIX)) {
+    applyModeState(true)
+  } else if (route.path.startsWith('/docs/')) {
+    applyModeState(false)
   } else {
-    // 如果没有存储，根据当前路径判断是否默认开启
-    if (route.path.startsWith('/blog/')) {
-      applyMode(true)
-    } else {
-      applyMode(false)
-    }
+    // 2. 如果是模糊地带（如自定义页面），读取缓存
+    const saved = localStorage.getItem('wolfe-theme-mode')
+    applyModeState(saved === 'plume')
   }
 
-  // 监听外部对 data-skin 的修改（如其他组件修改）
+  // 3. 监听外部变化（防御性代码）
   const observer = new MutationObserver(() => {
     const hasAttr = document.documentElement.getAttribute('data-skin') === 'plume'
     if (isPlume.value !== hasAttr) {
       isPlume.value = hasAttr
     }
   })
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['data-skin']
-  })
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-skin'] })
 })
 </script>
 
 <template>
   <Layout>
-    <!-- 1. 电脑端导航 -->
+    <!-- 电脑端导航 -->
     <template #nav-bar-content-before>
       <nav class="plume-nav desktop-only">
         <a 
@@ -127,7 +180,7 @@ onMounted(() => {
       </nav>
     </template>
 
-    <!-- 2. 移动端导航 -->
+    <!-- 移动端导航 -->
     <template #layout-top>
       <ClientOnly>
         <Teleport to="body">
@@ -147,7 +200,7 @@ onMounted(() => {
       </ClientOnly>
     </template>
 
-    <!-- 3. 模式切换按钮 -->
+    <!-- 模式切换按钮 -->
     <template #nav-bar-content-after>
       <button 
         class="wolfe-toggle-btn" 
@@ -155,12 +208,13 @@ onMounted(() => {
         :title="isPlume ? '切换到文档模式' : '切换到博客模式'" 
         @click="toggleMode"
       >
+        <!-- 图标：文档模式下显示方块，博客模式下显示文档 -->
         <svg v-if="!isPlume" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
         <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path><line x1="9" y1="7" x2="16" y2="7"></line><line x1="9" y1="11" x2="14" y2="11"></line></svg>
       </button>
     </template>
 
-    <!-- 4. 博客首页覆盖层 -->
+    <!-- 博客首页覆盖层 -->
     <template #home-hero-before v-if="showBlogHome">
       <div class="plume-blog-overlay">
         <BlogHome />
@@ -170,9 +224,7 @@ onMounted(() => {
 </template>
 
 <style>
-/* ==================================================
-   1. 锁定导航栏 (VPNav + VPNavBar)
-   ================================================== */
+/* 锁定导航栏 */
 html[data-skin="plume"] .VPNav,
 html[data-skin="plume"] .VPNavBar {
   position: fixed !important;
@@ -188,19 +240,16 @@ html[data-skin="plume"] .VPNavBar {
   border-bottom: 1px solid var(--vp-c-divider) !important;
 }
 
-/* ==================================================
-   2. 移动端适配 (Mobile Only)
-   ================================================== */
+/* 移动端菜单 */
 .plume-nav-mobile { display: none; }
 
 @media (max-width: 960px) {
   html[data-skin="plume"] .plume-nav-mobile {
     display: flex;
     position: fixed;
-    /* 放在原生导航栏下方 */
     top: var(--vp-nav-height, 60px); 
     left: 0; right: 0;
-    z-index: 19; /* 比原生导航低，比大纲栏高 */
+    z-index: 19;
     height: 48px;
     align-items: center;
     padding: 0 16px;
@@ -219,22 +268,11 @@ html[data-skin="plume"] .VPNavBar {
   }
   .plume-nav-mobile::-webkit-scrollbar { display: none; }
 
-  /* =========================================================
-     ★ 关键修复：把“大纲栏” (.VPLocalNav) 往下挤
-     解决重叠问题
-     ========================================================= */
   html[data-skin="plume"] .VPLocalNav {
-    /* 
-      原始值通常是 var(--vp-nav-height) (60px)
-      我们改为：60px (原生导航) + 48px (自定义导航) = 108px
-    */
     top: calc(var(--vp-nav-height, 60px) + 48px) !important;
-    
-    /* 确保层级在我们的自定义导航之下，避免互相穿插 */
     z-index: 18 !important; 
   }
 
-  /* 调整内容区域 Padding，给两个导航栏腾出空间 */
   html[data-skin="plume"] .VPContent, 
   html[data-skin="plume"] .VPContent.is-home {
     padding-top: calc(var(--vp-nav-height, 60px) + 68px) !important;
@@ -255,9 +293,7 @@ html[data-skin="plume"] .VPNavBar {
   }
 }
 
-/* ==================================================
-   3. 隐藏与通用样式 (保持不变)
-   ================================================== */
+/* 隐藏与通用样式 */
 html[data-skin="plume"] .VPNavBarMenu,
 html[data-skin="plume"] .VPNavBarSearch,
 html[data-skin="plume"] .VPHero,
@@ -296,12 +332,4 @@ html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
 }
 .wolfe-toggle-btn:hover { background: var(--vp-c-bg-alt); color: var(--vp-c-brand-1); }
 .wolfe-toggle-btn.active { color: var(--vp-c-brand-1); }
-
-/* ==================================================
-   4. View Transition 动画样式
-   ================================================== */
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: 0.3s;
-}
 </style>
