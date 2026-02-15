@@ -36,14 +36,12 @@ function enforceModeByRoute(path) {
   const htmlEl = document.documentElement
 
   if (isBlogSection) {
-    // 访问 /blog/ 下的页面 → 强制进入博客模式
     if (htmlEl.getAttribute('data-skin') !== 'plume') {
       htmlEl.setAttribute('data-skin', 'plume')
       localStorage.setItem('wolfe-theme-mode', 'plume')
       isPlume.value = true
     }
   } else if (!isHome) {
-    // 访问非首页的普通文档 → 强制退出博客模式
     if (htmlEl.getAttribute('data-skin') === 'plume') {
       htmlEl.removeAttribute('data-skin')
       localStorage.setItem('wolfe-theme-mode', 'default')
@@ -52,15 +50,12 @@ function enforceModeByRoute(path) {
   }
 }
 
-// ★ 简化后的切换逻辑：始终跳转到首页 /
 function toggleMode() {
   if (isPlume.value) {
-    // 博客模式 → 普通模式，回到首页（显示 homepage.md）
     document.documentElement.removeAttribute('data-skin')
     localStorage.setItem('wolfe-theme-mode', 'default')
     isPlume.value = false
   } else {
-    // 普通模式 → 博客模式，回到首页（显示 blogHome）
     document.documentElement.setAttribute('data-skin', 'plume')
     localStorage.setItem('wolfe-theme-mode', 'plume')
     isPlume.value = true
@@ -88,7 +83,7 @@ onMounted(() => {
 
 <template>
   <Layout>
-    <!-- 1. 电脑端导航 (保持在导航栏内部) -->
+    <!-- 1. 电脑端导航 -->
     <template #nav-bar-content-before>
       <nav class="plume-nav desktop-only">
         <a 
@@ -104,7 +99,7 @@ onMounted(() => {
       </nav>
     </template>
 
-    <!-- 2. 移动端导航 (修复：使用 Teleport 传送到 body，确保 fixed 定位生效) -->
+    <!-- 2. 移动端导航 -->
     <template #layout-top>
       <ClientOnly>
         <Teleport to="body">
@@ -148,8 +143,21 @@ onMounted(() => {
 
 <style>
 /* ==================================================
-   1. 核心逻辑：博客模式下，强行隐藏默认主题元素
+   1. 核心修复：强制锁定 VitePress 默认导航栏
+   解决“磁吸没了”和“顶部有缝隙”的问题
    ================================================== */
+html[data-skin="plume"] .VPNavBar {
+  position: fixed !important;
+  top: 0 !important;
+  /* 防止 VitePress JS 逻辑通过 transform 将其移出屏幕 */
+  transform: translateY(0) !important;
+  z-index: 30 !important; /* 确保在我们的二级导航之上 */
+  /* 如果有背景透明问题，强制加背景 */
+  background-color: var(--vp-c-bg) !important;
+  border-bottom: 1px solid var(--vp-c-divider) !important;
+}
+
+/* 隐藏默认菜单项，但保留 Logo 和 切换按钮 */
 html[data-skin="plume"] .VPNavBarMenu,
 html[data-skin="plume"] .VPNavBarSearch,
 html[data-skin="plume"] .VPHero,
@@ -158,7 +166,6 @@ html[data-skin="plume"] .VPContent.is-home .vp-doc.container {
   display: none !important;
 }
 
-/* 隐藏首页默认背景，适配深色模式 */
 html[data-skin="plume"] .VPHome {
   background: transparent !important;
   padding-bottom: 0 !important;
@@ -170,7 +177,6 @@ html[data-skin="plume"].dark .VPContent.is-home {
   background: var(--plume-bg, #161820) !important;
 }
 
-/* 去除内容最大宽度限制，让博客组件铺满 */
 html[data-skin="plume"] .VPDoc .container,
 html[data-skin="plume"] .VPDoc:not(.has-sidebar) .container,
 html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
@@ -179,12 +185,11 @@ html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
 }
 
 /* ==================================================
-   2. 桌面端导航 (Desktop Only)
+   2. 桌面端导航
    ================================================== */
 .plume-nav.desktop-only {
   display: none;
 }
-/* 仅在电脑端(>960px)且为博客模式时显示 */
 @media (min-width: 960px) {
   html[data-skin="plume"] .plume-nav.desktop-only {
     display: flex;
@@ -195,64 +200,56 @@ html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
 }
 
 /* ==================================================
-   3. 移动端导航 (Mobile Only) - 修复磁吸问题
+   3. 移动端导航修复
    ================================================== */
 .plume-nav-mobile {
-  display: none; /* 默认不显示，防止电脑端出现 */
+  display: none;
 }
 
 @media (max-width: 960px) {
-  /* 只有在博客模式下才显示移动端导航 */
   html[data-skin="plume"] .plume-nav-mobile {
     display: flex;
     
-    /* ★★★ 核心修复：磁吸定位 ★★★ */
+    /* ★★★ 磁吸定位 ★★★ */
     position: fixed;
-    /* 紧贴在 VitePress 原生导航栏(通常60px左右)下方 */
+    /* 紧贴在被我们强制锁定的原生导航栏下方 */
     top: var(--vp-nav-height); 
     left: 0;
     right: 0;
-    z-index: 20; /* 确保在内容之上，但在侧边栏之下 */
+    z-index: 20;
 
-    /* 样式美化 */
-    height: 48px; /* 固定高度 */
+    height: 48px;
     align-items: center;
     padding: 0 16px;
     gap: 12px;
     
-    /* 横向滚动 (防止标签太多换行) */
     overflow-x: auto;
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* Firefox 隐藏滚动条 */
+    scrollbar-width: none;
 
-    /* 毛玻璃背景 */
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.95); /* 增加不透明度 */
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--vp-c-divider);
     box-shadow: 0 4px 12px rgba(0,0,0,0.03);
   }
   
-  /* 深色模式适配 */
   html[data-skin="plume"].dark .plume-nav-mobile {
-    background: rgba(30, 30, 32, 0.85);
+    background: rgba(30, 30, 32, 0.95);
   }
 
-  /* 隐藏滚动条 (Chrome/Safari) */
   .plume-nav-mobile::-webkit-scrollbar {
     display: none;
   }
 
-  /* ★★★ 核心修复：防止内容被遮挡 ★★★ */
-  /* 因为导航栏fixed了，所以内容由于脱离文档流会上移，必须加 padding 顶下来 */
+  /* ★★★ 内容区域 Padding 修正 ★★★ */
+  /* 原生导航栏高度(通常64px) + 我们的导航栏高度(48px) + 间隙(16px) */
   html[data-skin="plume"] .VPContent {
-    /* 原生导航栏高度 + 我们自定义导航栏高度(48px) + 一点间隙 */
-    padding-top: calc(var(--vp-nav-height) + 56px) !important;
+    padding-top: calc(var(--vp-nav-height) + 64px) !important;
   }
   
-  /* 调整胶囊样式更像 APP */
   .plume-nav-mobile .plume-nav-link {
-    flex-shrink: 0; /* 防止被挤压 */
+    flex-shrink: 0;
     background: var(--vp-c-bg-alt);
     padding: 6px 14px;
     border-radius: 20px;
@@ -268,7 +265,7 @@ html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
 }
 
 /* ==================================================
-   4. 通用链接样式
+   4. 通用样式
    ================================================== */
 .plume-nav-link {
   display: inline-flex;
