@@ -99,7 +99,7 @@ onMounted(() => {
       </nav>
     </template>
 
-    <!-- 2. 移动端导航 -->
+    <!-- 2. 移动端导航 (使用 Teleport 确保层级) -->
     <template #layout-top>
       <ClientOnly>
         <Teleport to="body">
@@ -143,64 +143,30 @@ onMounted(() => {
 
 <style>
 /* ==================================================
-   1. 核心修复：强制锁定 VitePress 默认导航栏
-   解决“磁吸没了”和“顶部有缝隙”的问题
+   1. 终极修复：彻底锁定导航栏 (The "Magnetic" Fix)
    ================================================== */
+/* 核心修改：同时锁定 VPNav (父容器) 和 VPNavBar (子容器) */
+html[data-skin="plume"] .VPNav,
 html[data-skin="plume"] .VPNavBar {
   position: fixed !important;
   top: 0 !important;
-  /* 防止 VitePress JS 逻辑通过 transform 将其移出屏幕 */
-  transform: translateY(0) !important;
-  z-index: 30 !important; /* 确保在我们的二级导航之上 */
-  /* 如果有背景透明问题，强制加背景 */
+  left: 0 !important;
+  width: 100% !important;
+  /* 强制禁止 transforms 移动 */
+  transform: none !important;
+  transition: none !important;
+  /* 确保在最顶层，但不要遮挡移动端菜单 */
+  z-index: 20 !important;
+}
+
+/* 修复背景可能透明的问题 */
+html[data-skin="plume"] .VPNavBar {
   background-color: var(--vp-c-bg) !important;
   border-bottom: 1px solid var(--vp-c-divider) !important;
 }
 
-/* 隐藏默认菜单项，但保留 Logo 和 切换按钮 */
-html[data-skin="plume"] .VPNavBarMenu,
-html[data-skin="plume"] .VPNavBarSearch,
-html[data-skin="plume"] .VPHero,
-html[data-skin="plume"] .VPFeatures,
-html[data-skin="plume"] .VPContent.is-home .vp-doc.container {
-  display: none !important;
-}
-
-html[data-skin="plume"] .VPHome {
-  background: transparent !important;
-  padding-bottom: 0 !important;
-}
-html[data-skin="plume"] .VPContent.is-home {
-  background: var(--plume-bg, #f5f7fa) !important;
-}
-html[data-skin="plume"].dark .VPContent.is-home {
-  background: var(--plume-bg, #161820) !important;
-}
-
-html[data-skin="plume"] .VPDoc .container,
-html[data-skin="plume"] .VPDoc:not(.has-sidebar) .container,
-html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
-  max-width: 100% !important;
-  padding: 0 !important;
-}
-
 /* ==================================================
-   2. 桌面端导航
-   ================================================== */
-.plume-nav.desktop-only {
-  display: none;
-}
-@media (min-width: 960px) {
-  html[data-skin="plume"] .plume-nav.desktop-only {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-left: 16px;
-  }
-}
-
-/* ==================================================
-   3. 移动端导航修复
+   2. 移动端导航 (Mobile Only)
    ================================================== */
 .plume-nav-mobile {
   display: none;
@@ -209,14 +175,16 @@ html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
 @media (max-width: 960px) {
   html[data-skin="plume"] .plume-nav-mobile {
     display: flex;
-    
-    /* ★★★ 磁吸定位 ★★★ */
+    /* 固定定位 */
     position: fixed;
-    /* 紧贴在被我们强制锁定的原生导航栏下方 */
-    top: var(--vp-nav-height); 
+    /* 
+       重要：使用 CSS 变量，但提供兜底值 60px。
+       因为 VPNav 被我们强制固定在 top:0，所以这里紧贴着它 
+    */
+    top: var(--vp-nav-height, 60px); 
     left: 0;
     right: 0;
-    z-index: 20;
+    z-index: 19; /* 放在原生导航栏(z-index:20)下面 */
 
     height: 48px;
     align-items: center;
@@ -228,24 +196,32 @@ html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
 
-    background: rgba(255, 255, 255, 0.95); /* 增加不透明度 */
-    backdrop-filter: blur(20px);
+    /* 加强背景不透明度，防止内容透视干扰 */
+    background: rgba(255, 255, 255, 0.98);
     border-bottom: 1px solid var(--vp-c-divider);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.04);
   }
   
+  /* 深色模式适配 */
   html[data-skin="plume"].dark .plume-nav-mobile {
-    background: rgba(30, 30, 32, 0.95);
+    background: rgba(30, 30, 32, 0.98);
   }
 
   .plume-nav-mobile::-webkit-scrollbar {
     display: none;
   }
 
-  /* ★★★ 内容区域 Padding 修正 ★★★ */
-  /* 原生导航栏高度(通常64px) + 我们的导航栏高度(48px) + 间隙(16px) */
-  html[data-skin="plume"] .VPContent {
-    padding-top: calc(var(--vp-nav-height) + 64px) !important;
+  /* ==================================================
+     3. 修复内容被遮挡问题
+     ================================================== */
+  /* 
+     计算公式：
+     原生导航栏 (~60px) + 移动端菜单 (48px) + 额外间距 (20px) 
+     确保内容从约 128px 处开始显示
+  */
+  html[data-skin="plume"] .VPContent, 
+  html[data-skin="plume"] .VPContent.is-home {
+    padding-top: calc(var(--vp-nav-height, 60px) + 68px) !important;
   }
   
   .plume-nav-mobile .plume-nav-link {
@@ -265,8 +241,47 @@ html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
 }
 
 /* ==================================================
-   4. 通用样式
+   4. 隐藏默认元素逻辑 (保持不变)
    ================================================== */
+html[data-skin="plume"] .VPNavBarMenu,
+html[data-skin="plume"] .VPNavBarSearch,
+html[data-skin="plume"] .VPHero,
+html[data-skin="plume"] .VPFeatures,
+html[data-skin="plume"] .VPContent.is-home .vp-doc.container {
+  display: none !important;
+}
+
+html[data-skin="plume"] .VPHome {
+  background: transparent !important;
+  padding-bottom: 0 !important;
+}
+html[data-skin="plume"] .VPContent.is-home {
+  background: var(--plume-bg, #f5f7fa) !important;
+}
+html[data-skin="plume"].dark .VPContent.is-home {
+  background: var(--plume-bg, #161820) !important;
+}
+html[data-skin="plume"] .VPDoc .container,
+html[data-skin="plume"] .VPDoc:not(.has-sidebar) .container,
+html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
+  max-width: 100% !important;
+  padding: 0 !important;
+}
+
+/* Desktop Only Logic */
+.plume-nav.desktop-only {
+  display: none;
+}
+@media (min-width: 960px) {
+  html[data-skin="plume"] .plume-nav.desktop-only {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 16px;
+  }
+}
+
+/* 通用链接样式 */
 .plume-nav-link {
   display: inline-flex;
   align-items: center;
@@ -279,15 +294,8 @@ html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
   border-radius: 8px;
   transition: all 0.2s;
 }
-
-.plume-nav-icon {
-  font-size: 14px;
-}
-
-.plume-nav-link:hover {
-  color: var(--vp-c-brand-1);
-}
-
+.plume-nav-icon { font-size: 14px; }
+.plume-nav-link:hover { color: var(--vp-c-brand-1); }
 .wolfe-toggle-btn {
   display: inline-flex;
   align-items: center;
@@ -299,11 +307,6 @@ html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
   color: var(--vp-c-text-2);
   transition: background 0.2s;
 }
-.wolfe-toggle-btn:hover {
-  background: var(--vp-c-bg-alt);
-  color: var(--vp-c-brand-1);
-}
-.wolfe-toggle-btn.active {
-  color: var(--vp-c-brand-1);
-}
+.wolfe-toggle-btn:hover { background: var(--vp-c-bg-alt); color: var(--vp-c-brand-1); }
+.wolfe-toggle-btn.active { color: var(--vp-c-brand-1); }
 </style>
