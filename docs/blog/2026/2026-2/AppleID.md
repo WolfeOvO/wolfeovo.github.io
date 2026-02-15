@@ -1,3 +1,11 @@
+---
+title: Apple ID 账号获取
+date: 2026-02-15
+description: 正在快马加鞭地更新 ing...
+series: 墙外指南
+series_order: 1
+tags: [Apple ID, 账号获取]
+---
 # Apple ID 账号获取
 
 ## 免费 ID 共享

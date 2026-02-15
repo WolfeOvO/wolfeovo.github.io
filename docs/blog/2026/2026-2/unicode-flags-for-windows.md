@@ -1,6 +1,8 @@
 ---
 title: 为 Windows 10 和 11 打补丁以显示 Unicode 国旗表情 🇨🇳
 date: 2026-02-14
+series: 电脑技巧
+series_order: 1
 ---
 # 为 Windows 10 和 11 打补丁以显示 Unicode 国旗表情 🇨🇳
 
