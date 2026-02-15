@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wolfe's Bento</title>
+    <style>
+        /* --- 1. 变量与重置 --- */
+        :root {
+            --bg-color: #f2f4f6;
+            --card-bg: #ffffff;
+            --text-main: #111111;
+            --text-sub: #666666;
+            --hover-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            --card-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            --radius: 28px;
+            --transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        /* 深色模式 */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #0d0d0d;
+                --card-bg: #1c1c1e;
+                --text-main: #ffffff;
+                --text-sub: #a1a1a6;
+                --hover-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            }
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        /* --- 2. 网格容器 --- */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4列布局 */
+            grid-auto-rows: 180px; /* 每行高度 */
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        /* --- 3. 卡片基础 --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition);
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+        
+        .card:hover {
+            transform: scale(1.02);
+            box-shadow: var(--hover-shadow);
+            z-index: 10;
+        }
+
+        /* 布局辅助类 */
+        .col-span-2 { grid-column: span 2; }
+        .row-span-2 { grid-row: span 2; }
+
+        /* 通用标题样式 */
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-desc {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            line-height: 1.4;
+        }
+        .card-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* --- 4. 具体卡片定制 --- */
+
+        /* Profile: 个人简介 */
+        .profile-card {
+            background: linear-gradient(135deg, #FFDEE9 0%, #B5FFFC 100%);
+            justify-content: flex-end;
+        }
+        .profile-content { z-index: 2; }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #fff;
+            margin-bottom: 16px;
+            padding: 4px;
+        }
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .profile-card h1 { font-size: 2rem; color: #333; margin-bottom: 4px; }
+        .profile-card p { color: #555; font-weight: 500; }
+
+        /* Blog: 博客 */
+        .blog-card {
+            background-color: var(--card-bg);
+            border: 2px solid rgba(0,0,0,0.05);
+            justify-content: center;
+        }
+        .blog-card:hover { border-color: #007aff; }
+        .blog-card .arrow-icon {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            opacity: 0.3;
+        }
+
+        /* Social Cards: 品牌色 */
+        .github-card { background: #24292e; color: #fff; justify-content: space-between; }
+        .github-card .card-desc { color: #aaa; }
+        
+        .x-card { background: #000; color: #fff; align-items: center; justify-content: center; }
+        .x-card svg { fill: #fff; width: 48px; height: 48px; }
+        
+        .tg-card { background: #229ED9; color: #fff; align-items: center; justify-content: center; }
+        .tg-card svg { fill: #fff; width: 48px; height: 48px; }
+
+        /* Email Card */
+        .email-card {
+            background: var(--text-main);
+            color: var(--bg-color);
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            text-align: center;
+        }
+        .email-card h3 { font-size: 1.2rem; margin-top: 10px; word-break: break-all; }
+        .email-card .status { 
+            font-size: 0.8rem; 
+            opacity: 0.7; 
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Storage Card */
+        .storage-card {
+            background: #fff;
+            justify-content: space-between;
+        }
+        [data-theme="dark"] .storage-card { background: #2c2c2e; }
+
+        /* --- 5. 提示弹窗 --- */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        /* --- 6. 移动端适配 --- */
+        @media (max-width: 768px) {
+            .bento-grid {
+                grid-template-columns: 1fr; /* 单列 */
+                grid-auto-rows: auto; /* 高度自适应 */
+            }
+            .col-span-2, .row-span-2 { grid-column: auto; grid-row: auto; }
+            .card { min-height: 160px; }
+            .profile-card { min-height: 300px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bento-grid">
+        
+        <!-- 1. 个人简介 (2列 x 2行) -->
+        <div class="card col-span-2 row-span-2 profile-card">
+            <div class="profile-content">
+                <div class="profile-avatar">
+                    <!-- 这里用了 DiceBear 随机头像，你可以换成自己的图片链接 -->
+                    <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Wolfe" alt="Avatar">
+                </div>
+                <h1>你好, 我是 Wolfe</h1>
+                <p>欢迎来到我的数字花园。</p>
+            </div>
+        </div>
+
+        <!-- 2. 博客 (2列 x 1行) -->
+        <a href="https://wolfeovo.github.io/blog" target="_blank" class="card col-span-2 blog-card">
+            <svg class="arrow-icon card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+            <div class="card-title">
+                <span>📝 我的博客</span>
+            </div>
+            <div class="card-desc">记录生活、技术与思考。</div>
+        </a>
+
+        <!-- 3. 储物间 (1列 x 1行) -->
+        <a href="https://wolfeovo.github.io/" target="_blank" class="card storage-card">
+            <div class="card-title">📦 储物间</div>
+            <div class="card-desc">归档与杂项</div>
+            <!-- 一个简单的文件夹图标装饰 -->
+            <svg style="width:40px; height:40px; margin-left:auto; opacity:0.1;" viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
+        </a>
+
+        <!-- 4. GitHub (1列 x 1行) -->
+        <a href="https://github.com/WolfeOvO" target="_blank" class="card github-card">
+            <svg style="width:32px; height:32px;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            <div style="font-weight:bold; font-size:1.1rem;">GitHub</div>
+        </a>
+
+        <!-- 5. 邮箱 (2列 x 1行) -->
+        <div class="card col-span-2 email-card" id="emailBtn">
+            <svg style="width:24px; height:24px; opacity:0.8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            <h3>fishp2024@gmail.com</h3>
+            <div class="status">点击复制</div>
+        </div>
+
+        <!-- 6. X (1列 x 1行) -->
+        <a href="https://x.com/_WolfeOvO_" target="_blank" class="card x-card" title="Twitter / X">
+            <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+
+        <!-- 7. Telegram (1列 x 1行) -->
+        <a href="https://t.me/WolfeOvO" target="_blank" class="card tg-card" title="Telegram">
+            <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+        </a>
+
+    </div>
+
+    <!-- 复制成功提示 -->
+    <div class="toast" id="toast">邮箱已复制到剪贴板</div>
+
+    <script>
+        const emailBtn = document.getElementById('emailBtn');
+        const toast = document.getElementById('toast');
+        const emailAddress = "fishp2024@gmail.com";
+
+        emailBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(emailAddress).then(() => {
+                showToast();
+            }).catch(err => {
+                console.error('Copy failed', err);
+                alert('复制失败，请手动复制: ' + emailAddress);
+            });
+        });
+
+        function showToast() {
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
