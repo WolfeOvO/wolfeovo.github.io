@@ -122,10 +122,7 @@ onMounted(() => {
 </template>
 
 <style>
-/* ============================================================
-   1. 全局及切换按钮样式 (始终保留)
-   ============================================================ */
-/* 隐藏普通模式导航栏中的"合辑"链接 */
+/* ====== 1. 全局及切换按钮 (基础样式) ====== */
 .VPNavBarMenu .VPLink[href*="/blog/series"] {
   display: none !important;
 }
@@ -141,42 +138,26 @@ onMounted(() => {
   background: transparent;
   color: var(--vp-c-text-2);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
   margin-left: 4px;
-  padding: 0;
 }
-
-.wolfe-toggle-btn::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 8px;
-  background: var(--vp-c-default-soft);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.wolfe-toggle-btn:hover::before { opacity: 1; }
 .wolfe-toggle-btn:hover, .wolfe-toggle-btn.active { color: var(--vp-c-brand-1); }
-.wolfe-toggle-btn svg { position: relative; z-index: 1; }
 
-/* ============================================================
-   2. 博客模式 (data-skin="plume") 下的强制隐藏逻辑 (核心)
-   ============================================================ */
-/* 杀掉默认首页的大标题、功能块、搜索框和导航菜单 */
+/* ====== 2. 博客模式 (data-skin="plume") 深度隐藏逻辑 ====== */
+/* 必须加 !important 确保在任何情况下都杀掉默认组件 */
 html[data-skin="plume"] .VPHero,
 html[data-skin="plume"] .VPFeatures,
 html[data-skin="plume"] .VPNavBarMenu,
 html[data-skin="plume"] .VPNavBarSearch,
-html[data-skin="plume"] .VPContent.is-home .vp-doc.container,
-html[data-skin="plume"] .VPSidebar {
+html[data-skin="plume"] .VPSidebar,
+html[data-skin="plume"] .VPContent.is-home .vp-doc.container {
   display: none !important;
 }
 
-/* 博客首页背景处理 */
-html[data-skin="plume"] .VPHome { background: transparent !important; }
+html[data-skin="plume"] .VPHome {
+  background: transparent !important;
+  padding: 0 !important;
+}
+
 html[data-skin="plume"] .VPContent.is-home {
   background: var(--plume-bg, #f5f7fa) !important;
 }
@@ -184,18 +165,8 @@ html[data-skin="plume"].dark .VPContent.is-home {
   background: var(--plume-bg, #161820) !important;
 }
 
-/* 博客首页容器宽度铺满 */
-html[data-skin="plume"] .VPDoc .container,
-html[data-skin="plume"] .VPDoc:not(.has-sidebar) .container,
-html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
-  max-width: 100% !important;
-}
-
-/* ============================================================
-   3. 桌面端导航样式 (Desktop Only)
-   ============================================================ */
+/* ====== 3. 桌面端导航 (PC展示) ====== */
 .plume-nav { display: none; }
-
 @media (min-width: 960px) {
   html[data-skin="plume"] .plume-nav {
     display: flex;
@@ -205,56 +176,62 @@ html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
   }
 }
 
-/* ============================================================
-   4. 手机端“磁吸”导航样式 (Mobile Sticky)
-   ============================================================ */
+/* ====== 4. 移动端磁吸导航 (核心修复) ====== */
 .plume-nav-mobile { display: none; }
 
 @media (max-width: 960px) {
   html[data-skin="plume"] .plume-nav-mobile {
-    display: flex;
-    /* 核心修复：磁吸定位 */
-    position: sticky;
-    top: var(--vp-nav-height); /* 粘在 VitePress 顶栏下方 */
+    display: flex !important;
+    /* 改用 fixed 确保它绝不会因为容器问题而无法吸附 */
+    position: fixed;
+    /* 核心：钉在原生导航栏下方 */
+    top: var(--vp-nav-height); 
     left: 0;
     right: 0;
-    z-index: 10;
+    /* 关键：设置一个略低于顶栏但高于内容的层级 */
+    z-index: 30; 
     
-    margin: 0;
-    padding: 10px 12px;
+    height: 52px;
+    align-items: center;
+    padding: 0 12px;
     gap: 8px;
-    justify-content: center;
     
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-
-    background: color-mix(in srgb, var(--vp-c-bg) 88%, transparent);
+    background: var(--vp-c-bg);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--vp-c-divider);
+    
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
 
   .plume-nav-mobile::-webkit-scrollbar { display: none; }
 
-  /* 补偿：既然磁吸占了高度，内容区需要防止重叠 */
+  /* 核心：内容区补偿。因为导航栏变 fixed 了，不占位，内容会上浮，
+     所以必须给内容区加一个“原顶栏高度 + 胶囊栏高度”的 Padding */
   html[data-skin="plume"] .VPContent {
-    padding-top: 0 !important; /* 让磁吸栏自然占位 */
+    padding-top: calc(var(--vp-nav-height) + 52px) !important;
   }
-  
-  /* 手机端胶囊化样式增强 */
+
+  /* 修复磁吸后被遮住的问题：确保主体内容层级低于胶囊栏 */
+  html[data-skin="plume"] .VPContent.is-home {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 手机端胶囊细节 */
   .plume-nav-mobile .plume-nav-link {
-    padding: 6px 12px;
-    border-radius: 999px;
     background: var(--vp-c-bg-alt);
     border: 1px solid var(--vp-c-divider);
+    padding: 6px 14px;
+    border-radius: 20px;
     font-size: 13px;
     flex-shrink: 0;
   }
 }
 
-/* ============================================================
-   5. 通用链接及覆盖层样式
-   ============================================================ */
+/* ====== 5. 通用链接样式 ====== */
 .plume-nav-link {
   display: inline-flex;
   align-items: center;
@@ -263,24 +240,20 @@ html[data-skin="plume"] .VPDoc:not(.has-sidebar) .content {
   font-weight: 500;
   color: var(--vp-c-text-2);
   text-decoration: none !important;
-  border-radius: 8px;
-  transition: all 0.2s;
-  white-space: nowrap;
 }
-
-.plume-nav-link:hover { color: var(--vp-c-brand-1); background: var(--vp-c-brand-soft); }
-.plume-nav-link.active { color: var(--vp-c-brand-1); font-weight: 600; background: var(--vp-c-brand-soft); }
+.plume-nav-link:hover { color: var(--vp-c-brand-1); }
+.plume-nav-link.active {
+  color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-soft) !important;
+  border-color: var(--vp-c-brand-1) !important;
+}
 
 .plume-nav-icon { font-size: 14px; }
-.plume-nav-icon.icon-image { width: 16px; height: 16px; }
 
-/* 博客首页覆盖层 */
+/* 博客组件容器 */
 .plume-blog-overlay {
   position: relative;
-  z-index: 1;
+  z-index: 2; /* 确保在背景之上 */
   width: 100%;
-  padding-top: 8px;
 }
-html:not([data-skin="plume"]) .plume-blog-overlay { display: none !important; }
-
 </style>
