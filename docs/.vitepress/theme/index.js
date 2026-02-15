@@ -98,7 +98,6 @@ function setupSpoiler() {
 
 export default {
   extends: DefaultTheme,
-  Layout: plumeLayout,
 
   enhanceApp({ app }) {
     // 注册插件
