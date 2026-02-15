@@ -5,32 +5,29 @@ import DefaultTheme from 'vitepress/theme'
 import BlogHome from './blogHome.vue'
 import IconRenderer from './iconRenderer.vue'
 
-// 明确解构并重命名，防止模板中 Layout 变量名冲突导致递归
-const { Layout: VPLayout } = DefaultTheme
 const { frontmatter, theme } = useData()
 const route = useRoute()
 const router = useRouter()
 
 // ========================================================================
-// 配置常量
+// 1. 常量定义 (你指定的路径结构)
 // ========================================================================
 const DOCS_HOME = '/docs/homepage'
 const BLOG_HOME = '/'
 const BLOG_PATH_PREFIX = '/blog/'
 
-// 判断路径归属（SSR 安全的纯函数）
+// 判断路径是否属于博客侧（SSR安全纯函数）
 function isBlogSidePath(path) {
   if (!path) return false
   return path === '/' || path.includes(BLOG_PATH_PREFIX)
 }
 
 // ========================================================================
-// 状态初始化 (SSR 安全)
+// 2. 状态初始化 (SSR 安全)
 // ========================================================================
 const isPlume = ref(false)
 
-// 在 setup 阶段仅做最简单的路径判断，确保 SSR 生成正确的初始 HTML 结构
-// 此时不读 localStorage，不操作 DOM，避免构建错误
+// 在 SSR 阶段仅根据路径做最简单的判断，避免复杂逻辑导致的死循环
 if (route.path && isBlogSidePath(route.path)) {
   isPlume.value = true
 }
@@ -38,7 +35,7 @@ if (route.path && isBlogSidePath(route.path)) {
 const isHomePage = computed(() => frontmatter.value.layout === 'home')
 const showBlogHome = computed(() => isPlume.value && isHomePage.value)
 
-// 博客导航配置
+// 导航图标配置
 const blogIcons = computed(() => theme.value.blogIcons || {})
 const navItems = computed(() => [
   { text: '博客', link: '/', icon: blogIcons.value.home || '📝' },
@@ -48,10 +45,9 @@ const navItems = computed(() => [
 ])
 
 // ========================================================================
-// 客户端逻辑 (仅在浏览器运行)
+// 3. 客户端交互逻辑 (仅在浏览器执行)
 // ========================================================================
 
-// 切换 CSS 和 DOM 属性
 function applyModeState(enable) {
   isPlume.value = enable
   if (typeof document !== 'undefined') {
@@ -65,33 +61,28 @@ function applyModeState(enable) {
   }
 }
 
-// 切换按钮逻辑
+// 切换按钮逻辑：保存现场 -> 计算目标 -> 切换跳转
 async function toggleMode() {
   const currentPath = route.path
   const nextModeIsPlume = !isPlume.value
 
-  // 1. 保存当前现场
-  if (isPlume.value) {
-    localStorage.setItem('wolfe-last-blog-path', currentPath)
-  } else {
-    localStorage.setItem('wolfe-last-doc-path', currentPath)
-  }
+  // A. 保存现场
+  const key = isPlume.value ? 'wolfe-last-blog-path' : 'wolfe-last-doc-path'
+  localStorage.setItem(key, currentPath)
 
-  // 2. 计算目标路径
+  // B. 计算目标
   let targetPath = ''
   if (nextModeIsPlume) {
-    // 准备切往博客
+    // 准备切往博客：读取历史 -> 强制校验
     targetPath = localStorage.getItem('wolfe-last-blog-path') || BLOG_HOME
-    // 纠错：如果存的是文档路径，强制回博客首页
     if (!isBlogSidePath(targetPath)) targetPath = BLOG_HOME
   } else {
-    // 准备切往文档
+    // 准备切往文档：读取历史 -> 强制校验
     targetPath = localStorage.getItem('wolfe-last-doc-path') || DOCS_HOME
-    // 纠错：如果存的是博客路径，强制回文档首页
     if (isBlogSidePath(targetPath)) targetPath = DOCS_HOME
   }
 
-  // 3. 执行切换和跳转
+  // C. 执行切换
   applyModeState(nextModeIsPlume)
   
   if (currentPath !== targetPath) {
@@ -100,34 +91,29 @@ async function toggleMode() {
 }
 
 onMounted(() => {
-  // === 初始化逻辑 (仅客户端) ===
-  
-  // 1. 再次确认模式（处理 hydration 可能的不一致）
-  const savedMode = localStorage.getItem('wolfe-theme-mode')
-  const currentPath = route.path
-  
-  if (isBlogSidePath(currentPath)) {
-    applyModeState(true) // 路径优先：在博客区域强制开启
-  } else if (currentPath.startsWith('/docs/')) {
-    applyModeState(false) // 路径优先：在文档区域强制关闭
-  } else if (savedMode === 'plume') {
-    applyModeState(true) // 模糊区域：读取缓存
-  } else {
+  // 1. 初始化校验：根据当前 URL 强制设定模式 (防止 Hydration 不匹配)
+  const path = route.path
+  if (isBlogSidePath(path)) {
+    applyModeState(true)
+  } else if (path.startsWith('/docs/')) {
     applyModeState(false)
+  } else {
+    // 模糊地带读取缓存
+    const saved = localStorage.getItem('wolfe-theme-mode')
+    applyModeState(saved === 'plume')
   }
 
-  // 2. 注册路由监听 (解决后退键问题 + 自动记录)
-  // 移入 onMounted 彻底解决 SSR 构建死循环问题
+  // 2. 路由监听：处理浏览器后退键 + 自动记录足迹
   watch(
     () => route.path,
     (newPath) => {
-      const belongsToBlog = isBlogSidePath(newPath)
+      const isBlog = isBlogSidePath(newPath)
       
-      // 强制纠正模式（应对浏览器后退键）
-      if (belongsToBlog && !isPlume.value) {
+      // 强制纠正模式（应对浏览器后退）
+      if (isBlog && !isPlume.value) {
         applyModeState(true)
-      } else if (!belongsToBlog && isPlume.value) {
-        // 只有明确进入文档区域才切回，防止在根路径误判
+      } else if (!isBlog && isPlume.value) {
+        // 只有明确进入文档区才切回，防止在根路径误判
         if (newPath.startsWith('/docs/') || newPath === DOCS_HOME) {
            applyModeState(false)
         }
@@ -135,16 +121,13 @@ onMounted(() => {
 
       // 记录足迹
       nextTick(() => {
-        if (isPlume.value) {
-          localStorage.setItem('wolfe-last-blog-path', newPath)
-        } else {
-          localStorage.setItem('wolfe-last-doc-path', newPath)
-        }
+        const key = isPlume.value ? 'wolfe-last-blog-path' : 'wolfe-last-doc-path'
+        localStorage.setItem(key, newPath)
       })
     }
   )
 
-  // 3. 防御性监听：防止 data-skin 被外部修改
+  // 3. 防御性监听：防止 data-skin 被意外修改
   const observer = new MutationObserver(() => {
     const hasAttr = document.documentElement.getAttribute('data-skin') === 'plume'
     if (isPlume.value !== hasAttr) {
@@ -159,8 +142,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <!-- 使用重命名后的 VPLayout，避免递归 -->
-  <VPLayout>
+  <!-- 关键修改：使用动态组件 :is="DefaultTheme.Layout" 避免递归引用导致的 Stack Overflow -->
+  <component :is="DefaultTheme.Layout">
     <!-- 电脑端导航 -->
     <template #nav-bar-content-before>
       <nav class="plume-nav desktop-only">
@@ -216,7 +199,7 @@ onMounted(() => {
         <BlogHome />
       </div>
     </template>
-  </VPLayout>
+  </component>
 </template>
 
 <style>
