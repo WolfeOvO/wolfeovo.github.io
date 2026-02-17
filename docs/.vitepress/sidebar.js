@@ -39,14 +39,6 @@ export const sidebar = {
       ]
     },
     {
-      text: '教程',
-      base: '/墙外指南/教程/',
-      items: [
-        { text: '加速 GitHub 下载', link: '加速GitHub下载' },
-        { text: 'Apple ID 账号获取', link: 'AppleID' }
-      ]
-    },
-    {
       text: '推荐机场',
       base: '/墙外指南/推荐机场/',
       collapsed: false,
