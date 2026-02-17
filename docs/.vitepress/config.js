@@ -7,6 +7,7 @@ import { customContainerColorPlugin } from './plugins/customContainerColor'
 import { licenseDeclarationPlugin } from './plugins/licenseDeclaration'
 import { spoiler } from './plugins/spoiler'
 import encryptedBlockPlugin from './plugins/encryptedBlockPlugin'
+import markdownItImageFigures from 'markdown-it-image-figures'
 
 export default defineConfig({
   title: "Wolfeの储物间",
