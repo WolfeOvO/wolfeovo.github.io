@@ -7,7 +7,6 @@ import { useRoute } from 'vitepress'
 import GitHubRelease from '../components/GitHubRelease.vue'
 import notionTags from '../components/notionTags.vue'
 import linkCard from '../components/linkCard.vue'
-import sidebar from '../components/sidebarDirectory.vue'
 import downloadCard from '../components/downloadCard.vue'
 import copyMessage from '../components/copyMessage.vue'
 import encryptedBlock from '../components/encryptedBlock.vue'
@@ -108,7 +107,6 @@ export default {
     app.component('gtl', GitHubRelease)
     app.component('nt', notionTags)
     app.component('lc', linkCard)
-    app.component('sidebar', sidebar)
     app.component('dc', downloadCard)
     app.component('eb', encryptedBlock)
   },
