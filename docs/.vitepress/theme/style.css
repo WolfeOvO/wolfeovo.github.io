@@ -2406,3 +2406,29 @@ figure figcaption {
   font-size: 14px;
   color: #666; /* 次要文本颜色 */
 }
+
+/* =========================================
+   修复 Details 动画白边及聚焦边框问题
+   ========================================= */
+
+/* 1. 消除父级容器的默认边框和溢出 */
+.custom-block.details {
+  overflow: hidden !important; /* 修复动画时的锯齿/白边 */
+  border: 1px solid transparent !important; /* 覆盖默认边框 */
+}
+
+/* 2. 消除点击标题时的聚焦白框 */
+.custom-block.details summary {
+  outline: none !important;
+}
+
+.custom-block.details summary:focus,
+.custom-block.details summary:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* 3. 确保内容区域没有会导致透出背景的 margin */
+.custom-block.details .details-content {
+  margin: 0 !important;
+}
