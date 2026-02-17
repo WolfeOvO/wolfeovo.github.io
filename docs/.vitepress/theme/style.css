@@ -2393,3 +2393,16 @@
   opacity: 0;
   transform: translateX(-50%) translateY(8px);
 }
+
+/* 图片容器样式 */
+figure {
+  margin: 2rem 0;
+  text-align: center; /* 让图片和文字都居中 */
+}
+
+/* 具体的图片说明文字样式 */
+figure figcaption {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #666; /* 次要文本颜色 */
+}

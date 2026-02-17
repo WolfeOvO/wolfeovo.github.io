@@ -25,6 +25,11 @@ export default defineConfig({
       md.use(licenseDeclarationPlugin)
       md.use(encryptedBlockPlugin)
       customContainerColorPlugin(md)
+      md.use(markdownItImageFigures, {
+        figcaption: true,
+        lazy: true,
+        async: true
+        })
       
       // 自定义脚注渲染
       md.renderer.rules.footnote_ref = (tokens, idx, options, env, slf) => {
