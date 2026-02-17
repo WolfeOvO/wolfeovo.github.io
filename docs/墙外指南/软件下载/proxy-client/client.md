@@ -163,7 +163,3 @@ Windows NT 内核设计之初是为了支持 RISC 工作站的。以下是 Windo
 2.  **如果你追求极致移动体验**：关注 **ARM64** (Snapdragon X Elite)，这是 Windows 的未来变数，类似于 MacBook 的 M 系列芯片体验。
 3.  **如果你是考古爱好者**：可以去研究 DEC Alpha 或 Itanium 版本的 Windows，那是 Windows NT 架构「纯洁性」的证明——证明了 Windows 不仅仅是 Intel 的附属品。
 :::
-
-
-## ↓在这里选择客户端~
-<sidebar />
