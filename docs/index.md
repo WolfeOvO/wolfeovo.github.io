@@ -9,9 +9,6 @@ hero:
     - theme: brand
       text: 立即进入
       link: /homepage
-    - theme: alt
-      text: 访问项目仓库
-      link: https://github.com/WolfeOvO/wolfeovo.github.io
   image:
     src: /media/icon/logo.svg
 

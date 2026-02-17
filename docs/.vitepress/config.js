@@ -78,10 +78,6 @@ export default defineConfig({
       archives: '📅',    // 归档页标题图标
     },
 
-    socialLinks: [
-      { icon: 'github', link: 'https://muselink.cc/wolfe' }
-      ],
-
     lastUpdated: {
       text: '最后更新',
       formatOptions: {
