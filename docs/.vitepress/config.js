@@ -7,7 +7,6 @@ import { customContainerColorPlugin } from './plugins/customContainerColor'
 import { licenseDeclarationPlugin } from './plugins/licenseDeclaration'
 import { spoiler } from './plugins/spoiler'
 import encryptedBlockPlugin from './plugins/encryptedBlockPlugin'
-import markdownItImageFigures from 'markdown-it-image-figures'
 
 export default defineConfig({
   title: "Wolfeの储物间",
@@ -26,13 +25,28 @@ export default defineConfig({
       md.use(licenseDeclarationPlugin)
       md.use(encryptedBlockPlugin)
       customContainerColorPlugin(md)
-      md.use(markdownItImageFigures, {
-        figcaption: true,
-        copyAttrs: true,
-        lazy: true,
-        async: true
-        })
-      
+
+      // 图片 alt 文本显示为 caption
+      const defaultImageRender = md.renderer.rules.image
+      md.renderer.rules.image = (tokens, idx, options, env, self) => {
+        const token = tokens[idx]
+        const alt = token.content || (token.children ? token.children.reduce((acc, t) => acc + t.content, '') : '')
+        const src = token.attrGet('src') || ''
+        const title = token.attrGet('title') || ''
+
+        if (!alt) {
+          return defaultImageRender
+            ? defaultImageRender(tokens, idx, options, env, self)
+            : self.renderToken(tokens, idx, options)
+        }
+
+        return `<figure class="img-caption">\n` +
+          `<img src="${md.utils.escapeHtml(src)}" alt="${md.utils.escapeHtml(alt)}"` +
+          `${title ? ` title="${md.utils.escapeHtml(title)}"` : ''} loading="lazy">\n` +
+          `<figcaption>${md.utils.escapeHtml(alt)}</figcaption>\n` +
+          `</figure>`
+      }
+
       // 自定义脚注渲染
       md.renderer.rules.footnote_ref = (tokens, idx, options, env, slf) => {
         const id = slf.rules.footnote_anchor_name(tokens, idx, options, env, slf)

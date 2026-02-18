@@ -2307,6 +2307,37 @@
   }
 }
 
+/* ================================================================
+   图片 Caption 样式（alt 文本显示为标题）
+   ================================================================ */
+.vp-doc .img-caption {
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+.vp-doc .img-caption img {
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.vp-doc .img-caption figcaption {
+  display: inline-block;
+  margin-top: 0.6rem;
+  padding: 0.2rem 1rem;
+  color: #666;
+  font-size: 0.875rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.dark .vp-doc .img-caption figcaption {
+  color: #aaa;
+  border-color: #3a3a3a;
+  background: #1e1e1e;
+}
+
 /* Spoiler 高斯模糊样式 */
 .spoiler {
   display: inline;
@@ -2393,42 +2424,6 @@
 .dl-toast-leave-to {
   opacity: 0;
   transform: translateX(-50%) translateY(8px);
-}
-
-/* 图片和描述的容器 */
-figure {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 2.5rem 0;
-  gap: 12px; /* 图片和文字之间的间距 */
-}
-
-/* 图片本身加点圆角和微弱阴影（可选，更美观） */
-figure img {
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-}
-
-/* 核心：模仿截图中的胶囊样式说明文字 */
-figure figcaption {
-  display: inline-block;
-  padding: 4px 14px;
-  
-  /* 颜色设置：浅灰背景，深灰文字 */
-  background-color: var(--vp-c-bg-soft); /* 适配主题的浅色背景 */
-  color: var(--vp-c-text-2);             /* 适配主题的次要文字颜色 */
-  
-  /* 形状：胶囊状圆角 */
-  border-radius: 20px; 
-  
-  /* 字体设置 */
-  font-size: 0.85rem;
-  font-weight: 500;
-  line-height: 1.4;
-  
-  /* 边框（可选，如果想要更有层次感可以加上） */
-  border: 1px solid var(--vp-c-gutter);
 }
 
 /* =========================================
