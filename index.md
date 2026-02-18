@@ -1,3 +1,5 @@
+# 
+
 # 联系方式
 
 [X](https://x.com/_WolfeOvO_)|[GitHub](https://github.com/WolfeOvO)|[Telegram](https://t.me/WolfeOvO)
@@ -8,7 +10,7 @@
 
 请选择你要访问的网站：
 
-<u>首页_（本页）_</u>|[储物间](https://wolfeovo.github.io/depot)|[博客](https://wolfeovo.github.io/blog)
+首页（本页）|[储物间](https://wolfeovo.github.io/depot)|[博客](https://wolfeovo.github.io/blog)
 
 储物间备用站，托管于 Cloudflare：[https://wolfe.pages.dev](https://wolfe.pages.dev)
 
