@@ -1,4 +1,4 @@
-# 。
+# 🥳欢迎！
 
 # 联系方式
 
@@ -14,6 +14,6 @@
 
 储物间备用站，托管于 Cloudflare：[https://wolfe.pages.dev](https://wolfe.pages.dev)
 
-> Cloudflare 部署于全球的服务器多，在 GitHub Pages 无法访问或访问较慢时可作为备用。
+> Cloudflare 部署于全球的服务器较多，在 GitHub Pages 无法访问或访问较慢时可作为备用。
 
 # 永久找回地址：**``wolfeovo.github.io``**
