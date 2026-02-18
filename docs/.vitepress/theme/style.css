@@ -700,6 +700,7 @@
   list-style: none;
   color: #424242;
   user-select: none;
+  margin: 0 !important; /* 去除继承的 margin，防止露出白色背景 */
 }
 
 .vp-doc .custom-block.details summary::-webkit-details-marker {
