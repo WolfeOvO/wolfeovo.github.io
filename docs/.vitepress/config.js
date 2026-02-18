@@ -28,6 +28,7 @@ export default defineConfig({
       customContainerColorPlugin(md)
       md.use(markdownItImageFigures, {
         figcaption: true,
+        copyAttrs: true,
         lazy: true,
         async: true
         })

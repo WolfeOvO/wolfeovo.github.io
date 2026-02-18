@@ -2395,17 +2395,40 @@
   transform: translateX(-50%) translateY(8px);
 }
 
-/* 图片容器样式 */
+/* 图片和描述的容器 */
 figure {
-  margin: 2rem 0;
-  text-align: center; /* 让图片和文字都居中 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 2.5rem 0;
+  gap: 12px; /* 图片和文字之间的间距 */
 }
 
-/* 具体的图片说明文字样式 */
+/* 图片本身加点圆角和微弱阴影（可选，更美观） */
+figure img {
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* 核心：模仿截图中的胶囊样式说明文字 */
 figure figcaption {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #666; /* 次要文本颜色 */
+  display: inline-block;
+  padding: 4px 14px;
+  
+  /* 颜色设置：浅灰背景，深灰文字 */
+  background-color: var(--vp-c-bg-soft); /* 适配主题的浅色背景 */
+  color: var(--vp-c-text-2);             /* 适配主题的次要文字颜色 */
+  
+  /* 形状：胶囊状圆角 */
+  border-radius: 20px; 
+  
+  /* 字体设置 */
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.4;
+  
+  /* 边框（可选，如果想要更有层次感可以加上） */
+  border: 1px solid var(--vp-c-gutter);
 }
 
 /* =========================================
