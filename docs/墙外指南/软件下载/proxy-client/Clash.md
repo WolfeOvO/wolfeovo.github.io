@@ -5,7 +5,7 @@
 
 ## CFW (Clash for Windows)
 
-~~不是 [GFW](https://zh.wikipedia.org/wiki/%E9%98%B2%E7%81%AB%E9%95%BF%E5%9F%8E) 啊喂！~~
+||不是 [GFW](https://zh.wikipedia.org/wiki/%E9%98%B2%E7%81%AB%E9%95%BF%E5%9F%8E) 啊喂！||
 
 基于 Clash Premium 内核的全平台代理软件，2023 年 11 月 2 日宣布停止更新并删除发布仓库。
 

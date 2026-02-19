@@ -17,7 +17,8 @@ export const sidebar = {
         { text: '10 - 网页浏览器', link: '10-网页浏览器' },
         { text: '11 - 维基媒体', link: '11-维基媒体' },
         { text: '12 - 工具箱', link: '12-工具箱' },
-        {text: '13 - Telegram 频道推荐', link: '13-TG频道推荐' }
+        { text: '13 - Telegram 频道推荐', link: '13-TG频道推荐' },
+        { text: '14 - 云图导航', link: '14-云图导航' }
       ]
     }
   ],

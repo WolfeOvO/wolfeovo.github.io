@@ -2310,15 +2310,15 @@
 /* ================================================================
    图片 Caption 样式（alt 文本显示为标题）
    ================================================================ */
+/* 所有图片统一圆角和阴影 */
+.vp-doc img {
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
 .vp-doc .img-caption {
   text-align: center;
   margin: 1.5rem 0;
-}
-
-.vp-doc .img-caption img {
-  max-width: 100%;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
 .vp-doc .img-caption figcaption {
