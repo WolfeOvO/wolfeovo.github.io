@@ -72,6 +72,7 @@ export const sidebar = {
             { text: 'Sing-box', link: 'Sing-box' },
             { text: 'Clash Mi', link: 'ClashMi' },
             { text: 'Clash Verge Rev', link: 'ClashVergeRev' },
+            { text: 'NekoBox for Android', link: 'NekoBoxforAndroid' },
             { text: 'Clash Meta for Android', link: 'ClashMetaforAndroid' }
           ]
         }
