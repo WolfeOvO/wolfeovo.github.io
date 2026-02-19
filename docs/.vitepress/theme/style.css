@@ -1,3 +1,7 @@
+html {
+  scroll-behavior: smooth !important;
+}
+
 /* ================================================================
    CSS 变量定义
    ================================================================ */
@@ -2450,4 +2454,12 @@
 /* 3. 确保内容区域没有会导致透出背景的 margin */
 .custom-block.details .details-content {
   margin: 0 !important;
+}
+
+.content-card .card-body img {
+  width: 100%;
+  /* 核心修复：提前占位，防止图片加载后高度抖动 */
+  aspect-ratio: 16 / 9; 
+  object-fit: cover;
+  background-color: var(--vp-c-bg-alt); /* 占位底色 */
 }
