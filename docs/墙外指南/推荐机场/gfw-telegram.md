@@ -25,7 +25,7 @@
 
 快来关注这个宝藏频道！
 
-## 翻翻墙 | 机场评测
+## 翻翻墙 | 机场评测 {#翻翻墙}
 
 <lc url="https://t.me/ffqchannel" />
 
@@ -44,7 +44,7 @@
 - Tron：||TDdtJmMUs3QM4wvGeED5UpGwtDDv1XhhzQ||
 - Polygon：||0x7DcFc2B1eEb96aF36C43755F9a39bB6cC6A0ffff||
 
-## 海豚机场测评｜用户侧体验｜测速频道
+## 海豚机场测评｜用户侧体验｜测速频道 {#海豚}
 
 <lc url="https://t.me/haitun_channel" />
 
