@@ -25,7 +25,7 @@
 
 快来关注这个宝藏频道！
 
-## 翻翻墙 | 机场评测
+## 翻翻墙丨机场评测
 
 <lc url="https://t.me/ffqchannel" />
 
@@ -43,3 +43,28 @@
 请给我钱，谢谢喵~
 - Tron：||TDdtJmMUs3QM4wvGeED5UpGwtDDv1XhhzQ||
 - Polygon：||0x7DcFc2B1eEb96aF36C43755F9a39bB6cC6A0ffff||
+
+## 海豚机场测评｜用户侧体验｜测速频道
+
+<lc url="https://t.me/haitun_channel" />
+
+由 Telegram 散户群体自发形成的测速社区。专注**用户测**的体验——**单线程表现**、**三网/国际区域表现**、**实际延迟和稳定性**等综合评定。
+
+欢迎所有**用户👨🏻‍💻**和**机场主🕋**投稿，共建透明、客观、更反映用户实际体验的评测生态。
+
+➤投稿：[@HaitunSubmit_bot](https://t.me/HaitunSubmit_bot)<br>
+➤专线入口天梯表：[https://www.haitunt.org](https://www.haitunt.org)<br>
+➤若有可能的撤稿事项，仅受理**原投稿人**。
+
+讨论群：[@haitunspeed](https://t.me/haitunspeed)
+
+## CloudTest 机场测速频道
+
+<lc url="https://t.me/cloudtestcesu" />
+
+主要是自己手里的一些机场和订阅的测速，也欢迎投稿，不定期抽奖和发放福利。
+
+本频道对测速结果不做担保，测速结果不能当做实际购买参考，每个人的地区和宽带不同，使用体验各不相同，实际使用体验请各位自行测试！
+
+投稿：[@cloudtesttougaobot](https://t.me/cloudtesttougaobot)
+机场价格图：[@cloudtestprice](https://t.me/cloudtestprice)
