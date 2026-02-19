@@ -1,6 +1,6 @@
 import './style.css'
 import DefaultTheme from 'vitepress/theme'
-import { h, render, onMounted, watch } from 'vue'
+import { h, render, onMounted, watch, nextTick } from 'vue'  // 新增了 nextTick
 import { useRoute } from 'vitepress'
 
 // 组件
@@ -95,6 +95,76 @@ function setupSpoiler() {
 }
 // ============================================
 
+// ====== 动态锚点吸附逻辑 (零布局修改核心) ======
+let __anchorObserver = null
+let __anchorTimeout = null
+
+function setupAnchorFix() {
+  if (typeof window === 'undefined') return
+
+  const hash = window.location.hash
+  if (!hash) return
+
+  try {
+    const targetId = decodeURIComponent(hash.slice(1))
+    
+    nextTick(() => {
+      const targetEl = document.getElementById(targetId)
+      if (!targetEl) return
+
+      let isUserInteracted = false
+      const cancelFix = () => {
+        isUserInteracted = true
+        if (__anchorObserver) {
+          __anchorObserver.disconnect()
+          __anchorObserver = null
+        }
+      }
+
+      // 清理残留的监视器
+      cancelFix()
+      isUserInteracted = false
+      if (__anchorTimeout) clearTimeout(__anchorTimeout)
+
+      // 防干扰设计：只要用户介入(滚轮、触摸、点击大纲)，立刻交还控制权
+      window.addEventListener('wheel', cancelFix, { once: true, passive: true })
+      window.addEventListener('touchstart', cancelFix, { once: true, passive: true })
+      window.addEventListener('mousedown', cancelFix, { once: true, passive: true })
+
+      // 监视整个文档的物理变化
+      __anchorObserver = new ResizeObserver(() => {
+        if (isUserInteracted) return
+        
+        const el = document.getElementById(targetId)
+        if (!el) return
+        
+        // 动态获取当前主题下顶部固定导航栏的实际高度
+        const navHeightStr = getComputedStyle(document.documentElement).getPropertyValue('--vp-nav-height')
+        const navHeight = parseInt(navHeightStr) || 68
+        const offset = el.getBoundingClientRect().top
+        
+        // 当组件 fetch 数据或图片完成并撑开文档时，顶部坐标会被挤下去
+        // 一旦偏差超过 2px，立刻瞬移补正，肉眼几乎无法察觉到抖动
+        if (Math.abs(offset - navHeight) > 2) {
+          window.scrollTo({ top: window.pageYOffset + offset - navHeight, behavior: 'instant' })
+        }
+      })
+
+      const docEl = document.querySelector('.vp-doc') || document.body
+      if (docEl) __anchorObserver.observe(docEl)
+
+      // 赋予异步组件 3.5 秒的最大保护期，之后强制释放监控内存
+      __anchorTimeout = setTimeout(() => {
+        cancelFix()
+        window.removeEventListener('wheel', cancelFix)
+        window.removeEventListener('touchstart', cancelFix)
+        window.removeEventListener('mousedown', cancelFix)
+      }, 3500)
+    })
+  } catch (e) {}
+}
+// ============================================
+
 export default {
   extends: DefaultTheme,
 
@@ -127,27 +197,34 @@ export default {
 
       // 初始化 Spoiler 处理
       setupSpoiler()
+
+      // ✅ 页面初次载入时初始化锚点防偏移保护
+      setupAnchorFix()
+      
+      // ✅ 监听右侧侧边栏(大纲)的点击哈希跳转
+      window.addEventListener('hashchange', setupAnchorFix)
     })
 
-    // 路由变化时重新初始化脚注
+    // 路由变化时重新初始化脚注和锚点保护
     watch(
       () => route.path,
       () => {
-        // 等待 DOM 更新
         setTimeout(initFootnotes, 100)
+        
+        // 由于组件切换存在 DOM 卸载，稍微延后执行防止拿不到新页面 DOM
+        setTimeout(setupAnchorFix, 100) 
       }
     )
   }
 }
 
-// 脚注初始化函数（保留你的原逻辑）
+// 脚注初始化函数（保留原逻辑不变）
 function initFootnotes() {
   if (typeof document === 'undefined') return
 
   const footnoteLinks = document.querySelectorAll('.footnote-link')
 
   footnoteLinks.forEach((link) => {
-    // 避免重复绑定
     if (link.dataset.footnoteInit) return
     link.dataset.footnoteInit = 'true'
 
@@ -158,12 +235,10 @@ function initFootnotes() {
 
     const text = footnoteContent.querySelector('p')?.innerText || ''
 
-    // 创建 tooltip
     const tooltip = document.createElement('div')
     tooltip.className = 'footnote-tooltip'
     tooltip.innerHTML = text
 
-    // 桌面端：悬停显示
     link.addEventListener('mouseenter', () => {
       if (window.innerWidth > 768) {
         document.body.appendChild(tooltip)
@@ -179,7 +254,6 @@ function initFootnotes() {
       setTimeout(() => tooltip.remove(), 200)
     })
 
-    // 移动端：点击显示
     link.addEventListener('click', (e) => {
       if (window.innerWidth <= 768) {
         e.preventDefault()
@@ -190,7 +264,6 @@ function initFootnotes() {
         tooltip.style.top = rect.bottom + 5 + 'px'
         tooltip.classList.add('visible')
 
-        // 点击其他地方关闭
         setTimeout(() => {
           document.addEventListener('click', function closeTooltip(ev) {
             if (!tooltip.contains(ev.target) && ev.target !== link) {
