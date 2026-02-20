@@ -68,3 +68,61 @@
 
 投稿：[@cloudtesttougaobot](https://t.me/cloudtesttougaobot)
 机场价格图：[@cloudtestprice](https://t.me/cloudtestprice)
+
+## 机场列表 OpenClaw
+
+<lc url="https://t.me/jichang_list" />
+
+欢迎关注机场列表频道。
+
+本频道不断的收录机场的信息（名称、地址、频道、群组等等），均无 AFF，放心食用。<br>
+本频道信息来源：机器人自动抓取、投稿。
+
+序号：序号、顺序不代表机场排名<br>
+时间：是指消息发布时间，不是机场的开业时间<br>
+投稿：**频道内私聊**或[**@jichang_list_bot**](https://t.me/jichang_list_bot)
+
+机场交流群：
+- [@jichang_user](https://t.me/jichang_user)
+- [@EXAIRPORTSGroup](https://t.me/EXAIRPORTSGroup)
+
+## 好用的机场推荐
+
+<lc url="https://t.me/wsjkjk" />
+
+自用的机场推荐，从 ¥1.5-¥15 不等，各位老板按需购买☺️
+
+## 某咕咕的 机场 & VPN 测评站
+
+<lc url="https://t.me/AAAMouGuGuVPN2026" />
+
+投稿 Bot：[@AAAGUGUVPN_Bot](https://t.me/AAAGUGUVPN_Bot)
+
+测评群组：[@AAAMouGuGuVPN2026Group](https://t.me/AAAMouGuGuVPN2026Group)
+
+投稿要求：[https://t.me/AAAMouGuGuVPN2026/19](https://t.me/AAAMouGuGuVPN2026/19)
+
+机场测评属于公益测评，不带有任何 AFF 哦。
+
+星星的 Emby 测评群组：[@Starsfolks](https://t.me/Starsfolks)<br>
+星星的 Emby 测评频道：[@StarsNavigation](https://t.me/StarsNavigation)
+
+## 前女友们用过的机场—始于机场，不止机场
+
+<lc url="https://t.me/gebaopiCloud" />
+
+投稿：[exairport2022@gmail.com](mailto:exairport2022@gmail.com)<br>
+交流群：[https://t.me/EXAIRPORTSGroup](https://t.me/EXAIRPORTSGroup)<br>
+机场主投稿请按如下格式：
+
+``` Plain Text
+机场名：
+机场官网：
+机场频道：
+机场群组：
+机场套餐：
+机场订阅：
+机场特色：（可选）
+```
+
+本频道会对线路和落地，运营时间各方面综合考虑，不保证进行频道推送。
