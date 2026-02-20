@@ -7,6 +7,7 @@ import { customContainerColorPlugin } from './plugins/customContainerColor'
 import { licenseDeclarationPlugin } from './plugins/licenseDeclaration'
 import { spoiler } from './plugins/spoiler'
 import encryptedBlockPlugin from './plugins/encryptedBlockPlugin'
+import multimdTable from 'markdown-it-multimd-table'
 
 export default defineConfig({
   title: "Wolfeの储物间",
@@ -25,6 +26,9 @@ export default defineConfig({
       md.use(licenseDeclarationPlugin)
       md.use(encryptedBlockPlugin)
       customContainerColorPlugin(md)
+      md.use(multimdTable, {
+        headerless: true,
+      })
 
       // 图片 alt 文本显示为 caption
       const defaultImageRender = md.renderer.rules.image
