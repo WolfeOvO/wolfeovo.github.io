@@ -11,3 +11,6 @@
 
 ## [海豚测评导航](gfw-telegram#海豚)
 <lc url="https://www.haitunt.org" />
+
+## 挂梯子
+<lc url="https://guatizi.com/" />
