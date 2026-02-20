@@ -14,3 +14,6 @@
 
 ## 挂梯子
 <lc url="https://guatizi.com/" />
+
+## [机场推荐](gfw-telegram#科学上网观察与机场测速)
+<lc url="https://jichangtuijian.com/" />

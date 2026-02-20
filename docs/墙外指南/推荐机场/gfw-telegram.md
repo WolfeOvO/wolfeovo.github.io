@@ -126,3 +126,16 @@
 ```
 
 本频道会对线路和落地，运营时间各方面综合考虑，不保证进行频道推送。
+
+## 科学上网观察与机场测速
+
+<lc url="https://t.me/jichangtj" />
+
+#机场推荐 #机场测速 #机场评测/观察/点评，科学上网和科技相关新闻资讯。<br>
+#机场推荐：[https://bit.ly/3fdHzbp](https://bit.ly/3fdHzbp)
+
+X：[https://x.com/jichangtj](https://x.com/jichangtj)
+
+选机场要求很高！除非优秀否则不收。<br>
+投稿要求：[https://t.me/jichangtj/1014](https://t.me/jichangtj/1014)<br>
+投稿：[@jichangtjBot](https://t.me/jichangtjBot)（骚扰会 ban）

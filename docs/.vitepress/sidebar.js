@@ -58,10 +58,11 @@ export const sidebar = {
     },
     {
       text: '软件下载',
-      base: '/墙外指南/软件下载/proxy-client/', 
+      base: '/墙外指南/软件下载/', 
       items: [
         { 
           text: '客户端',
+          base: '/墙外指南/软件下载/proxy-client/',
           collapsed: true,
           items: [
             { text: '合集（一定要先读完我再下载！）', link: 'client' },
@@ -74,6 +75,13 @@ export const sidebar = {
             { text: 'Clash Verge Rev', link: 'ClashVergeRev' },
             { text: 'NekoBox for Android', link: 'NekoBoxforAndroid' },
             { text: 'Clash Meta for Android', link: 'ClashMetaforAndroid' }
+          ]
+        },
+        {
+          text: '社交平台',
+          base: '/墙外指南/软件下载/social-platform/',
+          items: [
+            { text: 'Telegram', link: 'Telegram' }
           ]
         }
       ]
