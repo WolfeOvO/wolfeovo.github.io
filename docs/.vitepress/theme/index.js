@@ -1,6 +1,6 @@
 import './style.css'
 import DefaultTheme from 'vitepress/theme'
-import { h, render, onMounted, watch, nextTick } from 'vue'  // 新增了 nextTick
+import { h, render, onMounted, watch, nextTick } from 'vue'
 import { useRoute } from 'vitepress'
 
 // 组件
@@ -95,7 +95,6 @@ function setupSpoiler() {
 }
 // ============================================
 
-// ====== 动态锚点吸附逻辑 (零布局修改核心) ======
 let __anchorObserver = null
 let __anchorTimeout = null
 
@@ -107,8 +106,8 @@ function setupAnchorFix() {
 
   try {
     const targetId = decodeURIComponent(hash.slice(1))
-    
-    nextTick(() => {
+
+    requestAnimationFrame(() => {
       const targetEl = document.getElementById(targetId)
       if (!targetEl) return
 
@@ -121,32 +120,28 @@ function setupAnchorFix() {
         }
       }
 
-      // 清理残留的监视器
       cancelFix()
       isUserInteracted = false
       if (__anchorTimeout) clearTimeout(__anchorTimeout)
 
-      // 防干扰设计：只要用户介入(滚轮、触摸、点击大纲)，立刻交还控制权
       window.addEventListener('wheel', cancelFix, { once: true, passive: true })
       window.addEventListener('touchstart', cancelFix, { once: true, passive: true })
       window.addEventListener('mousedown', cancelFix, { once: true, passive: true })
 
-      // 监视整个文档的物理变化
+      let lastAbsoluteTop = window.scrollY + targetEl.getBoundingClientRect().top
+
       __anchorObserver = new ResizeObserver(() => {
         if (isUserInteracted) return
+
+        const currentAbsoluteTop = window.scrollY + targetEl.getBoundingClientRect().top
+
+        const diff = currentAbsoluteTop - lastAbsoluteTop
         
-        const el = document.getElementById(targetId)
-        if (!el) return
-        
-        // 动态获取当前主题下顶部固定导航栏的实际高度
-        const navHeightStr = getComputedStyle(document.documentElement).getPropertyValue('--vp-nav-height')
-        const navHeight = parseInt(navHeightStr) || 68
-        const offset = el.getBoundingClientRect().top
-        
-        // 当组件 fetch 数据或图片完成并撑开文档时，顶部坐标会被挤下去
-        // 一旦偏差超过 2px，立刻瞬移补正，肉眼几乎无法察觉到抖动
-        if (Math.abs(offset - navHeight) > 2) {
-          window.scrollTo({ top: window.pageYOffset + offset - navHeight, behavior: 'instant' })
+        if (Math.abs(diff) > 1) {
+          window.scrollBy(0, diff)
+          
+          // 修正后更新记录
+          lastAbsoluteTop = currentAbsoluteTop
         }
       })
 
@@ -185,40 +180,30 @@ export default {
     const route = useRoute()
 
     onMounted(() => {
-      // ✅ 挂载 Copy Toast + 劫持 clipboard（放最前面更稳）
       mountCopyToastOnce()
       patchClipboardOnce()
-
-      // 初始化 details 动画
       setupDetailsAnimation()
-
-      // 初始化脚注
       initFootnotes()
-
-      // 初始化 Spoiler 处理
       setupSpoiler()
 
-      // ✅ 页面初次载入时初始化锚点防偏移保护
+      // 页面初次载入时初始化锚点防偏移保护
       setupAnchorFix()
       
-      // ✅ 监听右侧侧边栏(大纲)的点击哈希跳转
+      // 监听右侧大纲点击哈希跳转
       window.addEventListener('hashchange', setupAnchorFix)
     })
 
-    // 路由变化时重新初始化脚注和锚点保护
     watch(
       () => route.path,
       () => {
         setTimeout(initFootnotes, 100)
-        
-        // 由于组件切换存在 DOM 卸载，稍微延后执行防止拿不到新页面 DOM
         setTimeout(setupAnchorFix, 100) 
       }
     )
   }
 }
 
-// 脚注初始化函数（保留原逻辑不变）
+// 脚注初始化函数
 function initFootnotes() {
   if (typeof document === 'undefined') return
 
