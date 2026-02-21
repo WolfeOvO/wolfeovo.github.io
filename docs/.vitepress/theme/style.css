@@ -1,6 +1,24 @@
-/* ================================================================
-   CSS 变量定义
-   ================================================================ */
+/* 1. 引入 Google Fonts：同时加载 Noto Sans TC (无衬线/普通文本) 和 Noto Serif TC (衬线/标题) */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap');
+
+/* 2. 引入 Maple Mono 字体 (用于代码) */
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/maple-mono@latest/index.css');
+
+:root {
+  /* =================普通文本字体================= */
+  --vp-font-family-base: "Noto Sans TC", "PingFang TC", "Apple LiGothic Medium", "Microsoft JhengHei", sans-serif;
+  
+  /* =================代码字体================= */
+  --vp-font-family-mono: "Maple Mono", "JetBrains Mono", "Fira Code", monospace;
+}
+
+/* =================标题字体单独设置================= */
+h1, h2, h3, h4, h5, h6,
+.vp-doc h1, .vp-doc h2, .vp-doc h3, .vp-doc h4, .vp-doc h5, .vp-doc h6,
+.title, .name {
+  font-family: "Noto Serif TC", "PMingLiU", "MingLiU", serif !important;
+}
+
 :root {
   /* 品牌色 */
   --vp-c-brand-1: #6CAFD6;
