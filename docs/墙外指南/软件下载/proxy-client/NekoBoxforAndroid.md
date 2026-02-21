@@ -8,9 +8,9 @@ Telegram 更新&发布频道：[https://t.me/Matsuridayo](https://t.me/Matsurida
 
 ## 文档
 
-<lc url="https://github.com/MatsuriDayo/NekoBoxForAndroid/blob/main/README.md" />
-
 <lc url="https://matsuridayo.github.io/" />
+
+<lc url="https://github.com/MatsuriDayo/NekoBoxForAndroid/blob/main/README.md" />
 
 ## 介绍
 

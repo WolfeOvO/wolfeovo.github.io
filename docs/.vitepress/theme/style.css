@@ -2451,12 +2451,3 @@
 .custom-block.details .details-content {
   margin: 0 !important;
 }
-
-/* 自定义浅蓝色高亮样式 */
-.hl-blue {
-  background-color: #9ED3F0;
-  padding: 2px 4px;
-  border-radius: 4px;
-  color: var(--vp-c-text-1);
-  font-weight: bold;
-}

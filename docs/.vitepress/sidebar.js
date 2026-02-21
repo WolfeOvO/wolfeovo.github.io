@@ -70,8 +70,9 @@ export const sidebar = {
             { text: 'Hiddify', link: 'Hiddify' },
             { text: 'Karing', link: 'Karing' },
             { text: 'FlClash', link: 'FlClash' },
-            { text: 'Sing-box', link: 'Sing-box' },
             { text: 'Clash Mi', link: 'ClashMi' },
+            { text: 'Sing-box', link: 'Sing-box' },
+            { text: 'V2Ray 系列', link: 'V2Ray' },
             { text: 'Clash Verge Rev', link: 'ClashVergeRev' },
             { text: 'NekoBox for Android', link: 'NekoBoxforAndroid' },
             { text: 'Clash Meta for Android', link: 'ClashMetaforAndroid' }
@@ -80,6 +81,7 @@ export const sidebar = {
         {
           text: '社交平台',
           base: '/墙外指南/软件下载/social-platform/',
+          collapsed: true,
           items: [
             { text: 'Telegram', link: 'Telegram' }
           ]
