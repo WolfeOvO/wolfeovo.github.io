@@ -446,7 +446,6 @@ watch(() => [props.image, props.icon, props.title, props.description], () => {
 
 .link-card-url {
     font-size: 13px;
-    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Consolas', monospace;
     flex: 1;
     min-width: 0;
 }
@@ -467,7 +466,6 @@ watch(() => [props.image, props.icon, props.title, props.description], () => {
     line-height: 1.5;
     margin: 0;
     color: #0f172a;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', sans-serif;
 }
 
 .link-card-description {
