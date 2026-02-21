@@ -2,7 +2,7 @@
 
 :root {
   /* ================= 普通文本字体 (黑体) ================= */
-  --vp-font-family-base: "Noto Sans SC", "Noto Sans TC" !important;
+  --vp-font-family-base: "Noto Sans TC", "Noto Sans SC" !important;
   
   /* ================= 代码字体 ================= */
   --vp-font-family-mono: "Maple Mono" !important;
@@ -13,7 +13,7 @@
 h1, h2, h3, h4, h5, h6,
 .vp-doc h1, .vp-doc h2, .vp-doc h3, .vp-doc h4, .vp-doc h5, .vp-doc h6,
 .title, .name {
-  font-family: "Noto Serif SC", "Noto Serif TC" !important;
+  font-family: "Noto Serif TC", "Noto Serif SC" !important;
 }
 
 :root {

@@ -19,7 +19,7 @@ export default defineConfig({
     ['link', { rel: 'icon', href: '/media/icon/logo.svg' }],
     ['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],
     ['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],
-    ['link', { href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap', rel: 'stylesheet' }]
+    ['link', { href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Seirf+SC:wght@400;500;600;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap', rel: 'stylesheet' }]
   ],
 
   markdown: {
