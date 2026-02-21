@@ -1,9 +1,26 @@
-/* 引入 Google Fonts 上的 Noto Sans TC (等同于思源黑体 TW) */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
+/* 1. 引入普通文本：Noto Sans TC (黑体) */
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-tc@latest/index.css');
+
+/* 2. 引入标题：Noto Serif TC (宋体) */
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-tc@latest/index.css');
+
+/* 3. 引入代码字体：Maple Mono */
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/maple-mono@latest/index.css');
 
 :root {
-  --vp-font-family-base: "Noto Sans TC", "Source Han Sans TW", "PingFang TC", "Apple LiGothic Medium", "Microsoft JhengHei", sans-serif;
-  --vp-font-family-headings: "Noto Sans TC", "Source Han Sans TW", "PingFang TC", "Apple LiGothic Medium", "Microsoft JhengHei", sans-serif;
+  /* ================= 普通文本字体 (黑体) ================= */
+  --vp-font-family-base: "Noto Sans TC" !important;
+  
+  /* ================= 代码字体 ================= */
+  --vp-font-family-mono: "Maple Mono" !important;
+}
+
+/* ================= 标题单独设置 (宋体) ================= */
+/* 增加权重确保覆盖 VitePress 默认层级 */
+h1, h2, h3, h4, h5, h6,
+.vp-doc h1, .vp-doc h2, .vp-doc h3, .vp-doc h4, .vp-doc h5, .vp-doc h6,
+.title, .name {
+  font-family: "Noto Serif TC" !important;
 }
 
 :root {
