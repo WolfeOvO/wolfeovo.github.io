@@ -1,10 +1,3 @@
-/* 1. 引入普通文本：Noto Sans TC (黑体) */
-@import url('https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-tc@latest/index.css');
-
-/* 2. 引入标题：Noto Serif TC (宋体) */
-@import url('https://cdn.jsdelivr.net/npm/@fontsource/noto-serif-tc@latest/index.css');
-
-/* 3. 引入代码字体：Maple Mono */
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/maple-mono@latest/index.css');
 
 :root {
