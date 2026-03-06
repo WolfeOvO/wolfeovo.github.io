@@ -11,7 +11,7 @@ import multimdTable from 'markdown-it-multimd-table'
 
 export default defineConfig({
   title: "Wolfeの储物间",
-  base: '/depot/',
+  base: '/',
   description: "Wolfe 的小破站，始于 2026/1/11",
   ignoreDeadLinks: true,
   lastUpdated: true,
@@ -91,22 +91,19 @@ export default defineConfig({
     },
 
     nav: [
-      { text: '首页', link: '/' },
-      { text: '储物间', link: '/储物间/储物间目录' },
-      { text: '墙外指南', link: '/墙外指南/墙外指南目录' }
+      { text: '首页', link: '/', icon: 'material-symbols:home-rounded' },
+      { text: '储物间', link: '/储物间/储物间目录', icon: 'material-symbols:archive-rounded' },
+      { text: '墙外指南', link: '/墙外指南/墙外指南目录', icon: 'ic:baseline-rocket-launch' },
+      {
+        text: "更多",
+        icon: 'icon-park-outline:more-three',
+        items: [
+          { text: '博客', link: 'https://wolfeovo.github.io/blog', icon: 'material-symbols:archive-rounded' }
+        ],
+      },
     ],
 
     sidebar: sidebar,
-
-    // 博客模式各页面的自定义图标
-    // 支持：文字/emoji（如 '📝'）、SVG 字符串（如 '<svg ...>...</svg>'）、
-    // 图片路径（如 '/media/icon/blog.svg' 或 '/media/icon/blog.ico'）
-    blogIcons: {
-      posts: '📝',       // 博客文章页标题图标
-      tags: '🏷️',       // 标签云页标题图标
-      series: '📚',      // 合辑页标题图标
-      archives: '📅',    // 归档页标题图标
-    },
 
     lastUpdated: {
       text: '最后更新',

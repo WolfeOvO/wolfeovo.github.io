@@ -9,6 +9,9 @@ hero:
     - theme: brand
       text: 立即进入
       link: /homepage
+    - theme: alt
+      text: 前往博客
+      link: https://wolfeovo.github.io/blog
   image:
     src: /media/icon/logo.svg
 
