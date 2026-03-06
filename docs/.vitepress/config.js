@@ -19,7 +19,9 @@ export default defineConfig({
     ['link', { rel: 'icon', href: '/media/icon/logo.svg' }],
     ['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],
     ['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],
-    ['link', { href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap', rel: 'stylesheet' }]
+    ['link', { href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap', rel: 'stylesheet' }],
+    // 引入 Iconify 脚本，这样你 nav 里的 <iconify-icon> 标签才能生效
+    ['script', { src: 'https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js' }]
   ],
 
   markdown: {
@@ -90,15 +92,27 @@ export default defineConfig({
       label: '大纲' 
     },
 
+    // 重点修改：将图标写在 text 中，并使用 iconify-icon 标签
     nav: [
-      { text: '首页', link: '/', icon: 'material-symbols:home-rounded' },
-      { text: '储物间', link: '/储物间/储物间目录', icon: 'material-symbols:archive-rounded' },
-      { text: '墙外指南', link: '/墙外指南/墙外指南目录', icon: 'ic:baseline-rocket-launch' },
+      { 
+        text: '<iconify-icon icon="material-symbols:home-rounded"></iconify-icon> 首页', 
+        link: '/' 
+      },
+      { 
+        text: '<iconify-icon icon="material-symbols:archive-rounded"></iconify-icon> 储物间', 
+        link: '/储物间/储物间目录' 
+      },
+      { 
+        text: '<iconify-icon icon="ic:baseline-rocket-launch"></iconify-icon> 墙外指南', 
+        link: '/墙外指南/墙外指南目录' 
+      },
       {
-        text: "更多",
-        icon: 'icon-park-outline:more-three',
+        text: '<iconify-icon icon="icon-park-outline:more-three"></iconify-icon> 更多',
         items: [
-          { text: '博客', link: 'https://wolfeovo.github.io/blog', icon: 'material-symbols:archive-rounded' }
+          { 
+            text: '<iconify-icon icon="material-symbols:archive-rounded"></iconify-icon> 博客', 
+            link: 'https://wolfeovo.github.io/blog' 
+          }
         ],
       },
     ],
@@ -123,7 +137,7 @@ export default defineConfig({
       options: {
         translations: {
           button: {
-            buttonText: '搜索文档', // 对应左上角 "Search"
+            buttonText: '搜索文档',
             buttonAriaLabel: '搜索文档'
           },
           modal: {
@@ -132,9 +146,9 @@ export default defineConfig({
             backButtonTitle: '关闭搜索',
             noResultsText: '无法在标题或正文中找到：',
             footer: {
-              selectText: '选中',   // 对应 "to select"
-              navigateText: '选择', // 对应 "to navigate"
-              closeText: '关闭',    // 对应 "to close"
+              selectText: '选中',
+              navigateText: '选择',
+              closeText: '关闭',
             }
           }
         }

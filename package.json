@@ -1,37 +1,17 @@
 {
-  "name": "wolfe-storage",
+  "name": "Wolfeの储物间",
   "version": "1.0.0",
   "type": "module",
-  "description": "VitePress documentation project with custom scripts",
   "scripts": {
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs",
-    "r2": "tsx scripts/upload_r2.ts",
-    "update:clash": "tsx scripts/update_clash.ts",
-    "ub": "npx update-browserslist-db@latest --yes",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "docs:preview": "vitepress preview docs"
   },
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
-    "@aws-sdk/client-s3": "^3.968.0",
-    "@aws-sdk/lib-storage": "^3.968.0",
-    "@types/mime-types": "^3.0.1",
-    "@types/node": "^25.0.8",
-    "dotenv": "^17.2.3",
-    "exifr": "^7.0.0",
-    "glob": "^13.0.1",
-    "gray-matter": "^4.0.3",
-    "markdown-it": "^14.1.1",
-    "markdown-it-footnote": "^4.0.0",
-    "markdown-it-multimd-table": "latest",
-    "mime-types": "^3.0.2",
-    "tsx": "^4.21.0",
     "vitepress": "^1.0.0",
+    "vue": "^3.0.0",
     "vitepress-plugin-tabs": "^0.5.0",
-    "vue": "^3.5.29",
-    "@iconify-json/material-symbols": "^1.2.1",
-    "@iconify-json/icon-park-outline": "^1.2.1"
+    "markdown-it-footnote": "^4.0.0",
+    "markdown-it-multimd-table": "latest"
   }
 }
