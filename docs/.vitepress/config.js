@@ -100,11 +100,11 @@ export default defineConfig({
       },
       { 
         text: '<iconify-icon icon="material-symbols:archive-rounded"></iconify-icon> 储物间', 
-        link: '/储物间/储物间目录' 
+        link: '/collection/collection-content' 
       },
       { 
         text: '<iconify-icon icon="ic:baseline-rocket-launch"></iconify-icon> 墙外指南', 
-        link: '/墙外指南/墙外指南目录' 
+        link: '/gfw-guide/gfw-guide-content' 
       },
       {
         text: '<iconify-icon icon="icon-park-outline:more-three"></iconify-icon> 更多',
@@ -112,6 +112,10 @@ export default defineConfig({
           { 
             text: '<iconify-icon icon="material-symbols:archive-rounded"></iconify-icon> 博客', 
             link: 'https://wolfeovo.github.io/blog' 
+          },
+          {
+            text: '<iconify-icon icon="material-symbols:backup"></iconify-icon> 备份',
+            link: '/more/backup'
           }
         ],
       },

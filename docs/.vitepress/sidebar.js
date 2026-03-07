@@ -1,10 +1,10 @@
 export const sidebar = {
-  '/储物间/': [
+  '/collection/': [
     {
       text: '储物间',
-      base: '/储物间/', 
+      base: '/collection/', 
       items: [
-        { text: '目录', link: '储物间目录' },
+        { text: '目录', link: 'collection-content' },
         { text: '同类推荐', link: 'VitePress' },
         { text: '1 - 搜索引擎', link: '1-搜索引擎' },
         { text: '2 - 问答导航', link: '2-问答导航' },
@@ -23,18 +23,18 @@ export const sidebar = {
       ]
     }
   ],
-  '/墙外指南/': [
+  '/gfw-guide/': [
     {
       text: '墙外指南',
-      base: '/墙外指南/',
+      base: '/gfw-guide/',
       items: [
-        { text: '目录', link: '墙外指南目录' },
+        { text: '目录', link: 'gfw-guide-content' },
         { text: '名词解释', link: '名词解释' }
       ]
     },
     {
       text: '镜像',
-      base: '/墙外指南/镜像/',
+      base: '/gfw-guide/mirror/',
       items: [
         { text: 'GitHub 代理', link: 'GitHub' },
         { text: 'Wikipedia 维基百科', link: 'Wikipedia' }
@@ -42,7 +42,7 @@ export const sidebar = {
     },
     {
       text: '推荐机场',
-      base: '/墙外指南/推荐机场/',
+      base: '/gfw-guide/vpn/',
       collapsed: false,
       items: [
         { text: '网站推荐', link: 'website' },
@@ -60,11 +60,11 @@ export const sidebar = {
     },
     {
       text: '软件下载',
-      base: '/墙外指南/软件下载/', 
+      base: '/gfw-guide/software/', 
       items: [
         { 
           text: '客户端',
-          base: '/墙外指南/软件下载/proxy-client/',
+          base: '/gfw-guide/software/proxy-client/',
           collapsed: true,
           items: [
             { text: '合集（一定要先读完我再下载！）', link: 'client' },
@@ -82,7 +82,7 @@ export const sidebar = {
         },
         {
           text: '社交平台',
-          base: '/墙外指南/软件下载/social-platform/',
+          base: '/gfw-guide/software/social-platform/',
           collapsed: true,
           items: [
             { text: 'Telegram', link: 'Telegram' }

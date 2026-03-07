@@ -18,7 +18,7 @@ hero:
 features:
   - icon: 🏠
     title: 储物间
-    link: /储物间/储物间目录
+    link: /collection/collection-content
     details: 存放各种杂七杂八的资源
   - icon: 🌐
     title: 墙外指南
