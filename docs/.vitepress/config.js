@@ -16,20 +16,87 @@ export default defineConfig({
   ignoreDeadLinks: true,
   lastUpdated: true,
   
-  head:[
-    ['link', { rel: 'icon', href: '/media/icon/logo.svg' }],
-    ['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],['link', { href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap', rel: 'stylesheet' }],['script', { src: 'https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js' }],
-    ['link', { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css' }],['script', { src: 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js' }],['script', {}, `
-      const initFancybox = setInterval(() => {
-        if (window.Fancybox) {
-          window.Fancybox.bind('.vp-doc img', {
-            groupAll: true,
-          });
-          clearInterval(initFancybox);
-        }
-      }, 100);
-    `]
-  ],
+  head: [
+   ['link', { rel: 'icon', href: '/media/icon/logo.svg' }],
+   ['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],
+   ['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],
+   ['link', { href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap', rel: 'stylesheet' }],
+   ['script', { src: 'https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js' }],
+  
+   // 1. 引入 Fancybox 资源
+   ['link', { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css' }],
+   ['script', { src: 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js' }],
+
+   // 2. 核心逻辑脚本
+   ['script', {}, `
+    (function() {
+      let observer;
+      
+      function initFancybox() {
+        if (!window.Fancybox) return;
+        
+        // 先清理之前的绑定，防止重复
+        window.Fancybox.unbind('.vp-doc img');
+        window.Fancybox.bind('.vp-doc img', {
+          groupAll: true, // 将页面所有图片编组
+          Hash: false,    // 不在 URL 产生哈希
+          // 自动读取你在 markdown 渲染器里生成的 figcaption
+          caption: function(fancybox, slide) {
+            const figure = slide.triggerEl.closest('figure');
+            const figcaption = figure ? figure.querySelector('figcaption') : null;
+            return figcaption ? figcaption.innerHTML : slide.triggerEl.alt;
+          },
+          // 自定义工具栏：缩放、翻页、关闭
+          Toolbar: {
+            display: {
+              left: ["infobar"],
+              middle: [],
+              right: ["iterateZoom", "slideshow", "fullScreen", "close"],
+            },
+          },
+        });
+      }
+
+      // 监听 DOM 变化以适配 VitePress 的路由跳转
+      if (typeof window !== 'undefined') {
+        const callback = (mutationsList) => {
+          for (const mutation of mutationsList) {
+            if (mutation.type === 'childList') {
+              initFancybox();
+              break;
+            }
+          }
+        };
+
+        observer = new MutationObserver(callback);
+
+        window.addEventListener('load', () => {
+          const targetNode = document.querySelector('#app');
+          if (targetNode) {
+            observer.observe(targetNode, { childList: true, subtree: true });
+          }
+          initFancybox();
+        });
+      }
+     })();
+   `],
+
+  // 3. 美化：鼠标悬停显示放大镜
+  ['style', {}, `
+    .vp-doc img {
+      cursor: zoom-in;
+      transition: transform 0.2s ease;
+    }
+    .vp-doc img:hover {
+      transform: scale(1.01);
+    }
+    /* 修复 Fancybox z-index 确保在导航栏之上 */
+    .fancybox__container {
+      z-index: 2000 !important;
+      --fancybox-bg: rgba(0, 0, 0, 0.85);
+    }
+   `]
+   ],
 
   markdown: {
     config(md) {
