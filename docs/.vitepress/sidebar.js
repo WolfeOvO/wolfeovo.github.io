@@ -29,7 +29,7 @@ export const sidebar = {
       base: '/gfw-guide/',
       items: [
         { text: '目录', link: 'gfw-guide-content' },
-        { text: '名词解释', link: '名词解释' }
+        { text: '名词解释', link: 'noun-explain' }
       ]
     },
     {
@@ -41,11 +41,12 @@ export const sidebar = {
       ]
     },
     {
-      text: '推荐机场',
+      text: '科学上网',
       base: '/gfw-guide/vpn/',
       collapsed: false,
       items: [
         { text: '网站推荐', link: 'website-recommend' },
+        { text: '订阅转换', link: 'subconverter' },
         { text: '一线顶流机场推荐', link: 'top-tier' },
         { text: 'Telegram 墙外频道推荐', link: 'tg-channel' },
         {

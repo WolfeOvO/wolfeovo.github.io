@@ -38,7 +38,7 @@
 欢迎送测！
 
 - 投稿机器人：[@Bronya01Bot](https://t.me/Bronya01Bot)
-- 群组：[https://t.me/Bronya_02](https://t.me/Bronya_02)
+- 群组：https://t.me/Bronya_02
 
 请给我钱，谢谢喵~
 - Tron：||TDdtJmMUs3QM4wvGeED5UpGwtDDv1XhhzQ||
@@ -53,7 +53,7 @@
 欢迎所有**用户👨🏻‍💻**和**机场主🕋**投稿，共建透明、客观、更反映用户实际体验的评测生态。
 
 ➤投稿：[@HaitunSubmit_bot](https://t.me/HaitunSubmit_bot)  
-➤专线入口天梯表：[https://www.haitunt.org](https://www.haitunt.org)  
+➤专线入口天梯表：https://www.haitunt.org
 ➤若有可能的撤稿事项，仅受理**原投稿人**。
 
 讨论群：[@haitunspeed](https://t.me/haitunspeed)
@@ -112,7 +112,7 @@
 <lc url="https://t.me/gebaopiCloud" />
 
 投稿：[exairport2022@gmail.com](mailto:exairport2022@gmail.com)  
-交流群：[https://t.me/EXAIRPORTSGroup](https://t.me/EXAIRPORTSGroup)  
+交流群：https://t.me/EXAIRPORTSGroup  
 机场主投稿请按如下格式：
 
 ``` Plain Text
@@ -132,10 +132,10 @@
 <lc url="https://t.me/jichangtj" />
 
 #机场推荐 #机场测速 #机场评测/观察/点评，科学上网和科技相关新闻资讯。  
-#机场推荐：[https://bit.ly/3fdHzbp](https://bit.ly/3fdHzbp)
+#机场推荐：https://bit.ly/3fdHzbp
 
-X：[https://x.com/jichangtj](https://x.com/jichangtj)
+X：https://x.com/jichangtj
 
 选机场要求很高！除非优秀否则不收。  
-投稿要求：[https://t.me/jichangtj/1014](https://t.me/jichangtj/1014)  
+投稿要求：https://t.me/jichangtj/1014  
 投稿：[@jichangtjBot](https://t.me/jichangtjBot)（骚扰会 ban）

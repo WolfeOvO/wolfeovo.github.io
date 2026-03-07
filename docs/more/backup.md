@@ -6,9 +6,9 @@
 
 ## 主用（GitHub Pages）
 
-- 储物间：[https://wolfeovo.github.io](https://wolfeovo.github.io)
-- 博客：[https://wolfeovo.github.io/blog](https://wolfeovo.github.io/blog)
+- 储物间：https://wolfeovo.github.io
+- 博客：https://wolfeovo.github.io/blog
 
 ## 备用
 
-- 储物间 by Cloudflare：[https://wolfe.pages.dev](https://wolfe.pages.dev)
+- 储物间 by Cloudflare：https://wolfe.pages.dev
