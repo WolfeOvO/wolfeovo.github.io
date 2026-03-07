@@ -1,14 +1,56 @@
 export function spoiler(md) {
-  // 保存原始的 render 函数
-  const defaultRender = md.renderer.render.bind(md.renderer)
+  function tokenize(state, silent) {
+    const start = state.pos
+    const src = state.src
 
-  // 重写 render 函数
-  md.renderer.render = function(tokens, options, env) {
-    let html = defaultRender(tokens, options, env)
+    let openLen = 0
+    let closeSeq = ''
 
-    // 使用非贪婪匹配，支持多个 spoiler
-    html = html.replace(/\|\|([^|]+?)\|\|/g, '<span class="spoiler">$1</span>')
-    
-    return html
+    if (src.startsWith('||', start)) {
+      openLen = 2
+      closeSeq = '||'
+    } else if (src.startsWith('>!', start)) {
+      openLen = 2
+      closeSeq = '!<'
+    } else {
+      return false
+    }
+
+    const startContent = start + openLen
+    let pos = startContent
+    let found = false
+
+    while (pos < state.posMax) {
+      if (src.startsWith(closeSeq, pos)) {
+        found = true
+        break
+      }
+      pos++
+    }
+
+    if (!found) return false
+    if (silent) return false
+
+    const content = src.slice(startContent, pos)
+
+    const tokenOpen = state.push('spoiler_open', 'span', 1)
+    tokenOpen.attrs = [['class', 'spoiler']]
+
+    const children = []
+    state.md.inline.parse(content, state.md, state.env, children)
+
+    for (const t of children) {
+      state.tokens.push(t)
+    }
+
+    state.push('spoiler_close', 'span', -1)
+
+    state.pos = pos + closeSeq.length
+    return true
   }
+
+  md.inline.ruler.before('emphasis', 'spoiler', tokenize)
+
+  md.renderer.rules.spoiler_open = () => '<span class="spoiler">'
+  md.renderer.rules.spoiler_close = () => '</span>'
 }
