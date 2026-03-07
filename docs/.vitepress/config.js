@@ -38,9 +38,14 @@ export default defineConfig({
         // 先清理之前的绑定，防止重复
         window.Fancybox.unbind('.vp-doc img');
         window.Fancybox.bind('.vp-doc img', {
-          groupAll: true, // 将页面所有图片编组
-          Hash: false,    // 不在 URL 产生哈希
-          // 自动读取你在 markdown 渲染器里生成的 figcaption
+          groupAll: true,
+          Hash: false,
+          Images: {
+          initialSize: "fit",
+          Panzoom: {
+            maxScale: 999999,
+          },
+        },
           caption: function(fancybox, slide) {
             const figure = slide.triggerEl.closest('figure');
             const figcaption = figure ? figure.querySelector('figcaption') : null;
