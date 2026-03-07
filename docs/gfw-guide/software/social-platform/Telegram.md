@@ -8,7 +8,7 @@
 
 ## 官方下载
 
-Telegram 官网：[https://telegram.org/](https://telegram.org/)<br>
+Telegram 官网：[https://telegram.org/](https://telegram.org/)  
 官方下载页：[https://telegram.org/apps](https://telegram.org/apps)
 
 - **手机端**：[Android](https://telegram.org/android)、[iPhone & iPad](https://telegram.org/dl/ios)

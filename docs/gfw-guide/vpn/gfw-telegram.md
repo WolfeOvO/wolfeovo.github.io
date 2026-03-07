@@ -52,8 +52,8 @@
 
 欢迎所有**用户👨🏻‍💻**和**机场主🕋**投稿，共建透明、客观、更反映用户实际体验的评测生态。
 
-➤投稿：[@HaitunSubmit_bot](https://t.me/HaitunSubmit_bot)<br>
-➤专线入口天梯表：[https://www.haitunt.org](https://www.haitunt.org)<br>
+➤投稿：[@HaitunSubmit_bot](https://t.me/HaitunSubmit_bot)  
+➤专线入口天梯表：[https://www.haitunt.org](https://www.haitunt.org)  
 ➤若有可能的撤稿事项，仅受理**原投稿人**。
 
 讨论群：[@haitunspeed](https://t.me/haitunspeed)
@@ -75,11 +75,11 @@
 
 欢迎关注机场列表频道。
 
-本频道不断的收录机场的信息（名称、地址、频道、群组等等），均无 AFF，放心食用。<br>
+本频道不断的收录机场的信息（名称、地址、频道、群组等等），均无 AFF，放心食用。  
 本频道信息来源：机器人自动抓取、投稿。
 
-序号：序号、顺序不代表机场排名<br>
-时间：是指消息发布时间，不是机场的开业时间<br>
+序号：序号、顺序不代表机场排名  
+时间：是指消息发布时间，不是机场的开业时间  
 投稿：**频道内私聊**或[**@jichang_list_bot**](https://t.me/jichang_list_bot)
 
 机场交流群：
@@ -104,15 +104,15 @@
 
 机场测评属于公益测评，不带有任何 AFF 哦。
 
-星星的 Emby 测评群组：[@Starsfolks](https://t.me/Starsfolks)<br>
+星星的 Emby 测评群组：[@Starsfolks](https://t.me/Starsfolks)  
 星星的 Emby 测评频道：[@StarsNavigation](https://t.me/StarsNavigation)
 
 ## 前女友们用过的机场—始于机场，不止机场
 
 <lc url="https://t.me/gebaopiCloud" />
 
-投稿：[exairport2022@gmail.com](mailto:exairport2022@gmail.com)<br>
-交流群：[https://t.me/EXAIRPORTSGroup](https://t.me/EXAIRPORTSGroup)<br>
+投稿：[exairport2022@gmail.com](mailto:exairport2022@gmail.com)  
+交流群：[https://t.me/EXAIRPORTSGroup](https://t.me/EXAIRPORTSGroup)  
 机场主投稿请按如下格式：
 
 ``` Plain Text
@@ -131,11 +131,11 @@
 
 <lc url="https://t.me/jichangtj" />
 
-#机场推荐 #机场测速 #机场评测/观察/点评，科学上网和科技相关新闻资讯。<br>
+#机场推荐 #机场测速 #机场评测/观察/点评，科学上网和科技相关新闻资讯。  
 #机场推荐：[https://bit.ly/3fdHzbp](https://bit.ly/3fdHzbp)
 
 X：[https://x.com/jichangtj](https://x.com/jichangtj)
 
-选机场要求很高！除非优秀否则不收。<br>
-投稿要求：[https://t.me/jichangtj/1014](https://t.me/jichangtj/1014)<br>
+选机场要求很高！除非优秀否则不收。  
+投稿要求：[https://t.me/jichangtj/1014](https://t.me/jichangtj/1014)  
 投稿：[@jichangtjBot](https://t.me/jichangtjBot)（骚扰会 ban）
