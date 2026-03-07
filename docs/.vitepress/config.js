@@ -43,7 +43,7 @@ export default defineConfig({
           Images: {
           initialSize: "fit",
           Panzoom: {
-            maxScale: 999999,
+            maxScale: 2010,
           },
         },
           caption: function(fancybox, slide) {
@@ -56,7 +56,7 @@ export default defineConfig({
             display: {
               left: ["infobar"],
               middle: [],
-              right: ["iterateZoom", "slideshow", "fullScreen", "close"],
+              right: ["slideshow", "fullScreen", "close"],
             },
           },
         });
