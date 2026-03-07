@@ -15,13 +15,20 @@ export default defineConfig({
   description: "Wolfe 的小破站，始于 2026/1/11",
   ignoreDeadLinks: true,
   lastUpdated: true,
-  head: [
+  
+  head:[
     ['link', { rel: 'icon', href: '/media/icon/logo.svg' }],
-    ['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],
-    ['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],
-    ['link', { href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap', rel: 'stylesheet' }],
-    // 引入 Iconify 脚本，这样你 nav 里的 <iconify-icon> 标签才能生效
-    ['script', { src: 'https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js' }]
+    ['link', { rel: 'preconnect', href: 'https://fonts.googleapis.com' }],['link', { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' }],['link', { href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Serif+TC:wght@400;500;600;700&display=swap', rel: 'stylesheet' }],['script', { src: 'https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js' }],
+    ['link', { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css' }],['script', { src: 'https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js' }],['script', {}, `
+      const initFancybox = setInterval(() => {
+        if (window.Fancybox) {
+          window.Fancybox.bind('.vp-doc img', {
+            groupAll: true,
+          });
+          clearInterval(initFancybox);
+        }
+      }, 100);
+    `]
   ],
 
   markdown: {
@@ -92,31 +99,15 @@ export default defineConfig({
       label: '大纲' 
     },
 
-    // 重点修改：将图标写在 text 中，并使用 iconify-icon 标签
-    nav: [
-      { 
-        text: '<iconify-icon icon="material-symbols:home-rounded"></iconify-icon> 首页', 
-        link: '/' 
-      },
-      { 
-        text: '<iconify-icon icon="material-symbols:archive-rounded"></iconify-icon> 储物间', 
-        link: '/collection/collection-content' 
-      },
-      { 
-        text: '<iconify-icon icon="ic:baseline-rocket-launch"></iconify-icon> 墙外指南', 
-        link: '/gfw-guide/gfw-guide-content' 
-      },
+    nav:[
+      { text: '<iconify-icon icon="material-symbols:home-rounded"></iconify-icon> 首页', link: '/' },
+      { text: '<iconify-icon icon="material-symbols:archive-rounded"></iconify-icon> 储物间', link: '/collection/collection-content' },
+      { text: '<iconify-icon icon="ic:baseline-rocket-launch"></iconify-icon> 墙外指南', link: '/gfw-guide/gfw-guide-content' },
       {
         text: '<iconify-icon icon="icon-park-outline:more-three"></iconify-icon> 更多',
-        items: [
-          { 
-            text: '<iconify-icon icon="material-symbols:archive-rounded"></iconify-icon> 博客', 
-            link: 'https://wolfeovo.github.io/blog' 
-          },
-          {
-            text: '<iconify-icon icon="material-symbols:backup"></iconify-icon> 备份',
-            link: '/more/backup'
-          }
+        items:[
+          { text: '<iconify-icon icon="material-symbols:archive-rounded"></iconify-icon> 博客', link: 'https://wolfeovo.github.io/blog' },
+          { text: '<iconify-icon icon="material-symbols:backup"></iconify-icon> 备份', link: '/more/backup' }
         ],
       },
     ],
