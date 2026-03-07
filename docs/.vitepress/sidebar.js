@@ -45,8 +45,9 @@ export const sidebar = {
       base: '/gfw-guide/vpn/',
       collapsed: false,
       items: [
-        { text: '网站推荐', link: 'website' },
-        { text: 'Telegram 墙外频道推荐', link: 'gfw-telegram' },
+        { text: '网站推荐', link: 'website-recommend' },
+        { text: '一线顶流机场推荐', link: 'top-tier' },
+        { text: 'Telegram 墙外频道推荐', link: 'tg-channel' },
         {
           text: '2026 年',
           collapsed: true,

@@ -16,14 +16,6 @@ hero:
     src: /media/icon/folder_2.svg
 
 features:
-  - icon: 🏠
-    title: 储物间
-    link: /collection/collection-content
-    details: 存放各种杂七杂八的资源
-  - icon: 🌐
-    title: 墙外指南
-    link: /墙外指南/墙外指南目录
-    details: 教你如何翻墙
   - icon: ⚙️
     title: 简洁高效
     details: 基于 VitePress 构建，速度飞快
